@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+from cpu import CPU
+from ram import RAM
+from machine import Machine
+
+ram = RAM(65536)
+c = Machine(CPU(ram), ram)
+
+nop = 0x00
+jmp = 0xc3
+
+c.loadProgram(
+  [
+    0x00, # nop
+    0x08, # nop
+    0xc3, # jmp
+    0x00, # 0x100 low byte
+    0x01, # 0x100 high byte
+  ],
+  0x100)
+c.executeProgram(0x100)
