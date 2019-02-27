@@ -15,13 +15,13 @@ class CPU:
     self.ram = ram
     self.registers = [
       # General purpose registers
-      Register('ax', 1, reference=0b111),
-      Register('bx', 1, reference=0b000),
-      Register('cx', 1, reference=0b001),
-      Register('dx', 1, reference=0b010),
-      Register('ex', 1, reference=0b011),
-      Register('hx', 1, reference=0b100),
-      Register('lx', 1, reference=0b101),
+      Register('a', 1, reference=0b111),
+      Register('b', 1, reference=0b000),
+      Register('c', 1, reference=0b001),
+      Register('d', 1, reference=0b010),
+      Register('e', 1, reference=0b011),
+      Register('h', 1, reference=0b100),
+      Register('l', 1, reference=0b101),
 
       Register('sp', 2), # Stack Pointer
       Register('pc', 2), # Program Counter
