@@ -11,7 +11,19 @@ int main(int argc, char *argv[])
 
   else
   {
-    std::vector<uint8_t> prog = { 0x08, 0x06, 0x22, 0x10, 0x41, 0x10, 0x55, 0x10, 0x00 };
+    std::vector<uint8_t> prog = {
+      0x08, // nop
+      0x06, // mvi b, 0x22
+      0x22,
+      0x04, // inr b
+      0x10, // dump
+      0x41, // mov b, c
+      0x10, // dump
+      0x55, // mov d, l
+      0x10, // dump
+      0x00  // term
+    };
+
     cpu.loadProgram(prog, 0x100);
   }
 

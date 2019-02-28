@@ -121,7 +121,7 @@ bool Intel8080::checkParity(uint8_t val)
 {
   int acc = 0;
 
-  for (uint8_t mask = 1; mask <= 0x80; mask <<= 1)
+  for (uint16_t mask = 1; mask <= 0x80; mask <<= 1)
   {
     if (val & mask)
       acc++;
