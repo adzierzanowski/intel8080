@@ -13,6 +13,11 @@ Intel8080::Intel8080()
 {
   memory.resize(0x10000);
   generateOpcodes();
+
+  // constant bits in FLAGS register
+  setFlag(5, 0);
+  setFlag(3, 0);
+  setFlag(1, 1);
 }
 
 void Intel8080::execute()
@@ -62,19 +67,31 @@ void Intel8080::printMemory(int a, int n)
 
 void Intel8080::printRegisters()
 {
-  printf("\n==============REGISTERS==============\n");
+  printf("\n================REGISTERS================\n");
   printf("\033[1ma\033[0m: 0x%02x | ", a);
   printf("\033[1mb\033[0m: 0x%02x | ", b);
   printf("\033[1mc\033[0m: 0x%02x | ", c);
   printf("\033[1md\033[0m: 0x%02x\n", d);
   printf("\033[1me\033[0m: 0x%02x | ", e);
   printf("\033[1mh\033[0m: 0x%02x | ", h);
-  printf("\033[1ml\033[0m: 0x%02x\n", l);
+  printf("\033[1ml\033[0m: 0x%02x      SZ A P C\n", l);
 
-  printf("\033[1msp\033[0m: 0x%02x | ", sp);
-  printf("\033[1mpc\033[0m: 0x%02x | ", pc);
-  printf("\033[1mflags\033[0m: 0x%02x\n", flags);
-  printf("=====================================\n\n");
+  printf("\033[1msp\033[0m: 0x%04x | ", sp);
+  printf("\033[1mpc\033[0m: 0x%04x | ", pc);
+  printf("\033[1mflags\033[0m: ");
+  uint8_t mask = 0x80;
+  while (true)
+  {
+    printf("%c", flags & mask ? '1' : '0');
+    mask >>= 1;
+    
+    if (mask == 0)
+    {
+      printf("\n");
+      break;
+    }
+  }
+  printf("=========================================\n\n");
 }
 
 void Intel8080::loadProgram(std::vector<uint8_t> prog, uint16_t address)
@@ -161,24 +178,32 @@ void Intel8080::op_nop()
 template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
-  uint8_t val = getRegisterValue(reg);
-  uint8_t new_val = val + 1;
+  uint8_t old_val = getRegisterValue(reg);
+  uint8_t new_val = old_val + 1;
   setRegisterValue(reg, new_val);
 
-  new_val == 0 ? setZeroFlag() : resetZeroFlag();
-  new_val & 0x80 ? setSignFlag() : resetSignFlag();
-  checkParity(new_val) ? setParityFlag() : resetParityFlag();
-  checkForAuxiliaryCarry(val, new_val) ? setAuxiliaryCarryFlag() : resetAuxiliaryCarryFlag();
-
-  // TODO: set flags register
+  setFlags(
+    static_cast<uint8_t>(Flags::Z) |
+    static_cast<uint8_t>(Flags::S) |
+    static_cast<uint8_t>(Flags::P) |
+    static_cast<uint8_t>(Flags::AC),
+    old_val, new_val
+  );
 }
 
 template <Intel8080::Register reg>
 void Intel8080::op_dcr()
 {
-  uint8_t val = getRegisterValue(reg);
-  setRegisterValue(reg, val - 1);
-  // TODO: set flags register
+  uint8_t old_val = getRegisterValue(reg);
+  uint8_t new_val = old_val + 1;
+  setRegisterValue(reg, new_val);
+  setFlags(
+    static_cast<uint8_t>(Flags::Z) |
+    static_cast<uint8_t>(Flags::S) |
+    static_cast<uint8_t>(Flags::P) |
+    static_cast<uint8_t>(Flags::AC),
+    old_val, new_val
+  );
 }
 
 template <Intel8080::Register reg>
@@ -200,6 +225,15 @@ void Intel8080::setFlag(int pos, int state)
     flags |= (1 << pos);
   else
     flags &= ~(1 << pos);
+}
+
+void Intel8080::setFlags(uint8_t which, uint8_t old_val, uint8_t new_val)
+{
+  if (which & static_cast<uint8_t>(Flags::C)) {} // check for Carry flag
+  if (which & static_cast<uint8_t>(Flags::P)) checkParity(new_val) ? setParityFlag() : resetParityFlag();
+  if (which & static_cast<uint8_t>(Flags::AC)) checkForAuxiliaryCarry(old_val, new_val) ? setAuxiliaryCarryFlag() : resetAuxiliaryCarryFlag();
+  if (which & static_cast<uint8_t>(Flags::Z)) new_val == 0 ? setZeroFlag() : resetZeroFlag();
+  if (which & static_cast<uint8_t>(Flags::S)) new_val & 0x80 ? setSignFlag() : resetSignFlag();
 }
 
 void Intel8080::setCarryFlag(void) { setFlag(0, 1); }

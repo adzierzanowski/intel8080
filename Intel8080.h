@@ -69,6 +69,14 @@ class Intel8080
       M = 0b110
     };
 
+    enum class Flags : uint8_t {
+      C = 0,
+      P = 2,
+      AC = 4,
+      Z = 6,
+      S = 7
+    };
+
     Opcode *currentOpcode = nullptr;
     bool terminateFlag = false;
 
@@ -78,6 +86,7 @@ class Intel8080
     void executeInstruction(Opcode opcode);
 
     void setFlag(int pos, int state);
+    void setFlags(uint8_t which, uint8_t old_val, uint8_t new_val);
     void setCarryFlag(void);
     void resetCarryFlag(void);
     void setAuxiliaryCarryFlag(void);
