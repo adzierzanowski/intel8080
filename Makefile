@@ -1,5 +1,11 @@
 CXXFLAGS = -Wall -Wpedantic -std=c++17 -O3
-SOURCES = main.cc Intel8080.cc
+OBJECTS = main.o Intel8080.o
+EXE = emulator
 
-all:
-	g++ $(CXXFLAGS) $(SOURCES) -o emulator
+%.o: %.cc
+	g++ -c $(CXXFLAGS) $< -o $@
+
+$(EXE): $(OBJECTS)
+	g++ $(CXXFLAGS) $(OBJECTS) -o emulator
+
+all: $(EXE)
