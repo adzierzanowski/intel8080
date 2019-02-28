@@ -1,11 +1,26 @@
-CXXFLAGS = -Wall -Wpedantic -std=c++17 -O3
-OBJECTS = main.o Intel8080.o
+BUILD = build
 EXE = emulator
 
-%.o: %.cc
-	g++ -c $(CXXFLAGS) $< -o $@
-
-$(EXE): $(OBJECTS)
-	g++ $(CXXFLAGS) $(OBJECTS) -o emulator
+CXXFLAGS = -Wall -Wpedantic -std=c++17 -O3
+OBJECTS = $(addprefix $(BUILD)/, main.o Intel8080.o)
 
 all: $(EXE)
+
+clean:
+	rm -rf $(BUILD)
+	rm $(EXE)
+
+leaks:
+	leaks --atExit -- ./$(EXE)
+
+$(EXE): $(BUILD) $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
+
+$(BUILD)/main.o: main.cc
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+$(BUILD)/%.o: %.cc
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+$(BUILD):
+	mkdir $@

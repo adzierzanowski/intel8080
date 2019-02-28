@@ -16,12 +16,14 @@ typedef void (Intel8080::*func_t)(void);
 struct Opcode
 {
   const uint8_t number;
+  const uint8_t length;
   const std::string mnemonic;
   const std::string fullName;
   func_t callback;
 
   Opcode(
     const uint8_t number,
+    const uint8_t length,
     const std::string mnemonic,
     const std::string fullName,
     func_t callback
@@ -67,12 +69,13 @@ class Intel8080
       M = 0b110
     };
 
+    Opcode *currentOpcode = nullptr;
     bool terminateFlag = false;
 
     uint8_t getRegisterValue(Intel8080::Register reg);
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
     void generateOpcodes(void);
-    void executeInstruction(uint8_t opcode_n);
+    void executeInstruction(Opcode opcode);
 
     void op_nop(void);
 
