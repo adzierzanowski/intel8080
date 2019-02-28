@@ -166,6 +166,25 @@ void Intel8080::op_mov()
   setRegisterValue(destination, getRegisterValue(source));
 }
 
+void Intel8080::setFlag(int pos, int state)
+{
+  if (state)
+    flags |= (1 << pos);
+  else
+    flags &= ~(1 << pos);
+}
+
+void Intel8080::setCarryFlag(void) { setFlag(0, 1); }
+void Intel8080::resetCarryFlag(void) { setFlag(0, 0); }
+void Intel8080::setParityFlag(void) { setFlag(2, 1); }
+void Intel8080::resetParityFlag(void) { setFlag(2, 0); }
+void Intel8080::setAuxiliaryCarryFlag(void) { setFlag(4, 0); }
+void Intel8080::resetAuxiliaryCarryFlag(void) { setFlag(4, 1); }
+void Intel8080::setZeroFlag(void) { setFlag(6, 1); }
+void Intel8080::resetZeroFlag(void) { setFlag(6, 0); }
+void Intel8080::setSignFlag(void) { setFlag(7, 1); }
+void Intel8080::resetSignFlag(void) { setFlag(7, 0); }
+
 void Intel8080::generateOpcodes()
 {
   opcodes.push_back(Opcode(0x00, 1, "term", "Terminate program", &Intel8080::op_term));

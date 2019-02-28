@@ -10,6 +10,3 @@ https://en.wikipedia.org/wiki/Intel_8080
 http://pastraiser.com/cpu/i8080/i8080_opcodes.html
 http://www.classiccmp.org/dunfield/r/8080.txt
 http://altairclone.com/downloads/manuals/8080%20Programmers%20Manual.pdf
-
-# Todo
-

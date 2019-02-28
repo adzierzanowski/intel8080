@@ -77,6 +77,18 @@ class Intel8080
     void generateOpcodes(void);
     void executeInstruction(Opcode opcode);
 
+    void setFlag(int pos, int state);
+    void setCarryFlag(void);
+    void resetCarryFlag(void);
+    void setAuxiliaryCarryFlag(void);
+    void resetAuxiliaryCarryFlag(void);
+    void setSignFlag(void);
+    void resetSignFlag(void);
+    void setZeroFlag(void);
+    void resetZeroFlag(void);
+    void setParityFlag(void);
+    void resetParityFlag(void);
+
     void op_nop(void);
 
     template <Intel8080::Register reg>
