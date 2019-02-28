@@ -69,12 +69,23 @@ class Intel8080
       M = 0b110
     };
 
-    enum class Flags : uint8_t {
+    enum class Flag : uint8_t {
       C = 0,
       P = 2,
       AC = 4,
       Z = 6,
       S = 7
+    };
+
+    enum class Condition : uint8_t {
+      ZERO_FLAG_NOT_SET = 0b000,
+      ZERO_FLAG_SET = 0b001,
+      CARRY_FLAG_NOT_SET = 0b010,
+      CARRY_FLAG_SET = 0b011,
+      PARITY_FLAG_NOT_SET = 0b100,
+      PARITY_FLAG_SET = 0b101,
+      SIGN_FLAG_NOT_SET = 0b110,
+      SIGN_FLAG_SET = 0b111
     };
 
     Opcode *currentOpcode = nullptr;
@@ -85,18 +96,15 @@ class Intel8080
     void generateOpcodes(void);
     void executeInstruction(Opcode opcode);
 
+    bool getFlag(Intel8080::Flag flag);
+    void setFlag(Intel8080::Flag flag);
+    void resetFlag(Intel8080::Flag flag);
+
+    bool getFlag(int pos);
     void setFlag(int pos, int state);
     void setFlags(uint8_t which, uint8_t old_val, uint8_t new_val);
-    void setCarryFlag(void);
-    void resetCarryFlag(void);
-    void setAuxiliaryCarryFlag(void);
-    void resetAuxiliaryCarryFlag(void);
-    void setSignFlag(void);
-    void resetSignFlag(void);
-    void setZeroFlag(void);
-    void resetZeroFlag(void);
-    void setParityFlag(void);
-    void resetParityFlag(void);
+
+
     bool checkParity(uint8_t val);
     bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
 
@@ -113,6 +121,11 @@ class Intel8080
 
     template <Intel8080::Register destination, Intel8080::Register source>
     void op_mov(void);
+
+    void op_jmp(void);
+    
+    template <Intel8080::Condition condition>
+    void op_j(void);
 
     void op_dump(void);
     void op_term(void);

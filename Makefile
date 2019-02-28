@@ -5,6 +5,7 @@ CXXFLAGS = -Wall -Wpedantic -std=c++17 -O3 -g
 OBJECTS = $(addprefix $(BUILD)/, main.o Intel8080.o)
 
 all: $(EXE)
+	du -h $<
 
 clean:
 	rm -rf $(BUILD)

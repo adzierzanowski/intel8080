@@ -37,7 +37,7 @@ void Intel8080::executeInstruction(Opcode opcode)
   currentOpcode = &opcode;
 
   printf(
-    "\033[1m0x%02x\033[0m: \033[38;5;13m%s\033[0m %s\n",
+    "\033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
     opcode.number,
     opcode.mnemonic.c_str(),
     opcode.fullName.c_str()
@@ -67,18 +67,18 @@ void Intel8080::printMemory(int a, int n)
 
 void Intel8080::printRegisters()
 {
-  printf("\n================REGISTERS================\n");
-  printf("\033[1ma\033[0m: 0x%02x | ", a);
-  printf("\033[1mb\033[0m: 0x%02x | ", b);
-  printf("\033[1mc\033[0m: 0x%02x | ", c);
-  printf("\033[1md\033[0m: 0x%02x\n", d);
-  printf("\033[1me\033[0m: 0x%02x | ", e);
-  printf("\033[1mh\033[0m: 0x%02x | ", h);
-  printf("\033[1ml\033[0m: 0x%02x      SZ A P C\n", l);
+  printf("\n================\033[1m\033[38;5;12mREGISTERS\033[0m================\n");
+  printf("\033[1m\033[38;5;8mA\033[0m: \033[38;5;12m0x%02x\033[0m | ", a);
+  printf("\033[1m\033[38;5;8mB\033[0m: \033[38;5;12m0x%02x\033[0m | ", b);
+  printf("\033[1m\033[38;5;8mC\033[0m: \033[38;5;12m0x%02x\033[0m | ", c);
+  printf("\033[1m\033[38;5;8mD\033[0m: \033[38;5;12m0x%02x\033[0m\n", d);
+  printf("\033[1m\033[38;5;8mE\033[0m: \033[38;5;12m0x%02x\033[0m | ", e);
+  printf("\033[1m\033[38;5;8mH\033[0m: \033[38;5;12m0x%02x\033[0m | ", h);
+  printf("\033[1m\033[38;5;8mL\033[0m: \033[38;5;12m0x%02x\033[0m      SZ A P C\n", l);
 
-  printf("\033[1msp\033[0m: 0x%04x | ", sp);
-  printf("\033[1mpc\033[0m: 0x%04x | ", pc);
-  printf("\033[1mflags\033[0m: ");
+  printf("\033[1m\033[38;5;8mSP\033[0m: \033[38;5;12m0x%04x\033[0m | ", sp);
+  printf("\033[1m\033[38;5;8mPC\033[0m: \033[38;5;12m0x%04x\033[0m | ", pc);
+  printf("\033[1m\033[38;5;8mFlags\033[0m\033[38;5;12m: ");
   uint8_t mask = 0x80;
   while (true)
   {
@@ -87,7 +87,7 @@ void Intel8080::printRegisters()
     
     if (mask == 0)
     {
-      printf("\n");
+      printf("\033[0m\n");
       break;
     }
   }
@@ -175,6 +175,36 @@ void Intel8080::op_nop()
 {
 }
 
+void Intel8080::op_jmp()
+{
+  pc = memory[pc - 2] | (memory[pc - 1] << 8);
+  execute();
+}
+
+template <Intel8080::Condition condition>
+void Intel8080::op_j()
+{
+  bool conditionMet = false;
+
+  switch (condition)
+  {
+    case Condition::CARRY_FLAG_NOT_SET: conditionMet = !getFlag(Flag::C); break;
+    case Condition::CARRY_FLAG_SET: conditionMet = getFlag(Flag::C); break;
+    case Condition::PARITY_FLAG_NOT_SET: conditionMet = !getFlag(Flag::P); break;
+    case Condition::PARITY_FLAG_SET: conditionMet = getFlag(Flag::P); break;
+    case Condition::ZERO_FLAG_NOT_SET: conditionMet = !getFlag(Flag::Z); break;
+    case Condition::ZERO_FLAG_SET: conditionMet = getFlag(Flag::Z); break;
+    case Condition::SIGN_FLAG_NOT_SET: conditionMet = !getFlag(Flag::S); break;
+    case Condition::SIGN_FLAG_SET: conditionMet = getFlag(Flag::S); break;
+  }
+
+  if (conditionMet)
+  {
+    pc = memory[pc - 2] | (memory[pc - 1] << 8);
+    execute();
+  }
+}
+
 template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
@@ -183,10 +213,10 @@ void Intel8080::op_inr()
   setRegisterValue(reg, new_val);
 
   setFlags(
-    static_cast<uint8_t>(Flags::Z) |
-    static_cast<uint8_t>(Flags::S) |
-    static_cast<uint8_t>(Flags::P) |
-    static_cast<uint8_t>(Flags::AC),
+    static_cast<uint8_t>(Flag::Z) |
+    static_cast<uint8_t>(Flag::S) |
+    static_cast<uint8_t>(Flag::P) |
+    static_cast<uint8_t>(Flag::AC),
     old_val, new_val
   );
 }
@@ -195,13 +225,13 @@ template <Intel8080::Register reg>
 void Intel8080::op_dcr()
 {
   uint8_t old_val = getRegisterValue(reg);
-  uint8_t new_val = old_val + 1;
+  uint8_t new_val = old_val - 1;
   setRegisterValue(reg, new_val);
   setFlags(
-    static_cast<uint8_t>(Flags::Z) |
-    static_cast<uint8_t>(Flags::S) |
-    static_cast<uint8_t>(Flags::P) |
-    static_cast<uint8_t>(Flags::AC),
+    static_cast<uint8_t>(Flag::Z) |
+    static_cast<uint8_t>(Flag::S) |
+    static_cast<uint8_t>(Flag::P) |
+    static_cast<uint8_t>(Flag::AC),
     old_val, new_val
   );
 }
@@ -219,6 +249,11 @@ void Intel8080::op_mov()
   setRegisterValue(destination, getRegisterValue(source));
 }
 
+bool Intel8080::getFlag(int pos)
+{
+  return static_cast<bool>(flags & (1 << pos));
+}
+
 void Intel8080::setFlag(int pos, int state)
 {
   if (state)
@@ -229,23 +264,27 @@ void Intel8080::setFlag(int pos, int state)
 
 void Intel8080::setFlags(uint8_t which, uint8_t old_val, uint8_t new_val)
 {
-  if (which & static_cast<uint8_t>(Flags::C)) {} // check for Carry flag
-  if (which & static_cast<uint8_t>(Flags::P)) checkParity(new_val) ? setParityFlag() : resetParityFlag();
-  if (which & static_cast<uint8_t>(Flags::AC)) checkForAuxiliaryCarry(old_val, new_val) ? setAuxiliaryCarryFlag() : resetAuxiliaryCarryFlag();
-  if (which & static_cast<uint8_t>(Flags::Z)) new_val == 0 ? setZeroFlag() : resetZeroFlag();
-  if (which & static_cast<uint8_t>(Flags::S)) new_val & 0x80 ? setSignFlag() : resetSignFlag();
+  if (which & static_cast<uint8_t>(Flag::C)) {} // check for Carry flag
+  if (which & static_cast<uint8_t>(Flag::P)) checkParity(new_val) ? setFlag(Flag::P) : resetFlag(Flag::P);
+  if (which & static_cast<uint8_t>(Flag::AC)) checkForAuxiliaryCarry(old_val, new_val) ? setFlag(Flag::AC) : resetFlag(Flag::AC);
+  if (which & static_cast<uint8_t>(Flag::Z)) new_val == 0 ? setFlag(Flag::Z) : resetFlag(Flag::Z);
+  if (which & static_cast<uint8_t>(Flag::S)) new_val & 0x80 ? setFlag(Flag::S) : resetFlag(Flag::S);
 }
 
-void Intel8080::setCarryFlag(void) { setFlag(0, 1); }
-void Intel8080::resetCarryFlag(void) { setFlag(0, 0); }
-void Intel8080::setParityFlag(void) { setFlag(2, 1); }
-void Intel8080::resetParityFlag(void) { setFlag(2, 0); }
-void Intel8080::setAuxiliaryCarryFlag(void) { setFlag(4, 0); }
-void Intel8080::resetAuxiliaryCarryFlag(void) { setFlag(4, 1); }
-void Intel8080::setZeroFlag(void) { setFlag(6, 1); }
-void Intel8080::resetZeroFlag(void) { setFlag(6, 0); }
-void Intel8080::setSignFlag(void) { setFlag(7, 1); }
-void Intel8080::resetSignFlag(void) { setFlag(7, 0); }
+bool Intel8080::getFlag(Intel8080::Flag flag)
+{
+  return static_cast<bool>((flags & (1 << static_cast<uint8_t>(flag))));
+}
+
+void Intel8080::setFlag(Intel8080::Flag flag)
+{
+  setFlag(static_cast<uint8_t>(flag), 1);
+}
+
+void Intel8080::resetFlag(Intel8080::Flag flag)
+{
+  setFlag(static_cast<uint8_t>(flag), 0);
+}
 
 void Intel8080::generateOpcodes()
 {
@@ -455,16 +494,16 @@ void Intel8080::generateOpcodes()
 
   opcodes.push_back(Opcode(0xc0, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc1, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xc2, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xc3, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xc2, 3, "jnz", "Jump if not zero", &Intel8080::op_j<Condition::ZERO_FLAG_NOT_SET>));
+  opcodes.push_back(Opcode(0xc3, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xc4, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc5, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc6, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc7, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc8, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc9, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xca, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xcb, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xca, 3, "jz", "Jump if zero", &Intel8080::op_j<Condition::ZERO_FLAG_SET>));
+  opcodes.push_back(Opcode(0xcb, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xcc, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xcd, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xce, 1, "null", "Unknown instruction", nullptr));
