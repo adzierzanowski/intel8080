@@ -76,92 +76,20 @@ class Intel8080
 
     void op_nop(void);
 
-    void op_mvi(Intel8080::Register reg);
-    void op_mvi_a(void);
-    void op_mvi_b(void);
-    void op_mvi_c(void);
-    void op_mvi_d(void);
-    void op_mvi_e(void);
-    void op_mvi_h(void);
-    void op_mvi_l(void);
-    void op_mvi_m(void);
+    template <Intel8080::Register reg>
+    void op_inr(void);
 
-    void op_mov(Intel8080::Register destination, Intel8080::Register source);
-    void op_mov_b_b(void);
-    void op_mov_b_c(void);
-    void op_mov_b_d(void);
-    void op_mov_b_e(void);
-    void op_mov_b_h(void);
-    void op_mov_b_l(void);
-    void op_mov_b_m(void);
-    void op_mov_b_a(void);
+    template<Intel8080::Register reg>
+    void op_dcr(void);
 
-    void op_mov_c_b(void);
-    void op_mov_c_c(void);
-    void op_mov_c_d(void);
-    void op_mov_c_e(void);
-    void op_mov_c_h(void);
-    void op_mov_c_l(void);
-    void op_mov_c_m(void);
-    void op_mov_c_a(void);
+    template <Intel8080::Register reg>
+    void op_mvi(void);
 
-    void op_mov_d_b(void);
-    void op_mov_d_c(void);
-    void op_mov_d_d(void);
-    void op_mov_d_e(void);
-    void op_mov_d_h(void);
-    void op_mov_d_l(void);
-    void op_mov_d_m(void);
-    void op_mov_d_a(void);
-
-    void op_mov_e_b(void);
-    void op_mov_e_c(void);
-    void op_mov_e_d(void);
-    void op_mov_e_e(void);
-    void op_mov_e_h(void);
-    void op_mov_e_l(void);
-    void op_mov_e_m(void);
-    void op_mov_e_a(void);
-
-    void op_mov_h_b(void);
-    void op_mov_h_c(void);
-    void op_mov_h_d(void);
-    void op_mov_h_e(void);
-    void op_mov_h_h(void);
-    void op_mov_h_l(void);
-    void op_mov_h_m(void);
-    void op_mov_h_a(void);
-
-    void op_mov_l_b(void);
-    void op_mov_l_c(void);
-    void op_mov_l_d(void);
-    void op_mov_l_e(void);
-    void op_mov_l_h(void);
-    void op_mov_l_l(void);
-    void op_mov_l_m(void);
-    void op_mov_l_a(void);
-
-    void op_mov_m_b(void);
-    void op_mov_m_c(void);
-    void op_mov_m_d(void);
-    void op_mov_m_e(void);
-    void op_mov_m_h(void);
-    void op_mov_m_l(void);
-    void op_mov_m_m(void);
-    void op_mov_m_a(void);
-
-    void op_mov_a_b(void);
-    void op_mov_a_c(void);
-    void op_mov_a_d(void);
-    void op_mov_a_e(void);
-    void op_mov_a_h(void);
-    void op_mov_a_l(void);
-    void op_mov_a_m(void);
-    void op_mov_a_a(void);
+    template <Intel8080::Register destination, Intel8080::Register source>
+    void op_mov(void);
 
     void op_dump(void);
     void op_term(void);
 };
-
 
 #endif
