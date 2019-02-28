@@ -117,6 +117,27 @@ void Intel8080::setRegisterValue(Intel8080::Register reg, uint8_t val)
   }
 }
 
+bool Intel8080::checkParity(uint8_t val)
+{
+  int acc = 0;
+
+  for (uint8_t mask = 1; mask <= 0x80; mask <<= 1)
+  {
+    if (val & mask)
+      acc++;
+  }
+
+  if (acc % 2 == 0)
+    return true;
+  return false;
+}
+
+bool Intel8080::checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val)
+{
+  if (old_val & 0x8 && new_val & 0x10)
+    return true;
+  return false;
+}
 
 void Intel8080::setProgramCounter(uint16_t address)
 {
@@ -141,7 +162,14 @@ template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
   uint8_t val = getRegisterValue(reg);
-  setRegisterValue(reg, val + 1);
+  uint8_t new_val = val + 1;
+  setRegisterValue(reg, new_val);
+
+  new_val == 0 ? setZeroFlag() : resetZeroFlag();
+  new_val & 0x80 ? setSignFlag() : resetSignFlag();
+  checkParity(new_val) ? setParityFlag() : resetParityFlag();
+  checkForAuxiliaryCarry(val, new_val) ? setAuxiliaryCarryFlag() : resetAuxiliaryCarryFlag();
+
   // TODO: set flags register
 }
 

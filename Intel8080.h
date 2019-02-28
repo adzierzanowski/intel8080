@@ -88,6 +88,8 @@ class Intel8080
     void resetZeroFlag(void);
     void setParityFlag(void);
     void resetParityFlag(void);
+    bool checkParity(uint8_t val);
+    bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
 
     void op_nop(void);
 
