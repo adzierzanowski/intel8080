@@ -61,8 +61,44 @@ void printTest(void)
   cpu.execute();
 }
 
-int main()
+void stackTest(void)
 {
-  jnzTest();
-  printTest();
+  std::vector<uint8_t> prog = {
+    // set stack pointer
+    0x31, // lxi SP, 0x1000
+    0x00,
+    0x10,
+
+    // test push and pop
+    0x01, // lxi B:C, 0xabcd
+    0xcd,
+    0xab,
+    0xc5, // push B:C
+    0xd1, // pop D:E
+
+    // print registers
+    0x0e, // mvi c, 0xff
+    0xff,
+    0xcd, // call 0x0005
+    0x05,
+    0x00,
+
+    // terminate 
+    0x0e, // mvi c, 0x00,
+    0x00,
+    0xcd, // call 0x0005
+    0x05,
+    0x00,
+  };
+
+  cpu.loadProgram(prog, 0x100);
+  cpu.setProgramCounter(0x100);
+  cpu.execute();
+}
+
+int main(void)
+{
+  //jnzTest();
+  //printTest();
+  stackTest();
 }

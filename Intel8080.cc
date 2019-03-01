@@ -38,12 +38,15 @@ void Intel8080::executeInstruction(Opcode opcode)
   currentOpcode = &opcode;
 
   if (debugOutput)
+  {
     printf(
-      "\033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
+      "%04x - \033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
+      pc,
       opcode.number,
       opcode.mnemonic.c_str(),
       opcode.fullName.c_str()
     );
+  }
 
   if (opcode.callback != nullptr)
     (this->*(opcode.callback))();
@@ -165,9 +168,16 @@ void Intel8080::setRegisterValue(Intel8080::Register reg, uint8_t val)
 
 void Intel8080::setRegisterPairValue(Intel8080::RegisterPair regpair, uint16_t val)
 {
-  auto reg_stdpair = registerPairToStdPair(regpair);
-  setRegisterValue(reg_stdpair.first, val >> 8);
-  setRegisterValue(reg_stdpair.first, val & 0x00ff);
+  if (regpair == RegisterPair::SP)
+  {
+    sp = val;
+  }
+  else
+  {
+    auto reg_stdpair = registerPairToStdPair(regpair);
+    setRegisterValue(reg_stdpair.first, val >> 8);
+    setRegisterValue(reg_stdpair.second, val & 0x00ff);
+  }
 }
 
 bool Intel8080::checkParity(uint8_t val)
@@ -252,6 +262,17 @@ void Intel8080::op_xchg()
   l = tmp2;
 }
 
+void Intel8080::op_xthl(void)
+{
+  uint8_t hb = memory[sp + 1];
+  uint8_t lb = memory[sp];
+
+  memory[sp + 1] = h;
+  memory[sp] = l;
+  h = hb;
+  l = lb;
+}
+
 template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
@@ -322,15 +343,16 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
 
 void Intel8080::op_call(void)
 {
-  // push current addr onto stack
-  memory[sp - 1] = pc >> 8;
-  memory[sp - 2] = pc & 0x00ff;
-  sp -= 2;
 
   uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
 
   // BDOS call
-  if (addr == 0x0005)
+  if (addr == 0x0000)
+  {
+    printf("WBOOT\n");
+    op_term();
+  }
+  else if (addr == 0x0005)
   {
     switch (c)
     {
@@ -369,6 +391,10 @@ void Intel8080::op_call(void)
   }
   else // not a BDOS call
   {
+    // push current addr onto stack
+    memory[sp - 1] = pc >> 8;
+    memory[sp - 2] = pc & 0x00ff;
+    sp -= 2;
     pc = addr; 
   }
 }
@@ -566,18 +592,16 @@ void Intel8080::op_dcx(void)
 template <Intel8080::RegisterPair regpair>
 void Intel8080::op_push(void)
 {
-  uint16_t addr = sp;
-
   if (regpair == RegisterPair::SP)
   {
-    memory[addr - 1] = flags;
-    memory[addr - 2] = a;
+    memory[sp - 1] = flags;
+    memory[sp - 2] = a;
   }
   else
   {
     auto reg_stdpair = registerPairToStdPair(regpair);
-    memory[addr - 1] = getRegisterValue(reg_stdpair.first);
-    memory[addr - 2] = getRegisterValue(reg_stdpair.second);
+    memory[sp - 1] = getRegisterValue(reg_stdpair.first);
+    memory[sp - 2] = getRegisterValue(reg_stdpair.second);
   }
 
   sp -= 2;
@@ -621,7 +645,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x08, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x09, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x0a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x0b, 1, "dcx", "Decrement register pair B:C", &Intel8080::op_dcr<RegisterPair::BC>));
+  opcodes.push_back(Opcode(0x0b, 1, "dcx", "Decrement register pair B:C", &Intel8080::op_dcx<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x0c, 1, "inr", "Increment register C", &Intel8080::op_inr<Register::C>));
   opcodes.push_back(Opcode(0x0d, 1, "dcr", "Decrement register C", &Intel8080::op_dcr<Register::C>));
   opcodes.push_back(Opcode(0x0e, 2, "mvi", "Move immediate to C", &Intel8080::op_mvi<Register::C>));
@@ -823,7 +847,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xc6, 1, "adi", "Add immediate with A", &Intel8080::op_adi));
   opcodes.push_back(Opcode(0xc7, 1, "rst", "Reset 0", &Intel8080::op_rst<0>));
   opcodes.push_back(Opcode(0xc8, 1, "rz", "Return if zero", &Intel8080::op_r<Condition::ZERO_FLAG_SET>));
-  opcodes.push_back(Opcode(0xc9, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xc9, 1, "ret", "Return", &Intel8080::op_ret));
   opcodes.push_back(Opcode(0xca, 3, "jz", "Jump if zero", &Intel8080::op_j<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xcb, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xcc, 3, "cz", "Call if zero", &Intel8080::op_c<Condition::ZERO_FLAG_SET>));
@@ -838,7 +862,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xd4, 3, "cnc", "Call if not carry", &Intel8080::op_c<Condition::CARRY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xd5, 1, "push", "Push D:E onto stack", &Intel8080::op_push<RegisterPair::DE>));
   opcodes.push_back(Opcode(0xd6, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xd7, 1, "Reset 2", "Reset 2", &Intel8080::op_rst<2>));
+  opcodes.push_back(Opcode(0xd7, 1, "rst", "Reset 2", &Intel8080::op_rst<2>));
   opcodes.push_back(Opcode(0xd8, 1, "rc", "Return if carry", &Intel8080::op_r<Condition::CARRY_FLAG_SET>));
   opcodes.push_back(Opcode(0xd9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xda, 3, "jc", "Jump if carry", &Intel8080::op_j<Condition::CARRY_FLAG_SET>));
@@ -851,7 +875,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xe0, 1, "rpo", "Return if parity odd", &Intel8080::op_r<Condition::PARITY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xe1, 1, "pop", "Pop to H:L off stack", &Intel8080::op_pop<RegisterPair::HL>));
   opcodes.push_back(Opcode(0xe2, 3, "jpo", "Jump if parity flag odd", &Intel8080::op_j<Condition::PARITY_FLAG_NOT_SET>));
-  opcodes.push_back(Opcode(0xe3, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xe3, 1, "xthl", "Exchange H:L with top word on the stack", &Intel8080::op_xthl));
   opcodes.push_back(Opcode(0xe4, 3, "cpo", "Call if parity flag odd", &Intel8080::op_c<Condition::PARITY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xe5, 1, "push", "Push H:L onto stack", &Intel8080::op_push<RegisterPair::HL>));
   opcodes.push_back(Opcode(0xe6, 2, "ani", "And immediate with A", &Intel8080::op_ani));

@@ -137,6 +137,7 @@ class Intel8080
     void op_mov(void);
 
     void op_xchg(void);
+    void op_xthl(void);
 
     void op_jmp(void);
     void op_call(void);
