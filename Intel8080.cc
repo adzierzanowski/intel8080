@@ -214,7 +214,6 @@ void Intel8080::op_nop()
 void Intel8080::op_jmp()
 {
   pc = combineBytes(memory[pc - 1], memory[pc - 2]);
-  execute();
 }
 
 bool Intel8080::conditionMet(Intel8080::Condition condition)
@@ -241,7 +240,6 @@ void Intel8080::op_j(void)
   if (conditionMet(condition))
     op_jmp();
 }
-
 
 void Intel8080::op_xchg()
 {
@@ -324,6 +322,11 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
 
 void Intel8080::op_call(void)
 {
+  // push current addr onto stack
+  memory[sp - 1] = pc >> 8;
+  memory[sp - 2] = pc & 0x00ff;
+  sp -= 2;
+
   uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
 
   // BDOS call
@@ -364,13 +367,42 @@ void Intel8080::op_call(void)
         break;
     }
   }
+  else // not a BDOS call
+  {
+    pc = addr; 
+  }
 }
 
+void Intel8080::op_ret(void)
+{
+  // pop addr off the stack
+  pc = combineBytes(memory[sp + 1], memory[sp]);
+  sp += 2;
+}
+  
 template <Intel8080::Condition condition>
 void Intel8080::op_c(void)
 {
   if (conditionMet(condition))
     op_call();
+}
+
+template <Intel8080::Condition condition>
+void Intel8080::op_r(void)
+{
+  if (conditionMet(condition))
+    op_ret();
+}
+
+template <int n>
+void Intel8080::op_rst(void)
+{
+  // push current addr onto stack
+  memory[sp - 1] = pc >> 8;
+  memory[sp - 2] = pc & 0x00ff;
+  sp -= 2;
+
+  pc = n * 8;
 }
 
 template <Intel8080::Register reg1, Intel8080::Register reg2>
@@ -761,71 +793,71 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xbe, 1, "cmp", "Compare M with A", &Intel8080::op_cmp<Register::M>));
   opcodes.push_back(Opcode(0xbf, 1, "cmp", "Compare A with A", &Intel8080::op_cmp<Register::A>));
 
-  opcodes.push_back(Opcode(0xc0, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xc0, 1, "rnz", "Return if not zero", &Intel8080::op_r<Condition::ZERO_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xc1, 1, "pop", "Pop to B:C off stack", &Intel8080::op_pop<RegisterPair::BC>));
   opcodes.push_back(Opcode(0xc2, 3, "jnz", "Jump if not zero", &Intel8080::op_j<Condition::ZERO_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xc3, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xc4, 3, "cnz", "Call if not zero", &Intel8080::op_c<Condition::ZERO_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xc5, 1, "push", "Push B:C onto stack", &Intel8080::op_push<RegisterPair::BC>));
   opcodes.push_back(Opcode(0xc6, 1, "adi", "Add immediate with A", &Intel8080::op_adi));
-  opcodes.push_back(Opcode(0xc7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xc8, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xc7, 1, "rst", "Reset 0", &Intel8080::op_rst<0>));
+  opcodes.push_back(Opcode(0xc8, 1, "rz", "Return if zero", &Intel8080::op_r<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xc9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xca, 3, "jz", "Jump if zero", &Intel8080::op_j<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xcb, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xcc, 3, "cz", "Call if zero", &Intel8080::op_c<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xcd, 3, "call", "Unconditional call", &Intel8080::op_call));
   opcodes.push_back(Opcode(0xce, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xcf, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xcf, 1, "rst", "Reset 1", &Intel8080::op_rst<1>));
 
-  opcodes.push_back(Opcode(0xd0, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xd0, 1, "rnc", "Return if not carry", &Intel8080::op_r<Condition::CARRY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xd1, 1, "pop", "Pop to D:E off stack", &Intel8080::op_pop<RegisterPair::DE>));
   opcodes.push_back(Opcode(0xd2, 3, "jnc", "Jump if not carry", &Intel8080::op_j<Condition::CARRY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xd3, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xd4, 3, "cnc", "Call if not carry", &Intel8080::op_c<Condition::CARRY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xd5, 1, "push", "Push D:E onto stack", &Intel8080::op_push<RegisterPair::DE>));
   opcodes.push_back(Opcode(0xd6, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xd7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xd8, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xd7, 1, "Reset 2", "Reset 2", &Intel8080::op_rst<2>));
+  opcodes.push_back(Opcode(0xd8, 1, "rc", "Return if carry", &Intel8080::op_r<Condition::CARRY_FLAG_SET>));
   opcodes.push_back(Opcode(0xd9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xda, 3, "jc", "Jump if carry", &Intel8080::op_j<Condition::CARRY_FLAG_SET>));
   opcodes.push_back(Opcode(0xdb, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xdc, 3, "cc", "Call if carry", &Intel8080::op_c<Condition::CARRY_FLAG_SET>));
   opcodes.push_back(Opcode(0xdd, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xde, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xdf, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xdf, 1, "rst", "Reset 3", &Intel8080::op_rst<3>));
 
-  opcodes.push_back(Opcode(0xe0, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xe0, 1, "rpo", "Return if parity odd", &Intel8080::op_r<Condition::PARITY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xe1, 1, "pop", "Pop to H:L off stack", &Intel8080::op_pop<RegisterPair::HL>));
   opcodes.push_back(Opcode(0xe2, 3, "jpo", "Jump if parity flag odd", &Intel8080::op_j<Condition::PARITY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xe3, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xe4, 3, "cpo", "Call if parity flag odd", &Intel8080::op_c<Condition::PARITY_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xe5, 1, "push", "Push H:L onto stack", &Intel8080::op_push<RegisterPair::HL>));
   opcodes.push_back(Opcode(0xe6, 2, "ani", "And immediate with A", &Intel8080::op_ani));
-  opcodes.push_back(Opcode(0xe7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xe8, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xe7, 1, "rst", "Reset 4", &Intel8080::op_rst<4>));
+  opcodes.push_back(Opcode(0xe8, 1, "rpe", "Return if parity even", &Intel8080::op_r<Condition::PARITY_FLAG_SET>));
   opcodes.push_back(Opcode(0xe9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xea, 3, "jpe", "Jump if parity flag even", &Intel8080::op_j<Condition::PARITY_FLAG_SET>));
   opcodes.push_back(Opcode(0xeb, 1, "xchg", "Exchange registers D:E and H:L", &Intel8080::op_xchg));
   opcodes.push_back(Opcode(0xec, 3, "cpe", "Call if parity flag even", &Intel8080::op_j<Condition::PARITY_FLAG_SET>));
   opcodes.push_back(Opcode(0xed, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xee, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xef, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xef, 1, "rst", "Reset 5", &Intel8080::op_rst<5>));
 
-  opcodes.push_back(Opcode(0xf0, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xf0, 1, "rp", "Return if positive", &Intel8080::op_r<Condition::SIGN_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xf1, 1, "pop", "Pop to FLAGS:A off stack", &Intel8080::op_pop<RegisterPair::SP>));
   opcodes.push_back(Opcode(0xf2, 3, "jp", "Jump if positive", &Intel8080::op_j<Condition::SIGN_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xf3, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xf4, 3, "cp", "Call if positive", &Intel8080::op_c<Condition::SIGN_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xf5, 1, "push", "Push FLAGS:A onto stack", &Intel8080::op_push<RegisterPair::SP>));
   opcodes.push_back(Opcode(0xf6, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xf7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xf8, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xf7, 1, "rst", "Reset 6", &Intel8080::op_rst<6>));
+  opcodes.push_back(Opcode(0xf8, 1, "rm", "Return if negative", &Intel8080::op_r<Condition::SIGN_FLAG_SET>));
   opcodes.push_back(Opcode(0xf9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xfa, 3, "jm", "Jump if negative", &Intel8080::op_j<Condition::SIGN_FLAG_SET>));
   opcodes.push_back(Opcode(0xfb, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xfc, 3, "cm", "Call if negative", &Intel8080::op_c<Condition::SIGN_FLAG_SET>));
   opcodes.push_back(Opcode(0xfd, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xfe, 2, "cpi", "Compare immediate with A", &Intel8080::op_cpi));
-  opcodes.push_back(Opcode(0xff, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xff, 1, "rst", "Reset 7", &Intel8080::op_rst<7>));
 }

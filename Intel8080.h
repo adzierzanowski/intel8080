@@ -136,17 +136,23 @@ class Intel8080
     template <Intel8080::Register destination, Intel8080::Register source>
     void op_mov(void);
 
-    void op_jmp(void);
-    
-    template <Intel8080::Condition condition>
-    void op_j(void);
-
     void op_xchg(void);
 
+    void op_jmp(void);
     void op_call(void);
+    void op_ret(void);
+
+    template <Intel8080::Condition condition>
+    void op_j(void);
     
     template <Intel8080::Condition condition>
     void op_c(void);
+
+    template <Intel8080::Condition condition>
+    void op_r(void);
+
+    template <int n>
+    void op_rst(void);
 
     template <Intel8080::Register reg1, Intel8080::Register reg2>
     void op_lxi(void);
