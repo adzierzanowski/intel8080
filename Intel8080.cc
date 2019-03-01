@@ -35,8 +35,6 @@ void Intel8080::execute()
 
 void Intel8080::executeInstruction(Opcode opcode)
 {
-  currentOpcode = &opcode;
-
   if (debugOutput)
   {
     printf(
@@ -217,12 +215,7 @@ void Intel8080::setProgramCounter(uint16_t address)
   pc = address;
 }
 
-void Intel8080::op_dump()
-{
-  printRegisters();
-}
-
-void Intel8080::op_term()
+void Intel8080::setTerminateFlag()
 {
   terminateFlag = true;
 }
@@ -360,7 +353,7 @@ void Intel8080::op_call(void)
   if (addr == 0x0000)
   {
     printf("WBOOT\n");
-    op_term();
+    setTerminateFlag();
   }
   else if (addr == 0x0005)
   {
@@ -368,7 +361,7 @@ void Intel8080::op_call(void)
     {
       // P_TERMCPM - System reset
       case 0x00:
-        op_term();
+        setTerminateFlag();
         break;
 
       // C_WRITE - Console output

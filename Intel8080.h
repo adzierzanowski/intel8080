@@ -31,16 +31,18 @@ struct Opcode
 class Intel8080
 {
   public:
+    std::vector<Opcode> opcodes;
     bool debugOutput = true;
 
     Intel8080(void);
+
     void printMemory(void);
     void printMemory(int a, int b);
     void printRegisters(void);
-    void loadProgram(std::vector<uint8_t> prog, uint16_t address);
+
     void execute(void);
     void setProgramCounter(uint16_t addr);
-    std::vector<Opcode> opcodes;
+    void loadProgram(std::vector<uint8_t> prog, uint16_t address);
 
   private:
     uint8_t a;
@@ -95,7 +97,6 @@ class Intel8080
       SIGN_FLAG_SET = 0b111
     };
 
-    Opcode *currentOpcode = nullptr;
     bool terminateFlag = false;
 
     void generateOpcodes(void);
@@ -111,6 +112,8 @@ class Intel8080
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
     void setRegisterPairValue(Intel8080::RegisterPair, uint16_t val);
 
+    void setTerminateFlag(void);
+
     bool getFlag(Intel8080::Flag flag);
     void setFlag(Intel8080::Flag flag);
     void resetFlag(Intel8080::Flag flag);
@@ -124,131 +127,62 @@ class Intel8080
     bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
     bool conditionMet(Intel8080::Condition condition);
 
-    void op_nop(void);
 
-    template <Intel8080::Register reg>
-    void op_inr(void);
-
-    template <Intel8080::Register reg>
-    void op_dcr(void);
-
-    template <Intel8080::Register reg>
-    void op_mvi(void);
-
-    template <Intel8080::Register destination, Intel8080::Register source>
-    void op_mov(void);
-
-    void op_xchg(void);
-    void op_xthl(void);
-
-    void op_jmp(void);
-    void op_call(void);
-    void op_ret(void);
-
-    template <Intel8080::Condition condition>
-    void op_j(void);
-    
-    template <Intel8080::Condition condition>
-    void op_c(void);
-
-    template <Intel8080::Condition condition>
-    void op_r(void);
-
-    template <int n>
-    void op_rst(void);
-
-    template <Intel8080::Register reg1, Intel8080::Register reg2>
-    void op_lxi(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_lxi(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_ldax(void);
-
-    void op_lda(void);
-
-    void op_ani(void);
-    void op_adi(void);
-
-    template <Intel8080::Register reg>
-    void op_add(void);
-
+    template <Intel8080::Register reg> void op_adc(void);
+    template <Intel8080::Register reg> void op_add(void);
     void op_aci(void);
-
-    template <Intel8080::Register reg>
-    void op_adc(void);
-
-    void op_cpi(void);
-
-    void op_sui(void);
-    void op_sbi(void);
-
-    template <Intel8080::Register reg>
-    void op_sub(void);
-
-    template <Intel8080::Register reg>
-    void op_sbb(void);
-
-    template <Intel8080::Register reg>
-    void op_ana(void);
-
-    template <Intel8080::Register reg>
-    void op_xra(void);
-
-    template <Intel8080::Register reg>
-    void op_ora(void);
-
-    template <Intel8080::Register reg>
-    void op_cmp(void);
-
-    void op_sta(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_stax(void);
-
-    template <Intel8080::Register reg1, Intel8080::Register reg2>
-    void op_stax(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_inx(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_dcx(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_push(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_pop(void);
-
-    template <Intel8080::RegisterPair regpair>
-    void op_dad(void);
-
-    void op_rlc(void);
-    void op_rrc(void);
-    void op_ral(void);
-    void op_rar(void);
-
-    void op_shld(void);
-    void op_lhld(void);
-    void op_sphl(void);
-
+    void op_adi(void);
+    template <Intel8080::Register reg> void op_ana(void);
+    void op_ani(void);
+    template <Intel8080::Condition condition> void op_c(void);
+    void op_call(void);
     void op_cma(void);
     void op_cmc(void);
-
-    void op_stc(void);
-
-    void op_pchl(void);
-
-    void op_xri(void);
-    void op_ori(void);
-
+    template <Intel8080::Register reg> void op_cmp(void);
+    void op_cpi(void);
+    template <Intel8080::RegisterPair regpair> void op_dad(void);
+    template <Intel8080::Register reg> void op_dcr(void);
+    template <Intel8080::RegisterPair regpair> void op_dcx(void);
     void op_hlt(void);
-  
-
-    void op_dump(void);
-    void op_term(void);
+    template <Intel8080::Register reg> void op_inr(void);
+    template <Intel8080::RegisterPair regpair> void op_inx(void);
+    template <Intel8080::Condition condition> void op_j(void);
+    void op_jmp(void);
+    template <Intel8080::Register reg1, Intel8080::Register reg2> void op_lxi(void);
+    template <Intel8080::RegisterPair regpair> void op_lxi(void);
+    template <Intel8080::RegisterPair regpair> void op_ldax(void);
+    void op_lda(void);
+    void op_lhld(void);
+    template <Intel8080::Register destination, Intel8080::Register source> void op_mov(void);
+    template <Intel8080::Register reg> void op_mvi(void);
+    void op_nop(void);
+    template <Intel8080::Condition condition> void op_r(void);
+    template <Intel8080::Register> void op_ora(void);
+    void op_ori(void);
+    void op_pchl(void);
+    template <Intel8080::RegisterPair regpair> void op_pop(void);
+    template <Intel8080::RegisterPair regpair> void op_push(void);
+    void op_ral(void);
+    void op_rar(void);
+    void op_ret(void);
+    void op_rlc(void);
+    void op_rrc(void);
+    template <int n> void op_rst(void);
+    template <Intel8080::Register reg> void op_sbb(void);
+    void op_sbi(void);
+    void op_shld(void);
+    void op_sphl(void);
+    template <Intel8080::Register reg> void op_sub(void);
+    void op_sui(void);
+    void op_sta(void);
+    void op_stc(void);
+    // TODO: rewrite stax
+    template <Intel8080::RegisterPair regpair> void op_stax(void);
+    template <Intel8080::Register reg1, Intel8080::Register reg2> void op_stax(void);
+    void op_xchg(void);
+    template <Intel8080::Register reg> void op_xra(void);
+    void op_xthl(void);
+    void op_xri(void);
 };
 
 #endif
