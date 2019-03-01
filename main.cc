@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
       0x00 // term
     };
 
-    cpu.loadProgram(calltest, 0x100);
+    cpu.loadProgram(jmptest, 0x100);
   }
 
   //cpu.printMemory();

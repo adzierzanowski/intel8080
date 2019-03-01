@@ -182,29 +182,31 @@ void Intel8080::op_jmp()
   execute();
 }
 
-template <Intel8080::Condition condition>
-void Intel8080::op_j()
+bool Intel8080::conditionMet(Intel8080::Condition condition)
 {
-  bool conditionMet = false;
-
+  bool conditionMet_ = false;
   switch (condition)
   {
-    case Condition::CARRY_FLAG_NOT_SET: conditionMet = !getFlag(Flag::C); break;
-    case Condition::CARRY_FLAG_SET: conditionMet = getFlag(Flag::C); break;
-    case Condition::PARITY_FLAG_NOT_SET: conditionMet = !getFlag(Flag::P); break;
-    case Condition::PARITY_FLAG_SET: conditionMet = getFlag(Flag::P); break;
-    case Condition::ZERO_FLAG_NOT_SET: conditionMet = !getFlag(Flag::Z); break;
-    case Condition::ZERO_FLAG_SET: conditionMet = getFlag(Flag::Z); break;
-    case Condition::SIGN_FLAG_NOT_SET: conditionMet = !getFlag(Flag::S); break;
-    case Condition::SIGN_FLAG_SET: conditionMet = getFlag(Flag::S); break;
+    case Condition::CARRY_FLAG_NOT_SET: conditionMet_ = !getFlag(Flag::C); break;
+    case Condition::CARRY_FLAG_SET: conditionMet_ = getFlag(Flag::C); break;
+    case Condition::PARITY_FLAG_NOT_SET: conditionMet_ = !getFlag(Flag::P); break;
+    case Condition::PARITY_FLAG_SET: conditionMet_ = getFlag(Flag::P); break;
+    case Condition::ZERO_FLAG_NOT_SET: conditionMet_ = !getFlag(Flag::Z); break;
+    case Condition::ZERO_FLAG_SET: conditionMet_ = getFlag(Flag::Z); break;
+    case Condition::SIGN_FLAG_NOT_SET: conditionMet_ = !getFlag(Flag::S); break;
+    case Condition::SIGN_FLAG_SET: conditionMet_ = getFlag(Flag::S); break;
   }
-
-  if (conditionMet)
-  {
-    pc = memory[pc - 2] | (memory[pc - 1] << 8);
-    execute();
-  }
+  return conditionMet_;
 }
+
+
+template <Intel8080::Condition condition>
+void Intel8080::op_j(void)
+{
+  if (conditionMet(condition))
+    op_jmp();
+}
+
 
 void Intel8080::op_xchg()
 {
@@ -309,7 +311,14 @@ void Intel8080::op_call(void)
   }
 }
 
-void Intel8080::generateOpcodes()
+template <Intel8080::Condition condition>
+void Intel8080::op_c(void)
+{
+  if (conditionMet(condition))
+    op_call();
+}
+
+void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "term", "Terminate program", &Intel8080::op_term));
   opcodes.push_back(Opcode(0x01, 1, "null", "Unknown instruction", nullptr));
