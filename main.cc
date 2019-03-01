@@ -48,7 +48,26 @@ int main(int argc, char *argv[])
       0x00 // term
     };
 
-    cpu.loadProgram(jmptest, 0x100);
+    std::vector<uint8_t> writestrtest = {
+      0x0e, // mvi c, 9
+      0x09,
+      0x16, // mvi d, 0x01
+      0x01,
+      0x1e, // mvi e, 0x0a
+      0x0a,
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x00, // term
+      0x61, // a
+      0x62, // b
+      0x63, // c
+      0x64, // d
+      0x0a, // LF
+      0x24  // $
+    };
+
+    cpu.loadProgram(writestrtest, 0x100);
   }
 
   //cpu.printMemory();

@@ -91,6 +91,7 @@ class Intel8080
     bool terminateFlag = false;
 
     uint8_t getRegisterValue(Intel8080::Register reg);
+    uint16_t getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2);
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
     void generateOpcodes(void);
     void executeInstruction(Opcode opcode);
