@@ -117,7 +117,7 @@ uint8_t Intel8080::getRegisterValue(Intel8080::Register reg)
     case Register::E: return e; break;
     case Register::L: return l; break;
     case Register::H: return h; break;
-    case Register::M: return 0; break;
+    case Register::M: return memory[getRegisterPairValue(RegisterPair::HL)]; break;
   }
 }
 
@@ -159,7 +159,7 @@ void Intel8080::setRegisterValue(Intel8080::Register reg, uint8_t val)
     case Register::E: e = val; break;
     case Register::L: l = val; break;
     case Register::H: h = val; break;
-    case Register::M: break;
+    case Register::M: memory[getRegisterPairValue(RegisterPair::HL)] = val; break;
   }
 }
 
@@ -555,6 +555,15 @@ void Intel8080::op_inx(void)
 }
 
 template <Intel8080::RegisterPair regpair>
+void Intel8080::op_dcx(void)
+{
+  if (regpair == RegisterPair::SP)
+    sp--;
+  else
+    setRegisterPairValue(regpair, getRegisterPairValue(regpair) - 1);
+}
+
+template <Intel8080::RegisterPair regpair>
 void Intel8080::op_push(void)
 {
   uint16_t addr = sp;
@@ -593,6 +602,12 @@ void Intel8080::op_pop(void)
   sp += 2;
 }
 
+void Intel8080::op_hlt(void)
+{
+  // ;)
+  while (true);
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -606,7 +621,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x08, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x09, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x0a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x0b, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x0b, 1, "dcx", "Decrement register pair B:C", &Intel8080::op_dcr<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x0c, 1, "inr", "Increment register C", &Intel8080::op_inr<Register::C>));
   opcodes.push_back(Opcode(0x0d, 1, "dcr", "Decrement register C", &Intel8080::op_dcr<Register::C>));
   opcodes.push_back(Opcode(0x0e, 2, "mvi", "Move immediate to C", &Intel8080::op_mvi<Register::C>));
@@ -614,7 +629,7 @@ void Intel8080::generateOpcodes(void)
 
   opcodes.push_back(Opcode(0x10, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x11, 3, "lxi", "Load register pair D:E", &Intel8080::op_lxi<RegisterPair::DE>));
-  opcodes.push_back(Opcode(0x12, 1, "stax", "Store A at D:E", &Intel8080::op_stax<RegisterPair::DE>));
+  opcodes.push_back(Opcode(0x12, 1, "stax", "Store A at [D:E]", &Intel8080::op_stax<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x13, 1, "inx", "Increment register pair D:E", &Intel8080::op_inx<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x14, 1, "inr", "Increment register D", &Intel8080::op_inr<Register::D>));
   opcodes.push_back(Opcode(0x15, 1, "dcr", "Unknown instruction", &Intel8080::op_dcr<Register::D>));
@@ -623,7 +638,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x18, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x19, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x1a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x1b, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x1b, 1, "dcx", "Decrement register pair D:E", &Intel8080::op_dcx<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x1c, 1, "inr", "Increment register E", &Intel8080::op_inr<Register::E>));
   opcodes.push_back(Opcode(0x1d, 1, "dcr", "Decrement register E", &Intel8080::op_dcr<Register::E>));
   opcodes.push_back(Opcode(0x1e, 2, "mvi", "Move immediate to E", &Intel8080::op_mvi<Register::E>));
@@ -640,7 +655,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x28, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x29, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x2a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x2b, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x2b, 1, "dcx", "Decrement register pair H:L", &Intel8080::op_dcx<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x2c, 1, "inr", "Increment register L", &Intel8080::op_inr<Register::L>));
   opcodes.push_back(Opcode(0x2d, 1, "dcr", "Decrement register L", &Intel8080::op_dcr<Register::L>));
   opcodes.push_back(Opcode(0x2e, 2, "mvi", "Move immediate to L", &Intel8080::op_mvi<Register::L>));
@@ -648,10 +663,10 @@ void Intel8080::generateOpcodes(void)
 
   opcodes.push_back(Opcode(0x30, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x31, 3, "lxi", "Load register pair SP", &Intel8080::op_lxi<RegisterPair::SP>));
-  opcodes.push_back(Opcode(0x32, 1, "sta", "Store A at immediate", &Intel8080::op_sta));
+  opcodes.push_back(Opcode(0x32, 3, "sta", "Store A at immediate", &Intel8080::op_sta));
   opcodes.push_back(Opcode(0x33, 1, "inx", "Increment SP", &Intel8080::op_inx<RegisterPair::SP>));
-  opcodes.push_back(Opcode(0x34, 1, "inr", "Increment memref at H:L", &Intel8080::op_inr<Register::M>));
-  opcodes.push_back(Opcode(0x35, 1, "dcr", "Decrement memref at H:L", &Intel8080::op_dcr<Register::M>));
+  opcodes.push_back(Opcode(0x34, 1, "inr", "Increment memory at [H:L]", &Intel8080::op_inr<Register::M>));
+  opcodes.push_back(Opcode(0x35, 1, "dcr", "Decrement memory at [H:L]", &Intel8080::op_dcr<Register::M>));
   opcodes.push_back(Opcode(0x36, 2, "mvi", "Move immediate to memref at H:L", &Intel8080::op_mvi<Register::M>));
   opcodes.push_back(Opcode(0x37, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x38, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -720,7 +735,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x73, 1, "mov", "Move E to M", &Intel8080::op_mov<Register::M, Register::E>));
   opcodes.push_back(Opcode(0x74, 1, "mov", "Move H to M", &Intel8080::op_mov<Register::M, Register::H>));
   opcodes.push_back(Opcode(0x75, 1, "mov", "Move L to M", &Intel8080::op_mov<Register::M, Register::L>));
-  opcodes.push_back(Opcode(0x76, 1, "hlt", "Halt processor (unimplemented)", nullptr));
+  opcodes.push_back(Opcode(0x76, 1, "hlt", "Halt processor", &Intel8080::op_hlt));
   opcodes.push_back(Opcode(0x77, 1, "mov", "Move A to M", &Intel8080::op_mov<Register::M, Register::A>));
   opcodes.push_back(Opcode(0x78, 1, "mov", "Move B to A", &Intel8080::op_mov<Register::A, Register::B>));
   opcodes.push_back(Opcode(0x79, 1, "mov", "Move C to A", &Intel8080::op_mov<Register::A, Register::C>));
@@ -829,7 +844,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xda, 3, "jc", "Jump if carry", &Intel8080::op_j<Condition::CARRY_FLAG_SET>));
   opcodes.push_back(Opcode(0xdb, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xdc, 3, "cc", "Call if carry", &Intel8080::op_c<Condition::CARRY_FLAG_SET>));
-  opcodes.push_back(Opcode(0xdd, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xdd, 3, "call", "Unconditional call", &Intel8080::op_call));
   opcodes.push_back(Opcode(0xde, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xdf, 1, "rst", "Reset 3", &Intel8080::op_rst<3>));
 
@@ -846,7 +861,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xea, 3, "jpe", "Jump if parity flag even", &Intel8080::op_j<Condition::PARITY_FLAG_SET>));
   opcodes.push_back(Opcode(0xeb, 1, "xchg", "Exchange registers D:E and H:L", &Intel8080::op_xchg));
   opcodes.push_back(Opcode(0xec, 3, "cpe", "Call if parity flag even", &Intel8080::op_j<Condition::PARITY_FLAG_SET>));
-  opcodes.push_back(Opcode(0xed, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xed, 3, "call", "Unconditional call", &Intel8080::op_call));
   opcodes.push_back(Opcode(0xee, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xef, 1, "rst", "Reset 5", &Intel8080::op_rst<5>));
 
@@ -863,7 +878,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xfa, 3, "jm", "Jump if negative", &Intel8080::op_j<Condition::SIGN_FLAG_SET>));
   opcodes.push_back(Opcode(0xfb, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xfc, 3, "cm", "Call if negative", &Intel8080::op_c<Condition::SIGN_FLAG_SET>));
-  opcodes.push_back(Opcode(0xfd, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xfd, 3, "call", "Unconditional call", &Intel8080::op_call));
   opcodes.push_back(Opcode(0xfe, 2, "cpi", "Compare immediate with A", &Intel8080::op_cpi));
   opcodes.push_back(Opcode(0xff, 1, "rst", "Reset 7", &Intel8080::op_rst<7>));
 }
