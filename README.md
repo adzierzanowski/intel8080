@@ -21,3 +21,9 @@ https://www.seasip.info/Cpm/bdos.html
 https://svofski.github.io/pretty-8080-assembler/
 
 http://www.emulator101.com
+
+# Todo (sorted by decreasing importance)
+
+* implement "from ADD to CMP" instruction set
+* check for Carry flag
+* Nicer setFlags

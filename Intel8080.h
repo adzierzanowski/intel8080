@@ -68,6 +68,13 @@ class Intel8080
       M = 0b110
     };
 
+    enum class RegisterPair : uint8_t {
+      BC = 0b00,
+      DE = 0b01,
+      HL = 0b10,
+      SP = 0b11
+    };
+
     enum class Flag : uint8_t {
       C = 0,
       P = 2,
@@ -103,7 +110,7 @@ class Intel8080
 
     bool getFlag(int pos);
     void setFlag(int pos, int state);
-    void setFlags(uint8_t which, uint8_t old_val, uint8_t new_val);
+    void setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint8_t new_val);
 
 
     bool checkParity(uint8_t val);
@@ -136,6 +143,15 @@ class Intel8080
     
     template <Intel8080::Condition condition>
     void op_c(void);
+
+    template <Intel8080::Register reg1, Intel8080::Register reg2>
+    void op_lxi(void);
+
+    template <Intel8080::RegisterPair regpair>
+    void op_lxi(void);
+
+    void op_ani(void);
+    void op_adi(void);
 
     void op_dump(void);
     void op_term(void);
