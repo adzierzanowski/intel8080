@@ -22,6 +22,7 @@ Intel8080::Intel8080()
 
 void Intel8080::execute()
 {
+  terminateFlag = false;
   uint8_t opcode_n = memory[pc];
   Opcode opcode = opcodes[opcode_n];
   pc += opcode.length;
@@ -120,9 +121,26 @@ uint8_t Intel8080::getRegisterValue(Intel8080::Register reg)
   }
 }
 
+std::pair<Intel8080::Register, Intel8080::Register> Intel8080::registerPairToStdPair(Intel8080::RegisterPair regpair)
+{
+  switch (regpair)
+  {
+    case RegisterPair::BC: return std::make_pair(Register::B, Register::C); break;
+    case RegisterPair::DE: return std::make_pair(Register::D, Register::E); break;
+    case RegisterPair::HL: return std::make_pair(Register::H, Register::L); break;
+    case RegisterPair::SP: return std::make_pair(Register::M, Register::M); break; // nonsense but eh, TODO
+  }
+}
+
 uint16_t Intel8080::getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2)
 {
   return combineBytes(getRegisterValue(reg1), getRegisterValue(reg2));
+}
+
+uint16_t Intel8080::getRegisterPairValue(Intel8080::RegisterPair regpair)
+{
+  auto reg_stdpair = registerPairToStdPair(regpair);
+  return getRegisterPairValue(reg_stdpair.first, reg_stdpair.second);
 }
 
 uint16_t Intel8080::combineBytes(uint8_t hb, uint8_t lb)
@@ -143,6 +161,13 @@ void Intel8080::setRegisterValue(Intel8080::Register reg, uint8_t val)
     case Register::H: h = val; break;
     case Register::M: break;
   }
+}
+
+void Intel8080::setRegisterPairValue(Intel8080::RegisterPair regpair, uint16_t val)
+{
+  auto reg_stdpair = registerPairToStdPair(regpair);
+  setRegisterValue(reg_stdpair.first, val >> 8);
+  setRegisterValue(reg_stdpair.first, val & 0x00ff);
 }
 
 bool Intel8080::checkParity(uint8_t val)
@@ -320,11 +345,22 @@ void Intel8080::op_call(void)
       // C_WRITESTR - Output string
       // D:E = addres of the string (terminated with '$')
       case 0x09:
-        uint16_t addr = getRegisterPairValue(Register::D, Register::E);
+        {
+          uint16_t addr = getRegisterPairValue(RegisterPair::DE);
+          while (memory[addr] != (uint8_t) '$')
+            putchar(memory[addr++]);
+        }
+        break;
 
-        while (memory[addr] != (uint8_t) '$')
-          putchar(memory[addr++]);
-
+      // CUSTOM - Print memory
+      case 0xfe:
+        // TODO: select memory region to print
+        printMemory();
+        break;
+    
+      // CUSTOM - Print registers
+      case 0xff:
+        printRegisters();
         break;
     }
   }
@@ -471,12 +507,21 @@ void Intel8080::op_stax(void)
   memory[getRegisterPairValue(reg1, reg2)] = a;
 }
 
+template <Intel8080::RegisterPair regpair>
+void Intel8080::op_inx(void)
+{
+  if (regpair == RegisterPair::SP)
+    sp++;
+  else
+    setRegisterPairValue(regpair, getRegisterPairValue(regpair) + 1);
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x01, 3, "lxi", "Load register pair B:C", &Intel8080::op_lxi<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x02, 1, "stax", "Store A at B:C", &Intel8080::op_stax<RegisterPair::BC>));
-  opcodes.push_back(Opcode(0x03, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x03, 1, "inx", "Increment register pair B:C", &Intel8080::op_inx<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x04, 1, "inr", "Increment register B", &Intel8080::op_inr<Register::B>));
   opcodes.push_back(Opcode(0x05, 1, "dcr", "Decrement register B", &Intel8080::op_dcr<Register::B>));
   opcodes.push_back(Opcode(0x06, 2, "mvi", "Move immediate to B", &Intel8080::op_mvi<Register::B>));
@@ -493,7 +538,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x10, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x11, 3, "lxi", "Load register pair D:E", &Intel8080::op_lxi<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x12, 1, "stax", "Store A at D:E", &Intel8080::op_stax<RegisterPair::DE>));
-  opcodes.push_back(Opcode(0x13, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x13, 1, "inx", "Increment register pair D:E", &Intel8080::op_inx<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x14, 1, "inr", "Increment register D", &Intel8080::op_inr<Register::D>));
   opcodes.push_back(Opcode(0x15, 1, "dcr", "Unknown instruction", &Intel8080::op_dcr<Register::D>));
   opcodes.push_back(Opcode(0x16, 2, "mvi", "Move immediate to D", &Intel8080::op_mvi<Register::D>));
@@ -510,7 +555,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x20, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x21, 3, "lxi", "Load register pair H:L", &Intel8080::op_lxi<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x22, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x23, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x23, 1, "inx", "Increment register pair H:L", &Intel8080::op_inx<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x24, 1, "inr", "Increment register H", &Intel8080::op_inr<Register::H>));
   opcodes.push_back(Opcode(0x25, 1, "dcr", "Decrement register H", &Intel8080::op_dcr<Register::H>));
   opcodes.push_back(Opcode(0x26, 2, "mvi", "Move immediate to H", &Intel8080::op_mvi<Register::H>));
@@ -527,7 +572,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x30, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x31, 3, "lxi", "Load register pair SP", &Intel8080::op_lxi<RegisterPair::SP>));
   opcodes.push_back(Opcode(0x32, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x33, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x33, 1, "inx", "Increment SP", &Intel8080::op_inx<RegisterPair::SP>));
   opcodes.push_back(Opcode(0x34, 1, "inr", "Increment memref at H:L", &Intel8080::op_inr<Register::M>));
   opcodes.push_back(Opcode(0x35, 1, "dcr", "Decrement memref at H:L", &Intel8080::op_dcr<Register::M>));
   opcodes.push_back(Opcode(0x36, 2, "mvi", "Move immediate to memref at H:L", &Intel8080::op_mvi<Register::M>));

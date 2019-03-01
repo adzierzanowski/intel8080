@@ -13,14 +13,13 @@ clean:
 	rm -rf $(BUILD)
 	rm $(EXE)
 	rm $(DUMP)
+	rm tests
 
 leaks:
 	leaks --atExit -- ./$(EXE)
 
 tests: $(BUILD)/tests.o $(BUILD)/Intel8080.o
 	$(CXX) $(CXXFLAGS) $(BUILD)/Intel8080.o $(BUILD)/tests.o -o tests
-	./tests
-	rm tests
 
 $(DUMP): $(EXE)
 	./$< $(CPUDIAG) > $(DUMP)

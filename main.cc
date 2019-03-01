@@ -3,6 +3,7 @@
 int main(int argc, char *argv[])
 {
   Intel8080 cpu;
+  cpu.setProgramCounter(0x100);
 
   if (argc > 1)
   {
@@ -26,76 +27,46 @@ int main(int argc, char *argv[])
 
   else
   {
-    std::vector<uint8_t> jmptest = {
-      0x06, // mvi b, 0x05
-      0x05,
-      0x05, // dcr b
-      0xc2, // jnz 0x0102 
-      0x02,
-      0x01,
-      0x00  // term
-    };
-
-    std::vector<uint8_t> xchgtest = {
-      0x16, // mvi d, 0xdd
-      0xdd,
-      0x1e, // mvi e, 0xee
-      0xee,
-      0x10, // dump
-      0xeb, // xchg
-      0x10, // dump
-      0x00
-    };
-
-    std::vector<uint8_t> calltest = {
-      0x0e, // mvi c, 2
-      0x02,
-      0x1e, // mvi e, 'a'
-      0x61,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x1e, // mvi e, '\n'
-      0x0a,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x00 // term
-    };
-
-    std::vector<uint8_t> writestrtest = {
-      0x0e, // mvi c, 9
+    std::vector<uint8_t> helloWorld = {
+      0x0e, // mvi c, 0x09
       0x09,
-      0x16, // mvi d, 0x01
+      0x11, // lxi D:E, 0x0112
+      0x12,
       0x01,
-      0x1e, // mvi e, 0x0a
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x0e, // mvi c, 0xff
+      0xff,
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x0e, // mvi c, 0x00
+      0x00,
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x48, // db "Hello, world!\n$"
+      0x65,
+      0x6c,
+      0x6c,
+      0x6f,
+      0x2c,
+      0x20,
+      0x77,
+      0x6f,
+      0x72,
+      0x6c,
+      0x64,
+      0x21,
       0x0a,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x00, // term
-      0x61, // a
-      0x62, // b
-      0x63, // c
-      0x64, // d
-      0x0a, // LF
-      0x24  // $
+      0x24
     };
 
-    std::vector<uint8_t> terminate_test = {
-      0x0e, // mvi c, 0
-      0x00,
-      0xcd, // call 0x0005
-      0x05,
-      0x00
-    };
-
-    cpu.loadProgram(terminate_test, 0x100);
+    cpu.debugOutput = false;
+    cpu.loadProgram(helloWorld, 0x100);
   }
 
-  //cpu.printMemory();
-  cpu.setProgramCounter(0x100);
-  cpu.debugOutput = true;
   cpu.execute();
 
   return 0;

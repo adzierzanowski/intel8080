@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdio>
 #include <string>
+#include <utility>
 
 class Intel8080;
 
@@ -99,8 +100,11 @@ class Intel8080
 
     uint8_t getRegisterValue(Intel8080::Register reg);
     uint16_t getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2);
+    uint16_t getRegisterPairValue(Intel8080::RegisterPair regpair);
+    std::pair<Intel8080::Register, Intel8080::Register> registerPairToStdPair(Intel8080::RegisterPair regpair);
     uint16_t combineBytes(uint8_t hb, uint8_t lb);
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
+    void setRegisterPairValue(Intel8080::RegisterPair, uint16_t val);
     void generateOpcodes(void);
     void executeInstruction(Opcode opcode);
 
@@ -184,6 +188,9 @@ class Intel8080
 
     template <Intel8080::Register reg1, Intel8080::Register reg2>
     void op_stax(void);
+
+    template <Intel8080::RegisterPair regpair>
+    void op_inx(void);
 
     void op_dump(void);
     void op_term(void);
