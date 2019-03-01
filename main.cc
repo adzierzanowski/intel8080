@@ -7,6 +7,21 @@ int main(int argc, char *argv[])
   if (argc > 1)
   {
     // load program from file
+    FILE *f = fopen(argv[1], "rb");
+
+    if (f == nullptr)
+    {
+      fprintf(stderr, "fopen error\n");
+      return 1;
+    }
+
+    int b;
+    std::vector<uint8_t> prog;
+    while ((b = fgetc(f)) != EOF)
+      prog.push_back(static_cast<uint8_t>(b));
+    fclose(f);
+
+    cpu.loadProgram(prog, 0x100);
   }
 
   else
@@ -67,7 +82,15 @@ int main(int argc, char *argv[])
       0x24  // $
     };
 
-    cpu.loadProgram(jmptest, 0x100);
+    std::vector<uint8_t> terminate_test = {
+      0x0e, // mvi c, 0
+      0x00,
+      0xcd, // call 0x0005
+      0x05,
+      0x00
+    };
+
+    cpu.loadProgram(terminate_test, 0x100);
   }
 
   //cpu.printMemory();

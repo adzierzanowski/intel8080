@@ -39,6 +39,7 @@ class Intel8080
     void loadProgram(std::vector<uint8_t> prog, uint16_t address);
     void execute(void);
     void setProgramCounter(uint16_t addr);
+    std::vector<Opcode> opcodes;
 
   private:
     uint8_t a;
@@ -55,7 +56,6 @@ class Intel8080
     uint8_t flags;
 
     std::vector<uint8_t> memory;
-    std::vector<Opcode> opcodes;
 
     enum class Register : uint8_t {
       A = 0b111,

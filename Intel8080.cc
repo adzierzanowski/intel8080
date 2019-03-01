@@ -319,6 +319,11 @@ void Intel8080::op_call(void)
   {
     switch (c)
     {
+      // P_TERMCPM - System reset
+      case 0x00:
+        op_term();
+        break;
+
       // C_WRITE - Console output
       // E = ASCII character
       case 0x02:
@@ -347,7 +352,7 @@ void Intel8080::op_c(void)
 
 void Intel8080::generateOpcodes(void)
 {
-  opcodes.push_back(Opcode(0x00, 1, "term", "Terminate program", &Intel8080::op_term));
+  opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x01, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x02, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x03, 1, "null", "Unknown instruction", nullptr));
@@ -364,7 +369,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x0e, 2, "mvi", "Move immediate to C", &Intel8080::op_mvi<Register::C>));
   opcodes.push_back(Opcode(0x0f, 1, "null", "Unknown instruction", nullptr));
 
-  opcodes.push_back(Opcode(0x10, 1, "dump", "Print registers", &Intel8080::op_dump));
+  opcodes.push_back(Opcode(0x10, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x11, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x12, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x13, 1, "null", "Unknown instruction", nullptr));
