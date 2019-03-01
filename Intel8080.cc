@@ -374,6 +374,15 @@ void Intel8080::op_adi(void)
   setFlags(true, true, true, true, true, old_val, new_val);
 }
 
+template <Intel8080::Register reg>
+void Intel8080::op_add(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a + getRegisterValue(reg);
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -512,14 +521,14 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x7e, 1, "mov", "Move M to A", &Intel8080::op_mov<Register::A, Register::M>));
   opcodes.push_back(Opcode(0x7f, 1, "mov", "Move A to A", &Intel8080::op_mov<Register::A, Register::A>));
 
-  opcodes.push_back(Opcode(0x80, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x81, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x82, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x83, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x84, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x85, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x86, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x87, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x80, 1, "add", "Add B to A", &Intel8080::op_add<Register::B>));
+  opcodes.push_back(Opcode(0x81, 1, "add", "Add C to A", &Intel8080::op_add<Register::C>));
+  opcodes.push_back(Opcode(0x82, 1, "add", "Add D to A", &Intel8080::op_add<Register::D>));
+  opcodes.push_back(Opcode(0x83, 1, "add", "Add E to A", &Intel8080::op_add<Register::E>));
+  opcodes.push_back(Opcode(0x84, 1, "add", "Add H to A", &Intel8080::op_add<Register::H>));
+  opcodes.push_back(Opcode(0x85, 1, "add", "Add L to A", &Intel8080::op_add<Register::L>));
+  opcodes.push_back(Opcode(0x86, 1, "add", "Add M to A", &Intel8080::op_add<Register::M>));
+  opcodes.push_back(Opcode(0x87, 1, "add", "Add A to A", &Intel8080::op_add<Register::A>));
   opcodes.push_back(Opcode(0x88, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x89, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x8a, 1, "null", "Unknown instruction", nullptr));

@@ -153,6 +153,9 @@ class Intel8080
     void op_ani(void);
     void op_adi(void);
 
+    template <Intel8080::Register reg>
+    void op_add(void);
+
     void op_dump(void);
     void op_term(void);
 };
