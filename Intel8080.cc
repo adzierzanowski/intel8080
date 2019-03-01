@@ -205,6 +205,17 @@ void Intel8080::op_j()
   }
 }
 
+void Intel8080::op_xchg()
+{
+  uint8_t tmp1 = d;
+  uint8_t tmp2 = e;
+
+  d = h;
+  e = l;
+  h = tmp1;
+  l = tmp2;
+}
+
 template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
@@ -537,7 +548,7 @@ void Intel8080::generateOpcodes()
   opcodes.push_back(Opcode(0xe8, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xe9, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xea, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xeb, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xeb, 1, "xchg", "Exchange registers D:E and H:L", &Intel8080::op_xchg));
   opcodes.push_back(Opcode(0xec, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xed, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xee, 1, "null", "Unknown instruction", nullptr));

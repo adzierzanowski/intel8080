@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
   else
   {
-    std::vector<uint8_t> prog = {
+    std::vector<uint8_t> jmptest = {
       0x06, // mvi b, 0x05
       0x05,
       0x05, // dcr b
@@ -21,7 +21,18 @@ int main(int argc, char *argv[])
       0x00  // term
     };
 
-    cpu.loadProgram(prog, 0x100);
+    std::vector<uint8_t> xchgtest = {
+      0x16, // mvi d, 0xdd
+      0xdd,
+      0x1e, // mvi e, 0xee
+      0xee,
+      0x10, // dump
+      0xeb, // xchg
+      0x10, // dump
+      0x00
+    };
+
+    cpu.loadProgram(xchgtest, 0x100);
   }
 
   //cpu.printMemory();

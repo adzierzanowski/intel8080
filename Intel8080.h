@@ -4,9 +4,6 @@
 #include <cstdint>
 #include <vector>
 #include <cstdio>
-#include <algorithm>
-#include <map>
-#include <functional>
 #include <string>
 
 class Intel8080;
@@ -126,6 +123,8 @@ class Intel8080
     
     template <Intel8080::Condition condition>
     void op_j(void);
+
+    void op_xchg(void);
 
     void op_dump(void);
     void op_term(void);

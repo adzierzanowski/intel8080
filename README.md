@@ -13,3 +13,5 @@ http://pastraiser.com/cpu/i8080/i8080_opcodes.html
 http://www.classiccmp.org/dunfield/r/8080.txt
 
 http://altairclone.com/downloads/manuals/8080%20Programmers%20Manual.pdf
+
+https://svofski.github.io/pretty-8080-assembler/
