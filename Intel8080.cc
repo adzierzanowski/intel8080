@@ -632,6 +632,62 @@ void Intel8080::op_hlt(void)
   while (true);
 }
 
+void Intel8080::op_rlc(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a << 1;
+  a = new_val;
+
+  bool leftmostBitSet = old_val & 0x80;
+  leftmostBitSet ? setFlag(Flag::C) : resetFlag(Flag::C);
+  leftmostBitSet ? a |= 1 : a &= ~(1);
+}
+
+void Intel8080::op_rrc(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a >> 1;
+  a = new_val;
+
+  bool rightmostBitSet = old_val & 1;
+  rightmostBitSet ? setFlag(Flag::C) : resetFlag(Flag::C);
+  rightmostBitSet ? a |= 0x80 : a &= ~(0x80);
+}
+
+void Intel8080::op_ral(void)
+{
+  uint8_t carry = getFlag(Flag::C);
+  uint8_t old_val = a;
+  uint8_t new_val = (a << 1) | static_cast<uint8_t>(carry);
+  a = new_val;
+  
+  old_val & 0x80 ? setFlag(Flag::C) : resetFlag(Flag::C);
+}
+
+void Intel8080::op_rar(void)
+{
+  uint8_t carry = getFlag(Flag::C);
+  uint8_t old_val = a;
+  uint8_t new_val = (a > 1) | (static_cast<uint8_t>(carry) << 7);
+  a = new_val;
+  
+  old_val & 1 ? setFlag(Flag::C) : resetFlag(Flag::C);
+}
+
+template <Intel8080::RegisterPair regpair>
+void Intel8080::op_dad(void)
+{
+  uint16_t old_val;
+  if (regpair == RegisterPair::SP)
+    old_val = sp;
+  else
+    old_val = getRegisterPairValue(regpair);
+  
+  uint16_t new_val = getRegisterPairValue(RegisterPair::HL) + old_val;
+  setRegisterPairValue(RegisterPair::HL, new_val);
+  setFlags(true, false, false, false, false, old_val, new_val);
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -641,15 +697,15 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x04, 1, "inr", "Increment register B", &Intel8080::op_inr<Register::B>));
   opcodes.push_back(Opcode(0x05, 1, "dcr", "Decrement register B", &Intel8080::op_dcr<Register::B>));
   opcodes.push_back(Opcode(0x06, 2, "mvi", "Move immediate to B", &Intel8080::op_mvi<Register::B>));
-  opcodes.push_back(Opcode(0x07, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x07, 1, "rlc", "Rotate A left", &Intel8080::op_rlc));
   opcodes.push_back(Opcode(0x08, 1, "nop", "No operation", &Intel8080::op_nop));
-  opcodes.push_back(Opcode(0x09, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x09, 1, "dad", "Add B:C to H:L", &Intel8080::op_dad<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x0a, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x0b, 1, "dcx", "Decrement register pair B:C", &Intel8080::op_dcx<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x0c, 1, "inr", "Increment register C", &Intel8080::op_inr<Register::C>));
   opcodes.push_back(Opcode(0x0d, 1, "dcr", "Decrement register C", &Intel8080::op_dcr<Register::C>));
   opcodes.push_back(Opcode(0x0e, 2, "mvi", "Move immediate to C", &Intel8080::op_mvi<Register::C>));
-  opcodes.push_back(Opcode(0x0f, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x0f, 1, "rrc", "Rotate A right", &Intel8080::op_rrc));
 
   opcodes.push_back(Opcode(0x10, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x11, 3, "lxi", "Load register pair D:E", &Intel8080::op_lxi<RegisterPair::DE>));
@@ -658,15 +714,15 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x14, 1, "inr", "Increment register D", &Intel8080::op_inr<Register::D>));
   opcodes.push_back(Opcode(0x15, 1, "dcr", "Unknown instruction", &Intel8080::op_dcr<Register::D>));
   opcodes.push_back(Opcode(0x16, 2, "mvi", "Move immediate to D", &Intel8080::op_mvi<Register::D>));
-  opcodes.push_back(Opcode(0x17, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x17, 1, "ral", "Rotate left through carry", &Intel8080::op_ral));
   opcodes.push_back(Opcode(0x18, 1, "nop", "No operation", &Intel8080::op_nop));
-  opcodes.push_back(Opcode(0x19, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x19, 1, "dad", "Add D:E to H:L", &Intel8080::op_dad<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x1a, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x1b, 1, "dcx", "Decrement register pair D:E", &Intel8080::op_dcx<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x1c, 1, "inr", "Increment register E", &Intel8080::op_inr<Register::E>));
   opcodes.push_back(Opcode(0x1d, 1, "dcr", "Decrement register E", &Intel8080::op_dcr<Register::E>));
   opcodes.push_back(Opcode(0x1e, 2, "mvi", "Move immediate to E", &Intel8080::op_mvi<Register::E>));
-  opcodes.push_back(Opcode(0x1f, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x1f, 1, "rar", "Rotate A right through carry", &Intel8080::op_rar));
   
   opcodes.push_back(Opcode(0x20, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x21, 3, "lxi", "Load register pair H:L", &Intel8080::op_lxi<RegisterPair::HL>));
@@ -677,7 +733,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x26, 2, "mvi", "Move immediate to H", &Intel8080::op_mvi<Register::H>));
   opcodes.push_back(Opcode(0x27, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x28, 1, "nop", "No operation", &Intel8080::op_nop));
-  opcodes.push_back(Opcode(0x29, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x29, 1, "dad", "Add H:L to H:L", &Intel8080::op_dad<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x2a, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x2b, 1, "dcx", "Decrement register pair H:L", &Intel8080::op_dcx<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x2c, 1, "inr", "Increment register L", &Intel8080::op_inr<Register::L>));
@@ -694,7 +750,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x36, 2, "mvi", "Move immediate to memref at H:L", &Intel8080::op_mvi<Register::M>));
   opcodes.push_back(Opcode(0x37, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x38, 1, "nop", "No operation", &Intel8080::op_nop));
-  opcodes.push_back(Opcode(0x39, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x39, 1, "dad", "Add SP to H:L", &Intel8080::op_dad<RegisterPair::SP>));
   opcodes.push_back(Opcode(0x3a, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x3b, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x3c, 1, "inr", "Increment register A", &Intel8080::op_inr<Register::A>));

@@ -210,6 +210,14 @@ class Intel8080
     template <Intel8080::RegisterPair regpair>
     void op_pop(void);
 
+    template <Intel8080::RegisterPair regpair>
+    void op_dad(void);
+
+    void op_rlc(void);
+    void op_rrc(void);
+    void op_ral(void);
+    void op_rar(void);
+
     void op_hlt(void);
 
     void op_dump(void);

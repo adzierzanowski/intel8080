@@ -96,9 +96,39 @@ void stackTest(void)
   cpu.execute();
 }
 
+void jmpTest(void)
+{
+  std::vector<uint8_t> prog = {
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+
+    0xc3, // jmp 0x107
+    0x07,
+    0x01,
+
+    0xcb, // jmp 0x10a
+    0x0a,
+    0x01,
+
+    // terminate 
+    0x0e, // mvi c, 0x00,
+    0x00,
+    0xcd, // call 0x0005
+    0x05,
+    0x00,
+  };
+
+  cpu.loadProgram(prog, 0x100);
+  cpu.setProgramCounter(0x100);
+  cpu.execute();
+}
+
 int main(void)
 {
   //jnzTest();
   //printTest();
-  stackTest();
+  //stackTest();
+  jmpTest();
 }
