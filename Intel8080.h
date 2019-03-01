@@ -192,6 +192,12 @@ class Intel8080
     template <Intel8080::RegisterPair regpair>
     void op_inx(void);
 
+    template <Intel8080::RegisterPair regpair>
+    void op_push(void);
+
+    template <Intel8080::RegisterPair regpair>
+    void op_pop(void);
+
     void op_dump(void);
     void op_term(void);
 };
