@@ -92,6 +92,7 @@ class Intel8080
 
     uint8_t getRegisterValue(Intel8080::Register reg);
     uint16_t getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2);
+    uint16_t combineBytes(uint8_t hb, uint8_t lb);
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
     void generateOpcodes(void);
     void executeInstruction(Opcode opcode);

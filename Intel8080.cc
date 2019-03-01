@@ -122,7 +122,12 @@ uint8_t Intel8080::getRegisterValue(Intel8080::Register reg)
 
 uint16_t Intel8080::getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2)
 {
-  return (getRegisterValue(reg1) << 8) | getRegisterValue(reg2);
+  return combineBytes(getRegisterValue(reg1), getRegisterValue(reg2));
+}
+
+uint16_t Intel8080::combineBytes(uint8_t hb, uint8_t lb)
+{
+  return (hb << 8) | lb;
 }
 
 void Intel8080::setRegisterValue(Intel8080::Register reg, uint8_t val)
@@ -183,7 +188,7 @@ void Intel8080::op_nop()
 
 void Intel8080::op_jmp()
 {
-  pc = memory[pc - 2] | (memory[pc - 1] << 8);
+  pc = combineBytes(memory[pc - 1], memory[pc - 2]);
   execute();
 }
 
@@ -307,7 +312,7 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
 
 void Intel8080::op_call(void)
 {
-  uint16_t addr = memory[pc - 2] | (memory[pc - 1] << 8);
+  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
 
   // BDOS call
   if (addr == 0x0005)
