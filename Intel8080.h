@@ -189,6 +189,8 @@ class Intel8080
     template <Intel8080::Register reg>
     void op_cmp(void);
 
+    void op_sta(void);
+
     template <Intel8080::RegisterPair regpair>
     void op_stax(void);
 
