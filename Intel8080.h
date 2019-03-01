@@ -30,6 +30,8 @@ struct Opcode
 class Intel8080
 {
   public:
+    bool debugOutput = true;
+
     Intel8080(void);
     void printMemory(void);
     void printMemory(int a, int b);
@@ -125,6 +127,8 @@ class Intel8080
     void op_j(void);
 
     void op_xchg(void);
+
+    void op_call(void);
 
     void op_dump(void);
     void op_term(void);

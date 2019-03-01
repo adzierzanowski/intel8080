@@ -36,12 +36,13 @@ void Intel8080::executeInstruction(Opcode opcode)
 {
   currentOpcode = &opcode;
 
-  printf(
-    "\033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
-    opcode.number,
-    opcode.mnemonic.c_str(),
-    opcode.fullName.c_str()
-  );
+  if (debugOutput)
+    printf(
+      "\033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
+      opcode.number,
+      opcode.mnemonic.c_str(),
+      opcode.fullName.c_str()
+    );
 
   if (opcode.callback != nullptr)
     (this->*(opcode.callback))();
@@ -297,6 +298,17 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
   setFlag(static_cast<uint8_t>(flag), 0);
 }
 
+void Intel8080::op_call(void)
+{
+  uint16_t addr = memory[pc - 2] | (memory[pc - 1] << 8);
+
+  if (addr == 0x0005)
+  {
+    if (c == 2)
+      putchar(e);
+  }
+}
+
 void Intel8080::generateOpcodes()
 {
   opcodes.push_back(Opcode(0x00, 1, "term", "Terminate program", &Intel8080::op_term));
@@ -516,7 +528,7 @@ void Intel8080::generateOpcodes()
   opcodes.push_back(Opcode(0xca, 3, "jz", "Jump if zero", &Intel8080::op_j<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xcb, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xcc, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xcd, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xcd, 3, "call", "Unconditional call", &Intel8080::op_call));
   opcodes.push_back(Opcode(0xce, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xcf, 1, "null", "Unknown instruction", nullptr));
 

@@ -32,11 +32,28 @@ int main(int argc, char *argv[])
       0x00
     };
 
-    cpu.loadProgram(xchgtest, 0x100);
+    std::vector<uint8_t> calltest = {
+      0x0e, // mvi c, 2
+      0x02,
+      0x1e, // mvi e, 'a'
+      0x61,
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x1e, // mvi e, '\n'
+      0x0a,
+      0xcd, // call 0x0005
+      0x05,
+      0x00,
+      0x00 // term
+    };
+
+    cpu.loadProgram(calltest, 0x100);
   }
 
   //cpu.printMemory();
   cpu.setProgramCounter(0x100);
+  cpu.debugOutput = true;
   cpu.execute();
 
   return 0;
