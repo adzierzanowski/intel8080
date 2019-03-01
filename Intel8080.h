@@ -159,6 +159,11 @@ class Intel8080
     template <Intel8080::Register reg>
     void op_adc(void);
 
+    void op_cpi(void);
+
+    template <Intel8080::Register reg>
+    void op_sub(void);
+
     void op_dump(void);
     void op_term(void);
 };

@@ -395,6 +395,23 @@ void Intel8080::op_adc(void)
     a = new_val;
 }
 
+void Intel8080::op_cpi(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a - memory[pc - 1];
+
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
+template <Intel8080::Register reg>
+void Intel8080::op_sub(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a - getRegisterValue(reg);
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -550,14 +567,14 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x8e, 1, "adc", "Add with carry M to A", &Intel8080::op_adc<Register::M>));
   opcodes.push_back(Opcode(0x8f, 1, "adc", "Add with carry A to A", &Intel8080::op_adc<Register::A>));
 
-  opcodes.push_back(Opcode(0x90, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x91, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x92, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x93, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x94, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x95, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x96, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x97, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x90, 1, "sub", "Substract B from A", &Intel8080::op_sub<Register::B>));
+  opcodes.push_back(Opcode(0x91, 1, "sub", "Substract C from A", &Intel8080::op_sub<Register::C>));
+  opcodes.push_back(Opcode(0x92, 1, "sub", "Substract D from A", &Intel8080::op_sub<Register::D>));
+  opcodes.push_back(Opcode(0x93, 1, "sub", "Substract E from A", &Intel8080::op_sub<Register::E>));
+  opcodes.push_back(Opcode(0x94, 1, "sub", "Substract H from A", &Intel8080::op_sub<Register::H>));
+  opcodes.push_back(Opcode(0x95, 1, "sub", "Substract L from A", &Intel8080::op_sub<Register::L>));
+  opcodes.push_back(Opcode(0x96, 1, "sub", "Substract M from A", &Intel8080::op_sub<Register::M>));
+  opcodes.push_back(Opcode(0x97, 1, "sub", "Substract A from A", &Intel8080::op_sub<Register::A>));
   opcodes.push_back(Opcode(0x98, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x99, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x9a, 1, "null", "Unknown instruction", nullptr));
@@ -666,6 +683,6 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xfb, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xfc, 3, "cm", "Call if negative", &Intel8080::op_c<Condition::SIGN_FLAG_SET>));
   opcodes.push_back(Opcode(0xfd, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xfe, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xfe, 2, "cpi", "Compare immediate with A", &Intel8080::op_cpi));
   opcodes.push_back(Opcode(0xff, 1, "null", "Unknown instruction", nullptr));
 }
