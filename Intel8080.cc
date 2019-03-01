@@ -109,6 +109,16 @@ void Intel8080::loadProgram(std::vector<uint8_t> prog, uint16_t address)
   }
 }
 
+uint8_t Intel8080::getImmediate8(void)
+{
+  return memory[pc - 1];
+}
+
+uint16_t Intel8080::getImmediate16(void)
+{
+  return combineBytes(memory[pc - 1], memory[pc - 2]);
+}
+
 uint8_t Intel8080::getRegisterValue(Intel8080::Register reg)
 {
   switch (reg)
@@ -223,7 +233,7 @@ void Intel8080::op_nop()
 
 void Intel8080::op_jmp()
 {
-  pc = combineBytes(memory[pc - 1], memory[pc - 2]);
+  pc = getImmediate16();
 }
 
 bool Intel8080::conditionMet(Intel8080::Condition condition)
@@ -294,7 +304,7 @@ void Intel8080::op_dcr()
 template <Intel8080::Register reg>
 void Intel8080::op_mvi()
 {
-  uint8_t val = memory[pc-1];
+  uint8_t val = getImmediate8();
   setRegisterValue(reg, val);
 }
 
@@ -344,7 +354,7 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
 void Intel8080::op_call(void)
 {
 
-  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
+  uint16_t addr = getImmediate16();
 
   // BDOS call
   if (addr == 0x0000)
@@ -447,7 +457,7 @@ void Intel8080::op_lxi(void)
     case RegisterPair::DE: op_lxi<Register::D, Register::E>(); break;
     case RegisterPair::HL: op_lxi<Register::H, Register::L>(); break;
     case RegisterPair::SP:
-      sp = combineBytes(memory[pc - 1], memory[pc - 2]);
+      sp = getImmediate16();
       break;
   }
 }
@@ -455,7 +465,7 @@ void Intel8080::op_lxi(void)
 void Intel8080::op_ani(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = memory[pc - 1] & a;
+  uint8_t new_val = getImmediate8() & a;
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -463,7 +473,7 @@ void Intel8080::op_ani(void)
 void Intel8080::op_adi(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = memory[pc - 1] + a;
+  uint8_t new_val = getImmediate8() + a;
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -492,7 +502,7 @@ void Intel8080::op_adc(void)
 void Intel8080::op_cpi(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - memory[pc - 1];
+  uint8_t new_val = a - getImmediate8();
 
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -550,7 +560,7 @@ void Intel8080::op_cmp(void)
 
 void Intel8080::op_sta(void)
 {
-  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
+  uint16_t addr = getImmediate16();
   memory[addr] = a;
 }
 
@@ -704,13 +714,13 @@ void Intel8080::op_ldax(void)
 
 void Intel8080::op_shld(void)
 {
-  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
+  uint16_t addr = getImmediate16();
   memory[addr] = getRegisterPairValue(RegisterPair::HL);
 }
 
 void Intel8080::op_lhld(void)
 {
-  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
+  uint16_t addr = getImmediate16();
   setRegisterPairValue(RegisterPair::HL, memory[addr]);
 }
 
@@ -726,7 +736,7 @@ void Intel8080::op_stc(void)
 
 void Intel8080::op_lda(void)
 {
-  uint16_t addr = combineBytes(memory[pc - 1], memory[pc - 2]);
+  uint16_t addr = getImmediate16();
   a = memory[addr];
 }
 

@@ -98,6 +98,11 @@ class Intel8080
     Opcode *currentOpcode = nullptr;
     bool terminateFlag = false;
 
+    void generateOpcodes(void);
+    void executeInstruction(Opcode opcode);
+
+    uint8_t getImmediate8(void);
+    uint16_t getImmediate16(void);
     uint8_t getRegisterValue(Intel8080::Register reg);
     uint16_t getRegisterPairValue(Intel8080::Register reg1, Intel8080::Register reg2);
     uint16_t getRegisterPairValue(Intel8080::RegisterPair regpair);
@@ -105,8 +110,6 @@ class Intel8080
     uint16_t combineBytes(uint8_t hb, uint8_t lb);
     void setRegisterValue(Intel8080::Register reg, uint8_t val);
     void setRegisterPairValue(Intel8080::RegisterPair, uint16_t val);
-    void generateOpcodes(void);
-    void executeInstruction(Opcode opcode);
 
     bool getFlag(Intel8080::Flag flag);
     void setFlag(Intel8080::Flag flag);
@@ -115,7 +118,6 @@ class Intel8080
     bool getFlag(int pos);
     void setFlag(int pos, int state);
     void setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint8_t new_val);
-
 
     bool checkParity(uint8_t val);
     bool checkForCarry(uint8_t old_val, uint8_t new_val);
