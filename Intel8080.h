@@ -129,7 +129,7 @@ class Intel8080
     template <Intel8080::Register reg>
     void op_inr(void);
 
-    template<Intel8080::Register reg>
+    template <Intel8080::Register reg>
     void op_dcr(void);
 
     template <Intel8080::Register reg>
@@ -174,10 +174,15 @@ class Intel8080
     template <Intel8080::Register reg>
     void op_add(void);
 
+    void op_aci(void);
+
     template <Intel8080::Register reg>
     void op_adc(void);
 
     void op_cpi(void);
+
+    void op_sui(void);
+    void op_sbi(void);
 
     template <Intel8080::Register reg>
     void op_sub(void);
@@ -227,10 +232,17 @@ class Intel8080
 
     void op_shld(void);
     void op_lhld(void);
+    void op_sphl(void);
 
     void op_cma(void);
+    void op_cmc(void);
 
     void op_stc(void);
+
+    void op_pchl(void);
+
+    void op_xri(void);
+    void op_ori(void);
 
     void op_hlt(void);
   
