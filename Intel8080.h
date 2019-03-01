@@ -161,6 +161,11 @@ class Intel8080
     template <Intel8080::RegisterPair regpair>
     void op_lxi(void);
 
+    template <Intel8080::RegisterPair regpair>
+    void op_ldax(void);
+
+    void op_lda(void);
+
     void op_ani(void);
     void op_adi(void);
 
@@ -218,7 +223,15 @@ class Intel8080
     void op_ral(void);
     void op_rar(void);
 
+    void op_shld(void);
+    void op_lhld(void);
+
+    void op_cma(void);
+
+    void op_stc(void);
+
     void op_hlt(void);
+  
 
     void op_dump(void);
     void op_term(void);
