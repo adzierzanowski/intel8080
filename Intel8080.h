@@ -114,8 +114,8 @@ class Intel8080
 
 
     bool checkParity(uint8_t val);
+    bool checkForCarry(uint8_t old_val, uint8_t new_val);
     bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
-
     bool conditionMet(Intel8080::Condition condition);
 
     void op_nop(void);
@@ -155,6 +155,9 @@ class Intel8080
 
     template <Intel8080::Register reg>
     void op_add(void);
+
+    template <Intel8080::Register reg>
+    void op_adc(void);
 
     void op_dump(void);
     void op_term(void);

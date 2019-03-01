@@ -383,6 +383,18 @@ void Intel8080::op_add(void)
   setFlags(true, true, true, true, true, old_val, new_val);
 }
 
+template <Intel8080::Register reg>
+void Intel8080::op_adc(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a + getRegisterValue(reg);
+  setFlags(true, true, true, true, true, old_val, new_val);
+  if (conditionMet(Condition::CARRY_FLAG_SET))
+    a = new_val + 1;
+  else
+    a = new_val;
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
@@ -529,14 +541,14 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x85, 1, "add", "Add L to A", &Intel8080::op_add<Register::L>));
   opcodes.push_back(Opcode(0x86, 1, "add", "Add M to A", &Intel8080::op_add<Register::M>));
   opcodes.push_back(Opcode(0x87, 1, "add", "Add A to A", &Intel8080::op_add<Register::A>));
-  opcodes.push_back(Opcode(0x88, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x89, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8b, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8c, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8d, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8e, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x8f, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x88, 1, "adc", "Add with carry B to A", &Intel8080::op_adc<Register::B>));
+  opcodes.push_back(Opcode(0x89, 1, "adc", "Add with carry C to A", &Intel8080::op_adc<Register::C>));
+  opcodes.push_back(Opcode(0x8a, 1, "adc", "Add with carry D to A", &Intel8080::op_adc<Register::D>));
+  opcodes.push_back(Opcode(0x8b, 1, "adc", "Add with carry E to A", &Intel8080::op_adc<Register::E>));
+  opcodes.push_back(Opcode(0x8c, 1, "adc", "Add with carry H to A", &Intel8080::op_adc<Register::H>));
+  opcodes.push_back(Opcode(0x8d, 1, "adc", "Add with carry L to A", &Intel8080::op_adc<Register::L>));
+  opcodes.push_back(Opcode(0x8e, 1, "adc", "Add with carry M to A", &Intel8080::op_adc<Register::M>));
+  opcodes.push_back(Opcode(0x8f, 1, "adc", "Add with carry A to A", &Intel8080::op_adc<Register::A>));
 
   opcodes.push_back(Opcode(0x90, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x91, 1, "null", "Unknown instruction", nullptr));
