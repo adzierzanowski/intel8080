@@ -164,6 +164,27 @@ class Intel8080
     template <Intel8080::Register reg>
     void op_sub(void);
 
+    template <Intel8080::Register reg>
+    void op_sbb(void);
+
+    template <Intel8080::Register reg>
+    void op_ana(void);
+
+    template <Intel8080::Register reg>
+    void op_xra(void);
+
+    template <Intel8080::Register reg>
+    void op_ora(void);
+
+    template <Intel8080::Register reg>
+    void op_cmp(void);
+
+    template <Intel8080::RegisterPair regpair>
+    void op_stax(void);
+
+    template <Intel8080::Register reg1, Intel8080::Register reg2>
+    void op_stax(void);
+
     void op_dump(void);
     void op_term(void);
 };

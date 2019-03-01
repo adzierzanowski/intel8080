@@ -412,11 +412,70 @@ void Intel8080::op_sub(void)
   setFlags(true, true, true, true, true, old_val, new_val);
 }
 
+template <Intel8080::Register reg>
+void Intel8080::op_sbb(void)
+{
+  // TODO: implement
+}
+
+template <Intel8080::Register reg>
+void Intel8080::op_ana(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a & getRegisterValue(reg);
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
+template <Intel8080::Register reg>
+void Intel8080::op_xra(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a ^ getRegisterValue(reg);
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
+template <Intel8080::Register reg>
+void Intel8080::op_ora(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a | getRegisterValue(reg);
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
+template <Intel8080::Register reg>
+void Intel8080::op_cmp(void)
+{
+  uint8_t old_val = a;
+  uint8_t new_val = a - getRegisterValue(reg);
+
+  setFlags(true, true, true, true, true, old_val, new_val);
+}
+
+template <Intel8080::RegisterPair regpair>
+void Intel8080::op_stax(void)
+{
+  switch (regpair)
+  {
+    case RegisterPair::BC: Intel8080::op_stax<Register::B, Register::E>(); break;
+    case RegisterPair::DE: Intel8080::op_stax<Register::D, Register::E>(); break;
+    default: break;
+  }
+}
+
+template <Intel8080::Register reg1, Intel8080::Register reg2>
+void Intel8080::op_stax(void)
+{
+  memory[getRegisterPairValue(reg1, reg2)] = a;
+}
+
 void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x01, 3, "lxi", "Load register pair B:C", &Intel8080::op_lxi<RegisterPair::BC>));
-  opcodes.push_back(Opcode(0x02, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x02, 1, "stax", "Store A at B:C", &Intel8080::op_stax<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x03, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x04, 1, "inr", "Increment register B", &Intel8080::op_inr<Register::B>));
   opcodes.push_back(Opcode(0x05, 1, "dcr", "Decrement register B", &Intel8080::op_dcr<Register::B>));
@@ -433,7 +492,7 @@ void Intel8080::generateOpcodes(void)
 
   opcodes.push_back(Opcode(0x10, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x11, 3, "lxi", "Load register pair D:E", &Intel8080::op_lxi<RegisterPair::DE>));
-  opcodes.push_back(Opcode(0x12, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x12, 1, "stax", "Store A at D:E", &Intel8080::op_stax<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x13, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0x14, 1, "inr", "Increment register D", &Intel8080::op_inr<Register::D>));
   opcodes.push_back(Opcode(0x15, 1, "dcr", "Unknown instruction", &Intel8080::op_dcr<Register::D>));
@@ -575,48 +634,48 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x95, 1, "sub", "Substract L from A", &Intel8080::op_sub<Register::L>));
   opcodes.push_back(Opcode(0x96, 1, "sub", "Substract M from A", &Intel8080::op_sub<Register::M>));
   opcodes.push_back(Opcode(0x97, 1, "sub", "Substract A from A", &Intel8080::op_sub<Register::A>));
-  opcodes.push_back(Opcode(0x98, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x99, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9a, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9b, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9c, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9d, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9e, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0x9f, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0x98, 1, "sbb", "Substract with borrow B from A", &Intel8080::op_sbb<Register::B>));
+  opcodes.push_back(Opcode(0x99, 1, "sbb", "Substract with borrow C from A", &Intel8080::op_sbb<Register::C>));
+  opcodes.push_back(Opcode(0x9a, 1, "sbb", "Substract with borrow D from A", &Intel8080::op_sbb<Register::D>));
+  opcodes.push_back(Opcode(0x9b, 1, "sbb", "Substract with borrow E from A", &Intel8080::op_sbb<Register::E>));
+  opcodes.push_back(Opcode(0x9c, 1, "sbb", "Substract with borrow H from A", &Intel8080::op_sbb<Register::H>));
+  opcodes.push_back(Opcode(0x9d, 1, "sbb", "Substract with borrow L from A", &Intel8080::op_sbb<Register::L>));
+  opcodes.push_back(Opcode(0x9e, 1, "sbb", "Substract with borrow M from A", &Intel8080::op_sbb<Register::M>));
+  opcodes.push_back(Opcode(0x9f, 1, "sbb", "Substract with borrow A from A", &Intel8080::op_sbb<Register::A>));
 
-  opcodes.push_back(Opcode(0xa0, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa1, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa2, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa3, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa4, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa5, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa6, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa8, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xa9, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xaa, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xab, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xac, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xad, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xae, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xaf, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xa0, 1, "ana", "AND B with A", &Intel8080::op_ana<Register::B>));
+  opcodes.push_back(Opcode(0xa1, 1, "ana", "AND C with A", &Intel8080::op_ana<Register::C>));
+  opcodes.push_back(Opcode(0xa2, 1, "ana", "AND D with A", &Intel8080::op_ana<Register::D>));
+  opcodes.push_back(Opcode(0xa3, 1, "ana", "AND E with A", &Intel8080::op_ana<Register::E>));
+  opcodes.push_back(Opcode(0xa4, 1, "ana", "AND H with A", &Intel8080::op_ana<Register::H>));
+  opcodes.push_back(Opcode(0xa5, 1, "ana", "AND L with A", &Intel8080::op_ana<Register::L>));
+  opcodes.push_back(Opcode(0xa6, 1, "ana", "AND M with A", &Intel8080::op_ana<Register::M>));
+  opcodes.push_back(Opcode(0xa7, 1, "ana", "AND A with A", &Intel8080::op_ana<Register::A>));
+  opcodes.push_back(Opcode(0xa8, 1, "xra", "XOR B with A", &Intel8080::op_xra<Register::B>));
+  opcodes.push_back(Opcode(0xa9, 1, "xra", "XOR C with A", &Intel8080::op_xra<Register::C>));
+  opcodes.push_back(Opcode(0xaa, 1, "xra", "XOR D with A", &Intel8080::op_xra<Register::D>));
+  opcodes.push_back(Opcode(0xab, 1, "xra", "XOR E with A", &Intel8080::op_xra<Register::E>));
+  opcodes.push_back(Opcode(0xac, 1, "xra", "XOR H with A", &Intel8080::op_xra<Register::H>));
+  opcodes.push_back(Opcode(0xad, 1, "xra", "XOR L with A", &Intel8080::op_xra<Register::L>));
+  opcodes.push_back(Opcode(0xae, 1, "xra", "XOR M with A", &Intel8080::op_xra<Register::M>));
+  opcodes.push_back(Opcode(0xaf, 1, "xra", "XOR A with A", &Intel8080::op_xra<Register::A>));
 
-  opcodes.push_back(Opcode(0xb0, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb1, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb2, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb3, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb4, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb5, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb6, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb7, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb8, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xb9, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xba, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xbb, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xbc, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xbd, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xbe, 1, "null", "Unknown instruction", nullptr));
-  opcodes.push_back(Opcode(0xbf, 1, "null", "Unknown instruction", nullptr));
+  opcodes.push_back(Opcode(0xb0, 1, "ora", "OR B with A", &Intel8080::op_ora<Register::B>));
+  opcodes.push_back(Opcode(0xb1, 1, "ora", "OR C with A", &Intel8080::op_ora<Register::C>));
+  opcodes.push_back(Opcode(0xb2, 1, "ora", "OR D with A", &Intel8080::op_ora<Register::D>));
+  opcodes.push_back(Opcode(0xb3, 1, "ora", "OR E with A", &Intel8080::op_ora<Register::E>));
+  opcodes.push_back(Opcode(0xb4, 1, "ora", "OR H with A", &Intel8080::op_ora<Register::H>));
+  opcodes.push_back(Opcode(0xb5, 1, "ora", "OR L with A", &Intel8080::op_ora<Register::L>));
+  opcodes.push_back(Opcode(0xb6, 1, "ora", "OR M with A", &Intel8080::op_ora<Register::M>));
+  opcodes.push_back(Opcode(0xb7, 1, "ora", "OR A with A", &Intel8080::op_ora<Register::A>));
+  opcodes.push_back(Opcode(0xb8, 1, "cmp", "Compare B with A", &Intel8080::op_cmp<Register::B>));
+  opcodes.push_back(Opcode(0xb9, 1, "cmp", "Compare C with A", &Intel8080::op_cmp<Register::C>));
+  opcodes.push_back(Opcode(0xba, 1, "cmp", "Compare D with A", &Intel8080::op_cmp<Register::D>));
+  opcodes.push_back(Opcode(0xbb, 1, "cmp", "Compare E with A", &Intel8080::op_cmp<Register::E>));
+  opcodes.push_back(Opcode(0xbc, 1, "cmp", "Compare H with A", &Intel8080::op_cmp<Register::H>));
+  opcodes.push_back(Opcode(0xbd, 1, "cmp", "Compare L with A", &Intel8080::op_cmp<Register::L>));
+  opcodes.push_back(Opcode(0xbe, 1, "cmp", "Compare M with A", &Intel8080::op_cmp<Register::M>));
+  opcodes.push_back(Opcode(0xbf, 1, "cmp", "Compare A with A", &Intel8080::op_cmp<Register::A>));
 
   opcodes.push_back(Opcode(0xc0, 1, "null", "Unknown instruction", nullptr));
   opcodes.push_back(Opcode(0xc1, 1, "null", "Unknown instruction", nullptr));
