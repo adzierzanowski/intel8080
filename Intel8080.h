@@ -46,6 +46,7 @@ class Intel8080
     void execute(void);
     void setProgramCounter(uint16_t addr);
     void loadProgram(std::vector<uint8_t> prog, uint16_t address);
+    void loadProgram(std::string filename, uint16_t address);
 
   private:
     uint8_t a;
@@ -178,9 +179,7 @@ class Intel8080
     void op_sui(void);
     void op_sta(void);
     void op_stc(void);
-    // TODO: rewrite stax
     template <Intel8080::RegisterPair regpair> void op_stax(void);
-    template <Intel8080::Register reg1, Intel8080::Register reg2> void op_stax(void);
     void op_xchg(void);
     template <Intel8080::Register reg> void op_xra(void);
     void op_xthl(void);

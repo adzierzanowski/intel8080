@@ -16,6 +16,7 @@ class Intel8080Test
 
     void prepare(void);
     void loadAndExecute(std::vector<uint8_t> prog);
+    void loadAndExecute(std::string filename);
     void perform(void);
     void fail(std::string message);
     void pass(std::string message);
@@ -25,6 +26,8 @@ class Intel8080Test
     void op_inr_test(void);
     void op_dcr_test(void);
     void op_cma_test(void);
+    void op_mov_test(void);
+    void op_stax_test(void);
 };
 
 #endif

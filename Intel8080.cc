@@ -105,6 +105,25 @@ void Intel8080::loadProgram(std::vector<uint8_t> prog, uint16_t address)
   }
 }
 
+void Intel8080::loadProgram(std::string filename, uint16_t address)
+{
+  FILE *f = fopen(filename.c_str(), "rb");
+
+  if (f == nullptr)
+  {
+    fprintf(stderr, "fopen error\n");
+    exit(1);
+  }
+
+  int b;
+  std::vector<uint8_t> prog;
+  while ((b = fgetc(f)) != EOF)
+    prog.push_back(static_cast<uint8_t>(b));
+  fclose(f);
+
+  loadProgram(prog, address);
+}
+
 uint8_t Intel8080::getImmediate8(void)
 {
   return memory[pc - 1];
@@ -563,16 +582,13 @@ void Intel8080::op_stax(void)
 {
   switch (regpair)
   {
-    case RegisterPair::BC: Intel8080::op_stax<Register::B, Register::E>(); break;
-    case RegisterPair::DE: Intel8080::op_stax<Register::D, Register::E>(); break;
+    case RegisterPair::BC:
+    case RegisterPair::DE:
+      memory[getRegisterPairValue(regpair)] = a;
+      break;
+
     default: break;
   }
-}
-
-template <Intel8080::Register reg1, Intel8080::Register reg2>
-void Intel8080::op_stax(void)
-{
-  memory[getRegisterPairValue(reg1, reg2)] = a;
 }
 
 template <Intel8080::RegisterPair regpair>
@@ -818,7 +834,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0x17, 1, "ral", "Rotate left through carry", &Intel8080::op_ral));
   opcodes.push_back(Opcode(0x18, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x19, 1, "dad", "Add D:E to H:L", &Intel8080::op_dad<RegisterPair::DE>));
-  opcodes.push_back(Opcode(0x1a, 1, "ldax", "Unknown instruction", &Intel8080::op_ldax<RegisterPair::DE>));
+  opcodes.push_back(Opcode(0x1a, 1, "ldax", "Load A through [D:E]", &Intel8080::op_ldax<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x1b, 1, "dcx", "Decrement register pair D:E", &Intel8080::op_dcx<RegisterPair::DE>));
   opcodes.push_back(Opcode(0x1c, 1, "inr", "Increment register E", &Intel8080::op_inr<Register::E>));
   opcodes.push_back(Opcode(0x1d, 1, "dcr", "Decrement register E", &Intel8080::op_dcr<Register::E>));

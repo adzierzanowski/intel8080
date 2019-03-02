@@ -7,23 +7,7 @@ int main(int argc, char *argv[])
 
   if (argc > 1)
   {
-    // load program from file
-    FILE *f = fopen(argv[1], "rb");
-
-    if (f == nullptr)
-    {
-      fprintf(stderr, "fopen error\n");
-      return 1;
-    }
-
-    int b;
-    std::vector<uint8_t> prog;
-    while ((b = fgetc(f)) != EOF)
-      prog.push_back(static_cast<uint8_t>(b));
-    fclose(f);
-
-    cpu.loadProgram(prog, 0x100);
-
+    cpu.loadProgram(std::string(argv[1]), 0x100);
     if (argc > 2 && argv[2] == std::string("-q"))
       cpu.debugOutput = false;
   }
