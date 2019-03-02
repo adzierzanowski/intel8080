@@ -23,6 +23,9 @@ int main(int argc, char *argv[])
     fclose(f);
 
     cpu.loadProgram(prog, 0x100);
+
+    if (argc > 2 && argv[2] == std::string("-q"))
+      cpu.debugOutput = false;
   }
 
   else

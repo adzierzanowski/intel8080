@@ -24,6 +24,6 @@ http://www.emulator101.com
 
 # Todo (sorted by decreasing importance)
 
-* implement "from ADD to CMP" instruction set
-* check for Carry flag
+* Interpreter mode
+* More syscalls
 * Nicer setFlags

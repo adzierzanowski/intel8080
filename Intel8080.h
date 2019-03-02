@@ -8,6 +8,7 @@
 #include <utility>
 
 class Intel8080;
+class Intel8080Test;
 
 typedef void (Intel8080::*func_t)(void);
 
@@ -33,6 +34,8 @@ class Intel8080
   public:
     std::vector<Opcode> opcodes;
     bool debugOutput = true;
+
+    friend class Intel8080Test;
 
     Intel8080(void);
 
@@ -126,7 +129,6 @@ class Intel8080
     bool checkForCarry(uint8_t old_val, uint8_t new_val);
     bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
     bool conditionMet(Intel8080::Condition condition);
-
 
     template <Intel8080::Register reg> void op_adc(void);
     template <Intel8080::Register reg> void op_add(void);

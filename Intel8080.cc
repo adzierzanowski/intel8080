@@ -48,8 +48,6 @@ void Intel8080::executeInstruction(Opcode opcode)
 
   if (opcode.callback != nullptr)
     (this->*(opcode.callback))();
-  else
-    printf("No callback.\n");
 }
 
 void Intel8080::printMemory()
@@ -512,7 +510,10 @@ void Intel8080::op_sub(void)
 template <Intel8080::Register reg>
 void Intel8080::op_sbb(void)
 {
-  // TODO: implement
+  uint8_t old_val = a;
+  uint8_t new_val = a - getRegisterValue(reg) - static_cast<uint8_t>(getFlag(Flag::C));
+  a = new_val;
+  setFlags(true, true, true, true, true, old_val, new_val);
 }
 
 template <Intel8080::Register reg>
@@ -792,7 +793,7 @@ void Intel8080::generateOpcodes(void)
 {
   opcodes.push_back(Opcode(0x00, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x01, 3, "lxi", "Load register pair B:C", &Intel8080::op_lxi<RegisterPair::BC>));
-  opcodes.push_back(Opcode(0x02, 1, "stax", "Store A at B:C", &Intel8080::op_stax<RegisterPair::BC>));
+  opcodes.push_back(Opcode(0x02, 1, "stax", "Store A at [B:C]", &Intel8080::op_stax<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x03, 1, "inx", "Increment register pair B:C", &Intel8080::op_inx<RegisterPair::BC>));
   opcodes.push_back(Opcode(0x04, 1, "inr", "Increment register B", &Intel8080::op_inr<Register::B>));
   opcodes.push_back(Opcode(0x05, 1, "dcr", "Decrement register B", &Intel8080::op_dcr<Register::B>));
@@ -826,7 +827,7 @@ void Intel8080::generateOpcodes(void)
   
   opcodes.push_back(Opcode(0x20, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x21, 3, "lxi", "Load register pair H:L", &Intel8080::op_lxi<RegisterPair::HL>));
-  opcodes.push_back(Opcode(0x22, 3, "shld", "Store H:L in [immediate]", &Intel8080::op_shld));
+  opcodes.push_back(Opcode(0x22, 3, "shld", "Store H:L at [immediate]", &Intel8080::op_shld));
   opcodes.push_back(Opcode(0x23, 1, "inx", "Increment register pair H:L", &Intel8080::op_inx<RegisterPair::HL>));
   opcodes.push_back(Opcode(0x24, 1, "inr", "Increment register H", &Intel8080::op_inr<Register::H>));
   opcodes.push_back(Opcode(0x25, 1, "dcr", "Decrement register H", &Intel8080::op_dcr<Register::H>));
@@ -843,11 +844,11 @@ void Intel8080::generateOpcodes(void)
 
   opcodes.push_back(Opcode(0x30, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x31, 3, "lxi", "Load register pair SP", &Intel8080::op_lxi<RegisterPair::SP>));
-  opcodes.push_back(Opcode(0x32, 3, "sta", "Store A at immediate", &Intel8080::op_sta));
+  opcodes.push_back(Opcode(0x32, 3, "sta", "Store A at [immediate]", &Intel8080::op_sta));
   opcodes.push_back(Opcode(0x33, 1, "inx", "Increment SP", &Intel8080::op_inx<RegisterPair::SP>));
   opcodes.push_back(Opcode(0x34, 1, "inr", "Increment memory at [H:L]", &Intel8080::op_inr<Register::M>));
   opcodes.push_back(Opcode(0x35, 1, "dcr", "Decrement memory at [H:L]", &Intel8080::op_dcr<Register::M>));
-  opcodes.push_back(Opcode(0x36, 2, "mvi", "Move immediate to memref at H:L", &Intel8080::op_mvi<Register::M>));
+  opcodes.push_back(Opcode(0x36, 2, "mvi", "Move immediate to [H:L]", &Intel8080::op_mvi<Register::M>));
   opcodes.push_back(Opcode(0x37, 1, "stc", "Set carry flag", &Intel8080::op_stc));
   opcodes.push_back(Opcode(0x38, 1, "nop", "No operation", &Intel8080::op_nop));
   opcodes.push_back(Opcode(0x39, 1, "dad", "Add SP to H:L", &Intel8080::op_dad<RegisterPair::SP>));

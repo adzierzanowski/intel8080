@@ -1,38 +1,34 @@
 BUILD = build
 EXE = emulator
-DUMP = dump
-CPUDIAG = cpudiag.bin
+TEST = test
 
-CXXFLAGS = -Wall -Wpedantic -std=c++17 -g
-OBJECTS = $(addprefix $(BUILD)/, main.o Intel8080.o)
+CXXFLAGS = -Wall -Wpedantic -O3 -std=c++17
 
-all: $(EXE)
-	du -h $<
+EXE_OBJECTS_ = Intel8080.o main.o
+EXE_OBJECTS = $(addprefix $(BUILD)/, $(EXE_OBJECTS_))
+TEST_OBJECTS_ = Intel8080.o Intel8080Test.o test.o
+TEST_OBJECTS = $(addprefix $(BUILD)/, $(TEST_OBJECTS_))
+
+all: $(EXE) $(TEST)
 
 clean:
 	rm -rf $(BUILD)
+	rm $(TEST)
 	rm $(EXE)
-	rm $(DUMP)
-	rm tests
 
 leaks:
 	leaks --atExit -- ./$(EXE)
 
-tests: $(BUILD)/tests.o $(BUILD)/Intel8080.o
-	$(CXX) $(CXXFLAGS) $(BUILD)/Intel8080.o $(BUILD)/tests.o -o tests
+$(EXE): $(BUILD) $(EXE_OBJECTS)
+	$(CXX) $(CXXFLAGS) $(EXE_OBJECTS) -o $@
 
-$(DUMP): $(EXE)
-	./$< $(CPUDIAG) > $(DUMP)
-
-
-$(EXE): $(BUILD) $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
-
-$(BUILD)/main.o: main.cc
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+$(TEST): $(BUILD) $(TEST_OBJECTS)
+	$(CXX) $(CXXFLAGS) $(TEST_OBJECTS) -o $@
 
 $(BUILD)/%.o: %.cc
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+%.cc: %.h
 
 $(BUILD):
 	mkdir $@
