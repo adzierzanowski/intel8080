@@ -1,5 +1,5 @@
 BUILD = build
-EXE = emulator
+EXE = i8080emu
 TEST = test
 
 CXXFLAGS = -Wall -Wpedantic -O3 -std=c++17
@@ -8,8 +8,9 @@ EXE_OBJECTS_ = Intel8080.o main.o
 EXE_OBJECTS = $(addprefix $(BUILD)/, $(EXE_OBJECTS_))
 TEST_OBJECTS_ = Intel8080.o Intel8080Test.o test.o
 TEST_OBJECTS = $(addprefix $(BUILD)/, $(TEST_OBJECTS_))
+TEST_FILES = $(addsuffix .bin, $(TEST_FILES_))
 
-all: $(EXE) $(TEST)
+all: $(EXE) #$(TEST)
 
 clean:
 	rm -rf $(BUILD)

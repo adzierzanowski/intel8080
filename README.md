@@ -26,6 +26,7 @@ http://www.emulator101.com
 
 # Todo
 
+* Make an assembler
 * Interpreter mode
 * Test coverage
 * Make test ROMs work

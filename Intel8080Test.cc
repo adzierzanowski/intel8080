@@ -37,6 +37,8 @@ void Intel8080Test::perform(void)
   // nop - passed, lol
   op_mov_test();
   op_stax_test();
+  op_ldax_test();
+  op_add_test();
 
   printf("%d test(s) passed, %d test(s) failed\n", passed, failed);
 }
@@ -124,4 +126,17 @@ void Intel8080Test::op_stax_test(void)
 {
   loadAndExecute("tests/stax.bin");
   (cpu->memory[0x5555] == 0xaa && cpu->memory[0x6666] == 0xbb) ? pass("op_stax") : fail("op_stax");
+}
+
+void Intel8080Test::op_ldax_test(void)
+{
+  loadAndExecute("tests/ldax.bin");
+  (cpu->b == 0x01 && cpu->c == 0x00 && cpu->d == 0x01 && cpu->e == 0x00) ? pass("op_ldax") : fail("op_ldax");
+}
+
+void Intel8080Test::op_add_test(void)
+{
+  loadAndExecute("tests/add.bin");
+
+  cpu->a == 0x07 ? pass("op_add") : fail("op_add");
 }

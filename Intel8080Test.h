@@ -28,6 +28,8 @@ class Intel8080Test
     void op_cma_test(void);
     void op_mov_test(void);
     void op_stax_test(void);
+    void op_ldax_test(void);
+    void op_add_test(void);
 };
 
 #endif
