@@ -10,21 +10,26 @@ TEST_OBJECTS_ = Intel8080.o Intel8080Test.o test.o
 TEST_OBJECTS = $(addprefix $(BUILD)/, $(TEST_OBJECTS_))
 TEST_FILES = $(addsuffix .bin, $(TEST_FILES_))
 
-all: $(EXE) #$(TEST)
+all: $(EXE) $(TEST)
 
 clean:
 	rm -rf $(BUILD)
 	rm $(TEST)
 	rm $(EXE)
+	rm tests/*bin
 
 leaks:
 	leaks --atExit -- ./$(EXE)
+
+reassemble:
+	./assembleTests.sh
 
 $(EXE): $(BUILD) $(EXE_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(EXE_OBJECTS) -o $@
 
 $(TEST): $(BUILD) $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(TEST_OBJECTS) -o $@
+	./assembleTests.sh
 
 $(BUILD)/%.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -1,0 +1,23 @@
+org 0x100
+
+mvi b, 0x00
+mvi c, 0xff
+mvi d, 0x02
+mvi e, 0x03
+mvi h, 0x04
+mvi l, 0x05
+mvi a, 0x07
+
+inr h
+inr l
+
+mvi m, 0x06
+
+inr a
+inr b
+inr c
+inr d
+inr e
+inr m
+
+call 5

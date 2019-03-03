@@ -1,7 +1,5 @@
 .org 100h
 
-errcntaddr equ 0xffff ; error count address
-
 lxi sp, 0x1000 ; set stack pointer
 
 mvi b, 0x00
@@ -300,15 +298,8 @@ cnz incerrd
 mvi c, 0x00
 call 00005h
 
-incerrb: ; increment error count through B:C
-        lxi b, errcntaddr
-        ldax b
-        inr a
-        stax b
-        ret
-
 incerrd: ; increment error count through D:E
-        lxi d, errcntaddr
+        lxi d, 0xffff
         ldax d
         inr a
         stax d

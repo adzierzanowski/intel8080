@@ -104,7 +104,6 @@ void Intel8080Test::op_dcr_test(void)
     fail(message + " m=" + std::to_string(cpu->memory[cpu->getRegisterPairValue(Intel8080::RegisterPair::HL)]));
     return;
   }
-
   if (cpu->a != 0x08) { fail(message + " a=" + std::to_string(cpu->a)); return; }
 
   pass(message);
@@ -131,7 +130,7 @@ void Intel8080Test::op_stax_test(void)
 void Intel8080Test::op_ldax_test(void)
 {
   loadAndExecute("tests/ldax.bin");
-  (cpu->b == 0x01 && cpu->c == 0x00 && cpu->d == 0x01 && cpu->e == 0x00) ? pass("op_ldax") : fail("op_ldax");
+  (cpu->a = 0xaa && cpu->b 0xbb) ? pass("op_ldax") : fail("op_ldax");
 }
 
 void Intel8080Test::op_add_test(void)

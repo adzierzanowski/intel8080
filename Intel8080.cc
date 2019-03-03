@@ -111,7 +111,7 @@ void Intel8080::loadProgram(std::string filename, uint16_t address)
 
   if (f == nullptr)
   {
-    fprintf(stderr, "fopen error\n");
+    fprintf(stderr, "Error: fopen %s\n", filename.c_str());
     exit(1);
   }
 
