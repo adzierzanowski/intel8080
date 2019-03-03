@@ -34,6 +34,8 @@ class Intel8080
   public:
     std::vector<Opcode> opcodes;
     bool debugOutput = true;
+    bool verboseDebugOutput = false;
+    bool formattedOutput = true;
 
     friend class Intel8080Test;
 
@@ -63,6 +65,7 @@ class Intel8080
     uint8_t flags;
 
     std::vector<uint8_t> memory;
+    char stringDelimiter = '$';
 
     enum class Register : uint8_t {
       A = 0b111,
@@ -124,10 +127,10 @@ class Intel8080
 
     bool getFlag(int pos);
     void setFlag(int pos, int state);
-    void setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint8_t new_val);
+    void setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint16_t new_val);
 
     bool checkParity(uint8_t val);
-    bool checkForCarry(uint8_t old_val, uint8_t new_val);
+    bool checkForCarry(uint8_t old_val, uint16_t new_val);
     bool checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val);
     bool conditionMet(Intel8080::Condition condition);
 

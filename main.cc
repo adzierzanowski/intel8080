@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "Intel8080.h"
 
 int main(int argc, char *argv[])
@@ -5,11 +6,19 @@ int main(int argc, char *argv[])
   Intel8080 cpu;
   cpu.setProgramCounter(0x100);
 
+  if (!isatty(1))
+    cpu.formattedOutput = false;
+
   if (argc > 1)
   {
     cpu.loadProgram(std::string(argv[1]), 0x100);
-    if (argc > 2 && argv[2] == std::string("-q"))
-      cpu.debugOutput = false;
+    if (argc > 2)
+    {
+      if (argv[2] == std::string("-q"))
+        cpu.debugOutput = false;
+      else if (argv[2] == std::string("-v"))
+        cpu.verboseDebugOutput = true;
+    }
   }
 
   else

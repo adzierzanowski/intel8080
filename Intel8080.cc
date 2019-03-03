@@ -37,13 +37,27 @@ void Intel8080::executeInstruction(Opcode opcode)
 {
   if (debugOutput)
   {
+    std::string fmt;
+    if (formattedOutput)
+      fmt = "%04x - \033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[38;5;10m%5s\033[0m %s\n";
+    else
+      fmt = "%04x - 0x%02x: %5s%5s %s\n";
+
+    char arg[16] = {'\0'};
+    if (opcode.length == 2)
+      sprintf(arg, " %02x", memory[pc-1]);
+    else if (opcode.length == 3)
+      sprintf(arg, " %04x", combineBytes(memory[pc-1], memory[pc-2]));
     printf(
-      "%04x - \033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[0m %s\n",
-      pc,
+      fmt.c_str(),
+      pc - opcode.length,
       opcode.number,
       opcode.mnemonic.c_str(),
+      arg,
       opcode.fullName.c_str()
     );
+    if (verboseDebugOutput)
+      printRegisters();
   }
 
   if (opcode.callback != nullptr)
@@ -68,18 +82,31 @@ void Intel8080::printMemory(int a, int n)
 
 void Intel8080::printRegisters()
 {
-  printf("\n================\033[1m\033[38;5;12mREGISTERS\033[0m================\n");
-  printf("\033[1m\033[38;5;8mA\033[0m: \033[38;5;12m0x%02x\033[0m | ", a);
-  printf("\033[1m\033[38;5;8mB\033[0m: \033[38;5;12m0x%02x\033[0m | ", b);
-  printf("\033[1m\033[38;5;8mC\033[0m: \033[38;5;12m0x%02x\033[0m | ", c);
-  printf("\033[1m\033[38;5;8mD\033[0m: \033[38;5;12m0x%02x\033[0m\n", d);
-  printf("\033[1m\033[38;5;8mE\033[0m: \033[38;5;12m0x%02x\033[0m | ", e);
-  printf("\033[1m\033[38;5;8mH\033[0m: \033[38;5;12m0x%02x\033[0m | ", h);
-  printf("\033[1m\033[38;5;8mL\033[0m: \033[38;5;12m0x%02x\033[0m      SZ A P C\n", l);
+  std::string titlefmt = "";
+  std::string endfmt = "";
+  std::string regfmt = "";
+  std::string valfmt = "";
 
-  printf("\033[1m\033[38;5;8mSP\033[0m: \033[38;5;12m0x%04x\033[0m | ", sp);
-  printf("\033[1m\033[38;5;8mPC\033[0m: \033[38;5;12m0x%04x\033[0m | ", pc);
-  printf("\033[1m\033[38;5;8mFlags\033[0m\033[38;5;12m: ");
+  if (formattedOutput)
+  {
+    titlefmt = "\033[1m\033[38;5;12m";
+    endfmt = "\033[0m";
+    regfmt = "\033[1m\033[38;5;8m";
+    valfmt = "\033[38;5;12m";
+  }
+
+  printf("\n================%sREGISTERS%s================\n", titlefmt.c_str(), endfmt.c_str());
+  printf("%sA%s: %s0x%02x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), a, endfmt.c_str());
+  printf("%sB%s: %s0x%02x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), b, endfmt.c_str());
+  printf("%sC%s: %s0x%02x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), c, endfmt.c_str());
+  printf("%sD%s: %s0x%02x%s\n", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), d, endfmt.c_str());
+  printf("%sE%s: %s0x%02x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), e, endfmt.c_str());
+  printf("%sH%s: %s0x%02x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), h, endfmt.c_str());
+  printf("%sL%s: %s0x%02x%s      SZ A P C\n", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), l, endfmt.c_str());
+
+  printf("%sSP%s: %s0x%04x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), sp, endfmt.c_str());
+  printf("%sPC%s: %s0x%04x%s | ", regfmt.c_str(), endfmt.c_str(), valfmt.c_str(), pc, endfmt.c_str());
+  printf("%sFlags%s: ", regfmt.c_str(), endfmt.c_str());
   uint8_t mask = 0x80;
   while (true)
   {
@@ -88,7 +115,7 @@ void Intel8080::printRegisters()
     
     if (mask == 0)
     {
-      printf("\033[0m\n");
+      printf("%s\n", endfmt.c_str());
       break;
     }
   }
@@ -227,6 +254,13 @@ bool Intel8080::checkForAuxiliaryCarry(uint8_t old_val, uint8_t new_val)
   return false;
 }
 
+bool Intel8080::checkForCarry(uint8_t old_val, uint16_t new_val)
+{
+  if (new_val > 0xff)
+    return true;
+  return false;
+}
+
 void Intel8080::setProgramCounter(uint16_t address)
 {
   pc = address;
@@ -297,7 +331,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_inr()
 {
   uint8_t old_val = getRegisterValue(reg);
-  uint8_t new_val = old_val + 1;
+  uint16_t new_val = old_val + 1;
   setRegisterValue(reg, new_val);
   setFlags(false, true, true, true, true, old_val, new_val);
 }
@@ -306,7 +340,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_dcr()
 {
   uint8_t old_val = getRegisterValue(reg);
-  uint8_t new_val = old_val - 1;
+  uint16_t new_val = old_val - 1;
   setRegisterValue(reg, new_val);
   setFlags(false, true, true, true, true, old_val, new_val);
 }
@@ -337,9 +371,9 @@ void Intel8080::setFlag(int pos, int state)
     flags &= ~(1 << pos);
 }
 
-void Intel8080::setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint8_t new_val)
+void Intel8080::setFlags(bool carry, bool parity, bool auxiliaryCarry, bool zero, bool sign, uint8_t old_val, uint16_t new_val)
 {
-  if (carry) {} // check for Carry flag
+  if (carry) checkForCarry(old_val, new_val) ? setFlag(Flag::C) : resetFlag(Flag::C);
   if (parity) checkParity(new_val) ? setFlag(Flag::P) : resetFlag(Flag::P);
   if (auxiliaryCarry) checkForAuxiliaryCarry(old_val, new_val) ? setFlag(Flag::AC) : resetFlag(Flag::AC);
   if (zero) new_val == 0 ? setFlag(Flag::Z) : resetFlag(Flag::Z);
@@ -366,46 +400,103 @@ void Intel8080::op_call(void)
 
   uint16_t addr = getImmediate16();
 
-  // BDOS call
   if (addr == 0x0000)
-  {
-    printf("WBOOT\n");
     setTerminateFlag();
-  }
-  else if (addr == 0x0005)
+  
+  else if (addr == 0x0005) // BDOS system calls
   {
     switch (c)
     {
-      // P_TERMCPM - System reset
+      // BDOS function 0 (P_TERMCPM) - System Reset
+      //   Entered with CL=0, DL=0 or 1. Does not return.
+      //
+      // Quit the current program, return to command prompt.
+      // If DL is 0, the memory used by the program is deallocated;
+      // if DL is 1, it remains resident.
       case 0x00:
         setTerminateFlag();
-        break;
-
-      // C_WRITE - Console output
-      // E = ASCII character
-      case 0x02:
-        putchar(e);
+        if (d == 0x00 && l == 0x00)
+          std::fill(memory.begin(), memory.end(), 0);
         break;
       
-      // C_WRITESTR - Output string
-      // D:E = addres of the string (terminated with '$')
+      // BDOS function 1 (C_READ) - Console input
+      // BDOS function 3 (A_READ) - Auxiliary (Reader) input
+      // BDOS function 6 (C_RAWIO) - Direct console I/O
+      //   Returns A=L=character.
+      //
+      // Wait for a character from the keyboard; then echo it to the screen and return it.
+      case 0x01:
+      case 0x03:
+      case 0x06:
+        a = (uint8_t) getchar();
+        l = a;
+        break;
+
+      // BDOS function 2 (C_WRITE) - Console output
+      // BDOS function 4 (A_WRITE) - Auxiliary (Punch) output:
+      // BDOS function 5 (L_WRITE) - Printer output
+      //   E=ASCII character.
+      //
+      // Send the character in E to the screen.
+      // Tabs are expanded to spaces.
+      case 0x02:
+      case 0x04:
+      case 0x05:
+        if((char) e == '\t')
+          printf("  ");
+        else
+          putchar(e);
+        break;
+      
+      // BDOS function 9 (C_WRITESTR) - Output string
+      //   Entered with C=9, DE=address of string.
+      //
+      // Display a string of ASCII characters, terminated with the $ character.
       case 0x09:
         {
           uint16_t addr = getRegisterPairValue(RegisterPair::DE);
-          while (memory[addr] != (uint8_t) '$')
+          while (memory[addr] != (uint8_t) stringDelimiter)
             putchar(memory[addr++]);
         }
         break;
+      
+      // BDOS function 10 (C_READSTR) - Buffered console input
+      //   Entered with C=0x0a, DE=address or zero.
+      //
+      // This function reads characters from the keyboard into a memory buffer until RETURN is pressed.
+      case 0x0a:
+        {
+          uint16_t addr = getRegisterPairValue(RegisterPair::DE);
+          scanf("%[^\n]s", &memory[addr]);
+        }
+        break;
 
-      // CUSTOM - Print memory
+      // BDOS function 110 (C_DELIMIT) - Get/set string delimiter
+      //   Entered with C=6Eh, DE=0FFFFh or ASCII value. Returns ASCII value in A.
+      //
+      // This function gets or sets the string delimiter.
+      // If DE=0FFFFh, this gets the current ASCII value into A; otherwise it sets the delimiter to the value in E.
+      case 0x6e:
+        if (getRegisterPairValue(RegisterPair::DE) == 0xffff)
+          a = (uint8_t) stringDelimiter;
+        else
+          stringDelimiter = (char) e;
+        break;
+
+      // CUSTOM function 0xfe - Print memory
+      //  Entered with C=0xfe, DE=address, HL=length of memory region to print
+      //
+      // Prints emulator memory contents at a given address.
       case 0xfe:
-        // TODO: select memory region to print
-        printMemory();
+        printMemory(getRegisterPairValue(RegisterPair::DE), getRegisterPairValue(RegisterPair::HL));
         break;
     
       // CUSTOM - Print registers
       case 0xff:
         printRegisters();
+        break;
+      
+      default:
         break;
     }
   }
@@ -475,7 +566,7 @@ void Intel8080::op_lxi(void)
 void Intel8080::op_ani(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = getImmediate8() & a;
+  uint16_t new_val = getImmediate8() & a;
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -483,7 +574,8 @@ void Intel8080::op_ani(void)
 void Intel8080::op_adi(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = getImmediate8() + a;
+  uint16_t new_val = getImmediate8();
+  new_val += a;
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -492,7 +584,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_add(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a + getRegisterValue(reg);
+  uint16_t new_val = a + getRegisterValue(reg);
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -501,7 +593,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_adc(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a + getRegisterValue(reg);
+  uint16_t new_val = a + getRegisterValue(reg);
   setFlags(true, true, true, true, true, old_val, new_val);
   if (conditionMet(Condition::CARRY_FLAG_SET))
     a = new_val + 1;
@@ -512,7 +604,7 @@ void Intel8080::op_adc(void)
 void Intel8080::op_cpi(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getImmediate8();
+  uint16_t new_val = a - getImmediate8();
 
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -521,7 +613,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_sub(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getRegisterValue(reg);
+  uint16_t new_val = a - getRegisterValue(reg);
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -530,7 +622,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_sbb(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getRegisterValue(reg) - static_cast<uint8_t>(getFlag(Flag::C));
+  uint16_t new_val = a - getRegisterValue(reg) - static_cast<uint8_t>(getFlag(Flag::C));
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -539,7 +631,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_ana(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a & getRegisterValue(reg);
+  uint16_t new_val = a & getRegisterValue(reg);
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -548,7 +640,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_xra(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a ^ getRegisterValue(reg);
+  uint16_t new_val = a ^ getRegisterValue(reg);
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -557,7 +649,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_ora(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a | getRegisterValue(reg);
+  uint16_t new_val = a | getRegisterValue(reg);
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -566,7 +658,7 @@ template <Intel8080::Register reg>
 void Intel8080::op_cmp(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getRegisterValue(reg);
+  uint16_t new_val = a - getRegisterValue(reg);
 
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -758,7 +850,7 @@ void Intel8080::op_cmc(void)
 void Intel8080::op_aci(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a + getImmediate8() + static_cast<uint8_t>(getFlag(Flag::C));
+  uint16_t new_val = a + getImmediate8() + static_cast<uint8_t>(getFlag(Flag::C));
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -766,7 +858,7 @@ void Intel8080::op_aci(void)
 void Intel8080::op_sui(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getImmediate8();
+  uint16_t new_val = a - getImmediate8();
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -774,7 +866,7 @@ void Intel8080::op_sui(void)
 void Intel8080::op_sbi(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a - getImmediate8() - static_cast<uint8_t>(getFlag(Flag::C));
+  uint16_t new_val = a - getImmediate8() - static_cast<uint8_t>(getFlag(Flag::C));
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -787,7 +879,7 @@ void Intel8080::op_pchl(void)
 void Intel8080::op_xri(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a ^ getImmediate8();
+  uint16_t new_val = a ^ getImmediate8();
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }
@@ -795,7 +887,7 @@ void Intel8080::op_xri(void)
 void Intel8080::op_ori(void)
 {
   uint8_t old_val = a;
-  uint8_t new_val = a | getImmediate8();
+  uint16_t new_val = a | getImmediate8();
   a = new_val;
   setFlags(true, true, true, true, true, old_val, new_val);
 }

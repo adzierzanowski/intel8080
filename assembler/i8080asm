@@ -9,11 +9,13 @@ import argparse
 class Assembler:
   def __init__(self, data):
     self.data = data
-    self.data.replace('\t', ' ')
+    self.data = self.data.replace('\t', ' ')
+    self.data = self.data.replace('syscall', 'call 5')
     self.output = []
     self.instructions = []
     self.labels = {}
     self.defines = {}
+    self.macros = {}
 
     with open(os.path.dirname(os.path.realpath(__file__)) + '/opcodes.json', 'r') as o:
       self.opcodes = json.load(o)
@@ -32,23 +34,36 @@ class Assembler:
     if n.endswith('h'):
       return int(n[:-1], 16)
     return int(n)
-  
+
   @staticmethod
   def make_word(n):
     hb = n >> 8
     lb = n & 0x00ff
     return [lb, hb]
 
+  def expand_macros(self):
+    for line in self.data:
+      if line.startswith('.def'):
+        l = line.split(' ')
+        self.macros[l[1]] = ' '.join(l[2:])
+
+    self.data = '\n'.join(self.data)
+    for macro, value in self.macros.items():
+      self.data = self.data.replace(macro, value)
+    self.data = self.data.splitlines()
+
   def first_pass(self):
     offset = 0
-    for i, line in enumerate(self.data):
+    for line in self.data:
       if line.startswith('.'):
         l = line[1:].split(' ')
+
         if l[0] == 'org':
           self.origin = Assembler.get_number(l[1])
           if self.origin > 0xffff:
             sys.stderr.write('Error: origin greater than 0xffff.\n')
             sys.exit(1)
+
         continue
 
       # I forgot what it does the minute I wrote it
@@ -133,12 +148,13 @@ class Assembler:
 
   def assemble(self):
     self.prepare()
+    self.expand_macros()
     self.first_pass()
     self.second_pass()
 
 parser = argparse.ArgumentParser(description='Intel8080 assembler')
 parser.add_argument('file')
-parser.add_argument('-o', '--output', required=True)
+parser.add_argument('-o', '--output')
 args = parser.parse_args()
 
 with open(args.file, 'r') as f:
@@ -146,6 +162,9 @@ with open(args.file, 'r') as f:
   f.close()
 
 asm.assemble()
+
+if args.output is None:
+  args.output = ''.join(args.file.split('.')[:-1]) + '.bin'
 
 with open(args.output, 'wb') as f:
   f.write(bytes(asm.output))

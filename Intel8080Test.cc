@@ -130,7 +130,7 @@ void Intel8080Test::op_stax_test(void)
 void Intel8080Test::op_ldax_test(void)
 {
   loadAndExecute("tests/ldax.bin");
-  (cpu->a = 0xaa && cpu->b 0xbb) ? pass("op_ldax") : fail("op_ldax");
+  (cpu->a = 0xaa && cpu->b == 0xbb) ? pass("op_ldax") : fail("op_ldax");
 }
 
 void Intel8080Test::op_add_test(void)
