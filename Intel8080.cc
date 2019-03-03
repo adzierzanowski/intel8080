@@ -1017,7 +1017,7 @@ void Intel8080::generateOpcodes(void)
   opcodes.push_back(Opcode(0xc3, 3, "jmp", "Unconditional jump", &Intel8080::op_jmp));
   opcodes.push_back(Opcode(0xc4, 3, "cnz", "Call if not zero", &Intel8080::op_c<Condition::ZERO_FLAG_NOT_SET>));
   opcodes.push_back(Opcode(0xc5, 1, "push", "Push B:C onto stack", &Intel8080::op_push<RegisterPair::BC>));
-  opcodes.push_back(Opcode(0xc6, 1, "adi", "Add immediate with A", &Intel8080::op_adi));
+  opcodes.push_back(Opcode(0xc6, 2, "adi", "Add immediate with A", &Intel8080::op_adi));
   opcodes.push_back(Opcode(0xc7, 1, "rst", "Reset 0", &Intel8080::op_rst<0>));
   opcodes.push_back(Opcode(0xc8, 1, "rz", "Return if zero", &Intel8080::op_r<Condition::ZERO_FLAG_SET>));
   opcodes.push_back(Opcode(0xc9, 1, "ret", "Return", &Intel8080::op_ret));
