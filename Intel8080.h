@@ -141,6 +141,7 @@ class Intel8080
     template <Intel8080::Register reg> void op_ana(void);
     void op_ani(void);
     template <Intel8080::Condition condition> void op_c(void);
+    void op_call(uint16_t addr);
     void op_call(void);
     void op_cma(void);
     void op_cmc(void);

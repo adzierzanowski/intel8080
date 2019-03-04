@@ -37,6 +37,8 @@ void Intel8080::executeInstruction(Opcode opcode)
 {
   if (debugOutput)
   {
+    if (verboseDebugOutput)
+      printRegisters();
     std::string fmt;
     if (formattedOutput)
       fmt = "%04x - \033[1m0x%02x\033[0m: \033[38;5;13m%5s\033[38;5;10m%5s\033[0m %s\n";
@@ -56,8 +58,6 @@ void Intel8080::executeInstruction(Opcode opcode)
       arg,
       opcode.fullName.c_str()
     );
-    if (verboseDebugOutput)
-      printRegisters();
   }
 
   if (opcode.callback != nullptr)
@@ -395,11 +395,14 @@ void Intel8080::resetFlag(Intel8080::Flag flag)
   setFlag(static_cast<uint8_t>(flag), 0);
 }
 
+
 void Intel8080::op_call(void)
 {
+  op_call(getImmediate16());
+}
 
-  uint16_t addr = getImmediate16();
-
+void Intel8080::op_call(uint16_t addr)
+{
   if (addr == 0x0000)
     setTerminateFlag();
   
@@ -467,7 +470,12 @@ void Intel8080::op_call(void)
       case 0x0a:
         {
           uint16_t addr = getRegisterPairValue(RegisterPair::DE);
-          scanf("%[^\n]s", &memory[addr]);
+          // initial space for flushing stdin
+          char buf[0x10000];
+          scanf(" %[^\n]s", buf);
+          snprintf((char *) &memory[addr], (size_t) (strlen(buf) +1), "%s", buf);
+          memory[addr + strlen(buf)] = (uint8_t) stringDelimiter;
+
         }
         break;
 
@@ -539,7 +547,7 @@ void Intel8080::op_rst(void)
   memory[sp - 2] = pc & 0x00ff;
   sp -= 2;
 
-  pc = n * 8;
+  op_call(n*8);
 }
 
 template <Intel8080::Register reg1, Intel8080::Register reg2>

@@ -13,10 +13,11 @@ TEST_FILES = $(addsuffix .bin, $(TEST_FILES_))
 all: $(EXE) $(TEST)
 
 clean:
+	rm tests/bdos/*.bin
 	rm -rf $(BUILD)
 	rm $(TEST)
 	rm $(EXE)
-	rm tests/*bin
+	rm tests/*.bin
 
 leaks:
 	leaks --atExit -- ./$(EXE)
