@@ -1,6 +1,7 @@
 BUILD = build
 EXE = i8080emu
 TEST = test
+SRC = src
 
 CXXFLAGS = -Wall -Wpedantic -O3 -std=c++17
 
@@ -10,14 +11,15 @@ TEST_OBJECTS_ = Intel8080.o Intel8080Test.o test.o
 TEST_OBJECTS = $(addprefix $(BUILD)/, $(TEST_OBJECTS_))
 TEST_FILES = $(addsuffix .bin, $(TEST_FILES_))
 
-all: $(EXE) $(TEST)
+all: $(EXE)
 
 clean:
-	rm tests/bdos/*.bin
-	rm -rf $(BUILD)
-	rm $(TEST)
-	rm $(EXE)
-	rm tests/*.bin
+	-rm $(EXE)
+	-rm $(TEST)
+	-rm tests/*.bin
+	-rm tests/asm/*.bin
+	-rm tests/bdos/*.bin
+	-rm -rf $(BUILD)
 
 leaks:
 	leaks --atExit -- ./$(EXE)
@@ -32,7 +34,7 @@ $(TEST): $(BUILD) $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(TEST_OBJECTS) -o $@
 	./assembleTests.sh
 
-$(BUILD)/%.o: %.cc
+$(BUILD)/%.o: $(SRC)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.cc: %.h

@@ -1,217 +1,57 @@
 #!/usr/bin/env python3
 
-import os
-import re
-import sys
-import json
 import argparse
 
-class Formatter:
-  @staticmethod
-  def section(title, end='\n'):
-    print('\n\033[1m{}\033[0m:'.format(title), end=end)
+from formatter import Formatter
+from assembler import Assembler
 
-  @staticmethod
-  def warning(message):
-    print('\033[1m\033[38;5;11m{}\033[0m: {}.'.format('Warning', message))
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Intel8080 assembler')
+  parser.add_argument('file')
+  parser.add_argument('-o', '--output')
+  parser.add_argument('-v', '--verbose', action='store_true')
+  args = parser.parse_args()
 
-  @staticmethod
-  def error(message):
-    sys.stderr.write('\033[1m\033[38;5;9m{}\033[0m: {}.\n'.format('Error', message))
-    sys.exit(1)
+  with open(args.file, 'r') as f:
+    asm = Assembler(f.read())
+    f.close()
 
-class Assembler:
-  def __init__(self, data):
-    self.data = data
-    self.output = []
-    self.instructions = []
-    self.labels = {}
-    self.defines = {}
-    self.macros = {}
+  asm.assemble()
 
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/opcodes.json', 'r') as o:
-      self.opcodes = json.load(o)
+  if args.verbose:
+    Formatter.section('Origin', end=' ')
+    print(hex(asm.origin))
 
-    self.origin = 0 # addresses offset
+    Formatter.section('Macros')
+    for macro, value in asm.macros.items():
+      print('  {:>20s} {}'.format(macro, value))
 
-  def prepare(self):
-    self.data = self.data.replace('\t', ' ')
-    self.data = self.data.replace('syscall', 'call 5')
-    self.data = re.sub(r'[ ][ ]+', ' ', self.data).splitlines()
-    self.data = [line for line in self.data if not line.startswith(';')]
-    self.data = [''.join(line.split(';')[0].strip()) for line in self.data if line != '']
+    Formatter.section('Labels')
+    for label, offset in asm.labels.items():
+      print('  {:>20s} {}'.format(label, hex(offset)))
 
-  @staticmethod
-  def get_number(n):
-    if n.startswith('0x'):
-      return int(n[2:], 16)
-    if n.endswith('h'):
-      return int(n[:-1], 16)
-    return int(n)
-
-  @staticmethod
-  def make_word(n):
-    hb = n >> 8
-    lb = n & 0x00ff
-    return [lb, hb]
-
-  def expand_macros(self):
-    for line in self.data:
-      if line.startswith('.def'):
-        l = line.split(' ')
-        self.macros[l[1]] = ' '.join(l[2:])
-
-    self.data = '\n'.join(self.data)
-    for macro, value in self.macros.items():
-      self.data = self.data.replace(macro, value)
-    self.data = self.data.splitlines()
-
-  def first_pass(self):
-    offset = 0
-    for line in self.data:
-      if line.startswith('.'):
-        l = line[1:].split(' ')
-
-        if l[0] == 'org':
-          self.origin = Assembler.get_number(l[1])
-          if self.origin > 0xffff:
-            Formatter.error('Origin greater than 0xffff.')
-        continue
-
-      # I forgot what it does the minute I wrote it
-      if line.startswith('db'):
-        define = []
-        l = line[3:]
-        l = [ll for ll in re.split(r'(\".*?\")', l) if ll != '']
-        for ll in l:
-          if ll.startswith('"'):
-            lll = ll[1:-1]
-            for llll in lll:
-              define.append(ord(llll))
-          else:
-            lll = ll.split(',')
-            llll = [lllll.strip() for lllll in lll if lllll.strip() != '']
-            for lllll in llll:
-              define.append(Assembler.get_number(lllll))
-
-        self.instructions.append({'define': define})
-        offset += len(define)
-        continue
-
-      line = line.lower()
-      line = re.sub(r'([abcdelhm]),([abcdelhm])', r'\1, \2', line)
-      if line in self.opcodes:
-        instruction = self.opcodes[line]
-        self.instructions.append({'offset': offset, 'instruction': instruction, 'argument': None})
-        offset += instruction['length']
+    Formatter.section('Instructions')
+    for i in asm.instructions:
+      if 'ins' in i:
+        print('  {:>10} {:20} {:#02x}'.format(
+          i['ins']['mnem'],
+          i['arg'] if i['arg'] is not None else '-',
+          i['ins']['op']))
       else:
-        ls = line.split(',')
-        l = ls[0]
-        if l in self.opcodes:
-          instruction = self.opcodes[l]
-          arg = None
-          if instruction['length'] > 1:
-            arg = ls[1].strip()
-          self.instructions.append({'offset': offset, 'instruction': instruction, 'argument': arg})
-          offset += instruction['length']
-          continue
+        print('  db:')
+        for j, b in enumerate(i['define']):
+          if j % 16 == 0:
+            if j != 0:
+              print('\n', end='')
+            print('', end='  ')
+          print('{:2}'.format(chr(b) if chr(b).isprintable() else '{:02x}'.format((b))), end=' ')
+        print('\n')
 
-        ls = line.split(' ')
-        l = ls[0]
-        if l in self.opcodes.keys():
-          instruction = self.opcodes[l]
-          arg = None
-          if instruction['length'] > 1:
-            arg = ls[1].strip()
-          self.instructions.append({'offset': offset, 'instruction': instruction, 'argument': arg})
-          offset += instruction['length']
-          continue
-        elif l.endswith(':'):
-          l = l[:-1]
-          if l in self.labels:
-            Formatter.error('Two labels with the same name: `{}`'.format(l))
-          self.labels[l] = self.origin + offset
-          continue
-        if line != '':
-          Formatter.warning('Line `{}` is not parsable'.format(line))
+    Formatter.section('Total binary size', end=' ')
+    print('{} bytes'.format(len(asm.output)))
 
-  def second_pass(self):
-    for i in self.instructions:
-      if 'define' in i:
-        self.output += i['define']
-        continue
+  if args.output is None:
+    args.output = ''.join(args.file.split('.')[:-1]) + '.bin'
 
-      self.output.append(i['instruction']['opcode'])
-      if i['instruction']['length'] > 1:
-        if i['argument'] is None:
-          req_arg = 'byte' if i['instruction']['length'] == 2 else 'word'
-          Formatter.error(
-            'Instruction `{}` requires a {} as an argument'.format(i['instruction']['mnemonic'], req_arg))
-
-        # omfg, this is probably the ugliest piece of code I've ever written
-        arg = i['argument']
-        if arg in self.labels:
-          arg = str(self.labels[arg]) # converting int to string to get int
-        arg = Assembler.get_number(arg)
-        if i['instruction']['length'] == 3:
-          arg = Assembler.make_word(arg)
-        else:
-          arg = [arg] # lol
-        self.output += arg
-
-  def assemble(self):
-    self.prepare()
-    self.expand_macros()
-    self.first_pass()
-    self.second_pass()
-    if (len(self.output) > 0xffff):
-      Formatter.error('Output exceeds memory limit by {} bytes'.format(len(self.output) - 0xffff))
-
-parser = argparse.ArgumentParser(description='Intel8080 assembler')
-parser.add_argument('file')
-parser.add_argument('-o', '--output')
-parser.add_argument('-v', '--verbose', action='store_true')
-args = parser.parse_args()
-
-with open(args.file, 'r') as f:
-  asm = Assembler(f.read())
-  f.close()
-
-asm.assemble()
-if args.verbose:
-  Formatter.section('Origin', end=' ')
-  print(hex(asm.origin))
-
-  Formatter.section('Macros')
-  for macro, value in asm.macros.items():
-    print('  {:>20s} {}'.format(macro, value))
-
-  Formatter.section('Labels')
-  for label, offset in asm.labels.items():
-    print('  {:>20s} {}'.format(label, hex(offset)))
-
-  Formatter.section('Instructions')
-  for i in asm.instructions:
-    if 'instruction' in i:
-      print('  {:>10} {:20} {:#02x}'.format(
-        i['instruction']['mnemonic'],
-        i['argument'] if i['argument'] is not None else '-',
-        i['instruction']['opcode']))
-    else:
-      print('  db:')
-      for j, b in enumerate(i['define']):
-        if j % 16 == 0:
-          if j != 0:
-            print('\n', end='')
-          print('', end='  ')
-        print('{:2}'.format(chr(b) if chr(b).isprintable() else '{:02x}'.format((b))), end=' ')
-      print('\n')
-
-  Formatter.section('Total binary size', end=' ')
-  print('{} bytes'.format(len(asm.output)))
-
-if args.output is None:
-  args.output = ''.join(args.file.split('.')[:-1]) + '.bin'
-
-with open(args.output, 'wb') as f:
-  f.write(bytes(asm.output))
+  with open(args.output, 'wb') as f:
+    f.write(bytes(asm.output))
