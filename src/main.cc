@@ -1,69 +1,42 @@
-#include <unistd.h>
+#ifndef _WIN32
+  #include <unistd.h>
+#endif
+
 #include "Intel8080.h"
+#include "argparser/Argparser.h"
 
 int main(int argc, char *argv[])
 {
-  Intel8080 cpu;
-  cpu.setProgramCounter(0x100);
+  Argparser parser("i8080emu", "Intel 8080 emulator");
+  parser.addOption("--file").shortName("-f").takesArgument().help("Filename of an executable binary");
+  parser.addOption("--quiet").shortName("-q").help("No instructions output");
+  parser.addOption("--verbose").shortName("-v").help("Verbose debug output (registers, etc.)");
+  parser.parse(argc, argv);
 
-  if (!isatty(1))
-    cpu.formattedOutput = false;
 
   if (argc > 1)
   {
-    cpu.loadProgram(std::string(argv[1]), 0x100);
-    if (argc > 2)
-    {
-      if (argv[2] == std::string("-q"))
-        cpu.debugOutput = false;
-      else if (argv[2] == std::string("-v"))
-        cpu.verboseDebugOutput = true;
-    }
-  }
+    Intel8080 cpu;
+    cpu.setProgramCounter(0x100);
 
+    #ifdef _WIN32
+      cpu.formattedOutput = false;
+    #else
+      if (!isatty(1))
+        cpu.formattedOutput = false;
+    #endif
+
+    printf("filename: %s\n", parser.getValue("--file").c_str());
+    cpu.loadProgram(parser.getValue("--file"), 0x100);
+    if (parser.passed("-q"))
+      cpu.debugOutput = false;
+    else if (parser.passed("-v"))
+      cpu.verboseDebugOutput = true;
+  }
   else
   {
-    std::vector<uint8_t> helloWorld = {
-      0x0e, // mvi c, 0x09
-      0x09,
-      0x11, // lxi D:E, 0x0112
-      0x12,
-      0x01,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x0e, // mvi c, 0xff
-      0xff,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x0e, // mvi c, 0x00
-      0x00,
-      0xcd, // call 0x0005
-      0x05,
-      0x00,
-      0x48, // db "Hello, world!\n$"
-      0x65,
-      0x6c,
-      0x6c,
-      0x6f,
-      0x2c,
-      0x20,
-      0x77,
-      0x6f,
-      0x72,
-      0x6c,
-      0x64,
-      0x21,
-      0x0a,
-      0x24
-    };
-
-    cpu.debugOutput = false;
-    cpu.loadProgram(helloWorld, 0x100);
+    parser.usage();
   }
-
-  cpu.execute();
 
   return 0;
 }

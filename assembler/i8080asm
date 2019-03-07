@@ -2,7 +2,6 @@
 
 import argparse
 
-from formatter import Formatter
 from assembler import Assembler
 
 if __name__ == '__main__':
@@ -19,36 +18,7 @@ if __name__ == '__main__':
   asm.assemble()
 
   if args.verbose:
-    Formatter.section('Origin', end=' ')
-    print(hex(asm.origin))
-
-    Formatter.section('Macros')
-    for macro, value in asm.macros.items():
-      print('  {:>20s} {}'.format(macro, value))
-
-    Formatter.section('Labels')
-    for label, offset in asm.labels.items():
-      print('  {:>20s} {}'.format(label, hex(offset)))
-
-    Formatter.section('Instructions')
-    for i in asm.instructions:
-      if 'ins' in i:
-        print('  {:>10} {:20} {:#02x}'.format(
-          i['ins']['mnem'],
-          i['arg'] if i['arg'] is not None else '-',
-          i['ins']['op']))
-      else:
-        print('  db:')
-        for j, b in enumerate(i['define']):
-          if j % 16 == 0:
-            if j != 0:
-              print('\n', end='')
-            print('', end='  ')
-          print('{:2}'.format(chr(b) if chr(b).isprintable() else '{:02x}'.format((b))), end=' ')
-        print('\n')
-
-    Formatter.section('Total binary size', end=' ')
-    print('{} bytes'.format(len(asm.output)))
+    asm.dump_sections()
 
   if args.output is None:
     args.output = ''.join(args.file.split('.')[:-1]) + '.bin'

@@ -51,10 +51,11 @@ class Assembler:
     self.data = [''.join(line.split(';')[0].strip()) for line in self.data if line != '']
 
   def expand_macros(self):
-    for line in self.data:
+    for i, line in enumerate(self.data):
       if line.startswith('.def'):
         l = line.split(' ')
         self.macros[l[1]] = ' '.join(l[2:])
+        self.data[i] = ''
 
     self.data = '\n'.join(self.data)
     for macro, value in self.macros.items():
@@ -123,12 +124,12 @@ class Assembler:
       line = line[3:]
       line = [chunk for chunk in re.split(r'(\".*?\")', line) if chunk != '']
       for chunk in line:
-        if chunk.startswith('"') or chunk.startswith(''):
+        if chunk.startswith('"'):# or chunk.startswith(''):
           text = chunk[1:-1]
           for c in text:
             define_bytes.append(ord(c))
         else:
-          num_literals = line.split(',')
+          num_literals = chunk.split(',')
           num_literals = [literal.strip() for literal in num_literals if literal.strip() != '']
           for literal in num_literals:
             define_bytes.append(Assembler.get_number(literal))
@@ -185,3 +186,37 @@ class Assembler:
     self.data[n] = ''.join(line[1:]).strip()
     self.parse_line(n)
     return True
+
+  def dump_sections(self):
+    Formatter.section('Origin', end=' ')
+    print(hex(self.origin))
+
+    if self.macros:
+      Formatter.section('Macros')
+      for macro, value in self.macros.items():
+        print('  {:>20s} {}'.format(macro, value))
+
+    if self.labels:
+      Formatter.section('Labels')
+      for label, offset in self.labels.items():
+        print('  {:>20s} {}'.format(label, hex(offset)))
+
+    Formatter.section('Instructions')
+    for i in self.instructions:
+      if 'ins' in i:
+        print('  {:>10} {:20} {:#02x}'.format(
+          i['ins']['mnem'],
+          i['arg'] if i['arg'] is not None else '-',
+          i['ins']['op']))
+      else:
+        print('  db:')
+        for j, b in enumerate(i['define']):
+          if j % 16 == 0:
+            if j != 0:
+              print('\n', end='')
+            print('', end='  ')
+          print('{:2}'.format(chr(b) if chr(b).isprintable() else '{:02x}'.format((b))), end=' ')
+        print('\n')
+
+    Formatter.section('Total binary size', end=' ')
+    print('{} bytes'.format(len(self.output)))

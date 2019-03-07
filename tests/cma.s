@@ -3,5 +3,5 @@
 mvi a, 0x51
 cma
 
-mov c, 0
+mvi c, 0
 call 5

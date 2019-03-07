@@ -2,9 +2,28 @@
 
 I decided to write an Intel 8080 emulator as my pet project.
 
-At first I tried to write it in Python3 but quickly moved to C++.
+# Usage
 
-The thing you see is a quick draft that took two days of coding. I hope I'll find some more time to make it pretty and functional. Right now it's a mess and crashes when I load downloaded binaries. At least it prints out messages well.
+This project consists of two main parts:
+  * `i8080asm` which is an assembler written in Python
+  * `i8080emu` which is an emulator written in C++.
+
+Assembling a program:
+    $ i8080asm program.s
+
+Execute it:
+    $ i8080emu program.bin
+
+To suppress any output not coming from the assembled program itself, use `-q` switch.
+To print all register values upon every instruction executed, use `-v` switch.
+
+# Building
+
+To build, just call
+
+    $ make
+
+It may be bugged but works for me.
 
 # Resources
 
@@ -26,9 +45,7 @@ http://www.emulator101.com
 
 # Todo
 
-* Make an assembler
 * Interpreter mode
 * Test coverage
 * Make test ROMs work
-* More syscalls
 * Nicer setFlags

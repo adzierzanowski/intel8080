@@ -1,11 +1,12 @@
 
 .org 0x100 ; comment
+.def printstr 9
 
 mvi a, 4
 stc
 
 label:
-  mvi c, 9
+  mvi c,printstr 
   lxi d, msg
   call 0x0005
   dcr  a
