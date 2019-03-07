@@ -4,3 +4,4 @@ dump
 test
 i8080emu
 *.bin
+__pycache__
