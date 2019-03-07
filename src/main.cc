@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
       cpu.debugOutput = false;
     else if (parser.passed("-v"))
       cpu.verboseDebugOutput = true;
+    cpu.execute();
   }
   else
   {
