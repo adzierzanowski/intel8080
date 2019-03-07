@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
         cpu.formattedOutput = false;
     #endif
 
-    printf("filename: %s\n", parser.getValue("--file").c_str());
     cpu.loadProgram(parser.getValue("--file"), 0x100);
     if (parser.passed("-q"))
       cpu.debugOutput = false;
