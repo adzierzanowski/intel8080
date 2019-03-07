@@ -9,9 +9,11 @@ This project consists of two main parts:
   * `i8080emu` which is an emulator written in C++.
 
 Assembling a program:
+
     $ i8080asm program.s
 
 Execute it:
+
     $ i8080emu program.bin
 
 To suppress any output not coming from the assembled program itself, use `-q` switch.
