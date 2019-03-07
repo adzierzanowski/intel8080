@@ -17,7 +17,8 @@ Execute it:
     $ i8080emu program.bin
 
 To suppress any output not coming from the assembled program itself, use `-q` switch.
-To print all register values upon every instruction executed, use `-v` switch.
+
+To print all register values upon every instruction execution, use `-v` switch.
 
 # Building
 
