@@ -5,6 +5,11 @@
 #include <vector>
 #include <cstdio>
 #include <string>
+#ifndef __clang__
+  #ifdef __GNUC__
+    #include <cstring>
+  #endif
+#endif
 #include <utility>
 
 class Intel8080;

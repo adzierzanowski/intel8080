@@ -44,7 +44,7 @@ void Argparser::parse(int argc, char *argv[])
 
 std::pair<int, Option> Argparser::findOption(std::string name)
 {
-  for (int i = 0; i < options.size(); i++)
+  for (size_t i = 0; i < options.size(); i++)
   {
     if (options[i].shortName == name || options[i].longName == name)
       return std::make_pair(i, options[i]);

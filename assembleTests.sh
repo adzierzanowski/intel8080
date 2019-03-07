@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-TEST_SOURCES=$(ls -l1 tests/*.s)
+TEST_SOURCES=$(ls -1 tests/*.s)
 
 
 for test in $TEST_SOURCES; do

@@ -25,7 +25,7 @@ To build, just call
 
     $ make
 
-It may be bugged but works for me.
+It may be bugged but works for me (macOS Mojave, clang).
 
 # Resources
 

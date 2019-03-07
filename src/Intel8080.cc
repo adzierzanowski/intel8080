@@ -173,6 +173,7 @@ uint8_t Intel8080::getRegisterValue(Intel8080::Register reg)
     case Register::L: return l; break;
     case Register::H: return h; break;
     case Register::M: return memory[getRegisterPairValue(RegisterPair::HL)]; break;
+    default: return 0; break;
   }
 }
 
@@ -183,7 +184,7 @@ std::pair<Intel8080::Register, Intel8080::Register> Intel8080::registerPairToStd
     case RegisterPair::BC: return std::make_pair(Register::B, Register::C); break;
     case RegisterPair::DE: return std::make_pair(Register::D, Register::E); break;
     case RegisterPair::HL: return std::make_pair(Register::H, Register::L); break;
-    case RegisterPair::SP: return std::make_pair(Register::M, Register::M); break; // nonsense but eh, TODO
+    default: return std::make_pair(Register::M, Register::M); break; // nonsense but eh, TODO
   }
 }
 
