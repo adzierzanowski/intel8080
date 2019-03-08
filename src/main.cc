@@ -9,13 +9,19 @@ int main(int argc, char *argv[])
 {
   Argparser parser("i8080emu", "Intel 8080 emulator");
   parser.addOption("--file").shortName("-f").takesArgument().help("Filename of an executable binary");
+  parser.addOption("--help").shortName("-h").help("Show this help message and exit");
   parser.addOption("--quiet").shortName("-q").help("No instructions output");
   parser.addOption("--verbose").shortName("-v").help("Verbose debug output (registers, etc.)");
   parser.parse(argc, argv);
 
-
   if (argc > 1)
   {
+    if (parser.passed("--help"))
+    {
+      parser.usage();
+      exit(0);
+    }
+
     Intel8080 cpu;
     cpu.setProgramCounter(0x100);
 
