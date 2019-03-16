@@ -4,9 +4,10 @@ I decided to write an Intel 8080 emulator as my pet project.
 
 # Usage
 
-This project consists of two main parts:
+This project consists of three main utilities:
   * `i8080asm` which is an assembler written in Python
   * `i8080emu` which is an emulator written in C++.
+  * `hextobin` which is an Intel HEX to binary converter written in Rust.
 
 Assembling a program:
 
@@ -49,6 +50,7 @@ http://www.emulator101.com
 # Todo
 
 * Interpreter mode
+* hextobin checksums and other checks
 * Test coverage
 * Make test ROMs work
 * Nicer setFlags
