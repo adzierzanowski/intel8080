@@ -1,50 +1,33 @@
-BUILD = build
-EXE = i8080emu
-TEST = test
 SRC = src
+BUILD = build
 
-EXE_OBJECTS_ = Intel8080.o Option.o Argparser.o main.o
-EXE_OBJECTS = $(addprefix $(BUILD)/, $(EXE_OBJECTS_))
-TEST_OBJECTS_ = Intel8080.o Intel8080Test.o test.o
-TEST_OBJECTS = $(addprefix $(BUILD)/, $(TEST_OBJECTS_))
-TEST_FILES = $(addsuffix .bin, $(TEST_FILES_))
+CXXFLAGS = -std=c++17
 
-CXXFLAGS = -Wall -Wpedantic -O3 -std=c++17
-INCLUDES = -Isrc/argparser
+EXE = $(addprefix $(BUILD)/, emu test)
+OBJECTS = $(addprefix $(BUILD)/, opcode.o ram.o cpu.o emu.o)
+TEST_OBJECTS = test_cpu.o \
+test_opcodes_0x0x.o \
+test_opcodes_0x1x.o \
+test_opcodes_0x2x.o \
+test_opcodes_0x3x.o \
+test_opcodes_mov.o \
+test_opcodes_0x8x.o
 
-all: $(EXE) $(TEST)
-
+all: $(EXE)
 clean:
-	-rm $(EXE)
-	-rm $(TEST)
-	-rm tests/*.bin
-	-rm tests/asm/*.bin
-	-rm tests/bdos/*.bin
-	-rm -rf $(BUILD)
+	- rm -rf $(BUILD)
 
-leaks:
-	leaks --atExit -- ./$(EXE)
+$(BUILD)/emu: $(addprefix $(BUILD)/, main.o) $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) $< -o $@
 
-reassemble:
-	./assembleTests.sh
+$(BUILD)/test: $(addprefix $(BUILD)/, test.o) $(OBJECTS) $(addprefix $(BUILD)/, $(TEST_OBJECTS))
+	$(CXX) $(CXXFLAGS) -lcriterion $(OBJECTS) $(addprefix $(BUILD)/, $(TEST_OBJECTS)) $< -o $@
 
-$(EXE): $(BUILD) $(EXE_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(EXE_OBJECTS) -o $@
-
-$(TEST): $(BUILD) $(TEST_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(TEST_OBJECTS) -o $@
-	./assembleTests.sh
-
-$(BUILD)/Option.o: $(SRC)/argparser/Option.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(BUILD)/Argparser.o: $(SRC)/argparser/Argparser.cc
+$(BUILD)/test_%.o: $(SRC)/tests/test_%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/%.o: $(SRC)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.cc: %.h
-
 $(BUILD):
-	mkdir $@
+	- mkdir build

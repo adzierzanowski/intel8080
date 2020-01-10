@@ -1,0 +1,273 @@
+number, mnemonic, length, cycles, description 
+
+0x00,   NOP,      1,      4,      No op
+0x01,   LXI,      3,      10,     B:C <- imm16
+0x02,   STAX,     1,      7,      [B:C] <- A
+0x03,   INX,      1,      5,      B:C++
+0x04,   INR,      1,      5,      B++
+0x05,   DCR,      1,      5,      B--
+0x06,   MVI,      2,      7,      B <- imm8
+0x07,   RLC,      1,      4,      A <<= 1 (carry)
+0x08,   NOP,      1,      4,      No op
+0x09,   DAD,      1,      10,     H:L += B:C
+0x0a,   LDAX,     1,      7,      A <- [B:C]
+0x0b,   DCX,      1,      5,      B:C--
+0x0c,   INR,      1,      5,      C++
+0x0d,   DCR,      1,      5,      C--
+0x0e,   MVI,      2,      7,      C <- imm8
+0x0f,   RRC,      1,      4,      A >>= 1 (carry)
+
+0x10,   NOP,      1,      4,      No op
+0x11,   LXI,      3,      10,     D:E <- imm16
+0x12,   STAX,     1,      7,      [D:E] <- A
+0x13,   INX,      1,      5,      D:E++
+0x14,   INR,      1,      5,      D++
+0x15,   DCR,      1,      5,      D--
+0x16,   MVI,      2,      7,      D <- imm8
+0x17,   RAL,      1,      4,      A <<= 1
+0x18,   NOP,      1,      4,      No op
+0x19,   DAD,      1,      10,     H:L += D:E
+0x1a,   LDAX,     1,      7,      A <- [D:E]
+0x1b,   DCX,      1,      5,      D:E--
+0x1c,   INR,      1,      5,      E++
+0x1d,   DCR,      1,      5,      E--
+0x1e,   MVI,      2,      7,      E <- imm8
+0x1f,   RAR,      1,      4,      A >>= 1
+
+0x20,   NOP,      1,      4,      No op
+0x21,   LXI,      3,      10,     H:L <- imm16
+0x22,   SHLD,     3,      16,     [imm16] <- H:L
+0x23,   INX,      1,      5,      H:L++
+0x24,   INR,      1,      5,      H++
+0x25,   DCR,      1,      5,      H--
+0x26,   MVI,      2,      7,      H <- imm8
+0x27,   DAA,      1,      4,      Decimal adjust A
+0x28,   NOP,      1,      4,      No op
+0x29,   DAD,      1,      10,     H:L += H:L
+0x2a,   LHLD,     3,      16,     H:L <- [imm16]
+0x2b,   DCX,      1,      5,      H:L--
+0x2c,   INR,      1,      5,      L++
+0x2d,   DCR,      1,      5,      L--
+0x2e,   MVI,      2,      7,      L <- imm8
+0x2f,   CMA,      1,      4,      A = ~A
+
+0x30,   NOP,      1,      4,      No op
+0x31,   LXI,      3,      10,     SP <- imm16
+0x32,   STA,      3,      13,     [H:L] <- A
+0x33,   INX,      1,      5,      SP++
+0x34,   INR,      1,      10,     [H:L]++
+0x35,   DCR,      1,      10,     [H:L]--
+0x36,   MVI,      2,      10,     [H:L] <- imm8
+0x37,   STC,      1,      4,      Set carry flag
+0x38,   NOP,      1,      4,      No op
+0x39,   DAD,      1,      10,     H:L += SP
+0x3a,   LDA,      3,      13,     A <- [imm16]
+0x3b,   DCX,      1,      5,      SP--
+0x3c,   INR,      1,      5,      A++
+0x3d,   DCR,      1,      5,      A--
+0x3e,   MVI,      2,      7,      A <- imm8
+0x3f,   CMC,      1,      4,      Toggle carry flag
+
+0x40,   MOV,      1,      5,      B <- B
+0x41,   MOV,      1,      5,      B <- C
+0x42,   MOV,      1,      5,      B <- D
+0x43,   MOV,      1,      5,      B <- E
+0x44,   MOV,      1,      5,      B <- H
+0x45,   MOV,      1,      5,      B <- L
+0x46,   MOV,      1,      7,      B <- [H:L]
+0x47,   MOV,      1,      5,      B <- A
+0x48,   MOV,      1,      5,      C <- B
+0x49,   MOV,      1,      5,      C <- C
+0x4a,   MOV,      1,      5,      C <- D
+0x4b,   MOV,      1,      5,      C <- E
+0x4c,   MOV,      1,      5,      C <- H
+0x4d,   MOV,      1,      5,      C <- L
+0x4e,   MOV,      1,      7,      C <- [H:L]
+0x4f,   MOV,      1,      5,      C <- A
+
+0x50,   MOV,      1,      5,      D <- B
+0x51,   MOV,      1,      5,      D <- C
+0x52,   MOV,      1,      5,      D <- D
+0x53,   MOV,      1,      5,      D <- E
+0x54,   MOV,      1,      5,      D <- H
+0x55,   MOV,      1,      5,      D <- L
+0x56,   MOV,      1,      7,      D <- [H:L]
+0x57,   MOV,      1,      5,      D <- A
+0x58,   MOV,      1,      5,      E <- B
+0x59,   MOV,      1,      5,      E <- C
+0x5a,   MOV,      1,      5,      E <- D
+0x5b,   MOV,      1,      5,      E <- E
+0x5c,   MOV,      1,      5,      E <- H
+0x5d,   MOV,      1,      5,      E <- L
+0x5e,   MOV,      1,      7,      E <- [H:L]
+0x5f,   MOV,      1,      5,      E <- A
+
+0x60,   MOV,      1,      5,      H <- B
+0x61,   MOV,      1,      5,      H <- C
+0x62,   MOV,      1,      5,      H <- D
+0x63,   MOV,      1,      5,      H <- E
+0x64,   MOV,      1,      5,      H <- H
+0x65,   MOV,      1,      5,      H <- L
+0x66,   MOV,      1,      7,      H <- [H:L]
+0x67,   MOV,      1,      5,      H <- A
+0x68,   MOV,      1,      5,      L <- B
+0x69,   MOV,      1,      5,      L <- C
+0x6a,   MOV,      1,      5,      L <- D
+0x6b,   MOV,      1,      5,      L <- E
+0x6c,   MOV,      1,      5,      L <- H
+0x6d,   MOV,      1,      5,      L <- L
+0x6e,   MOV,      1,      7,      L <- [H:L]
+0x6f,   MOV,      1,      5,      L <- A
+
+0x70,   MOV,      1,      5,      [H:L] <- B
+0x71,   MOV,      1,      5,      [H:L] <- C
+0x72,   MOV,      1,      5,      [H:L] <- D
+0x73,   MOV,      1,      5,      [H:L] <- E
+0x74,   MOV,      1,      5,      [H:L] <- H
+0x75,   MOV,      1,      5,      [H:L] <- L
+0x76,   HLT,      1,      7,      Halt
+0x77,   MOV,      1,      5,      M <- A
+0x78,   MOV,      1,      5,      A <- B
+0x79,   MOV,      1,      5,      A <- C
+0x7a,   MOV,      1,      5,      A <- D
+0x7b,   MOV,      1,      5,      A <- E
+0x7c,   MOV,      1,      5,      A <- H
+0x7d,   MOV,      1,      5,      A <- L
+0x7e,   MOV,      1,      7,      A <- [H:L]
+0x7f,   MOV,      1,      5,      A <- A
+
+0x80,   ADD,      1,      4,      A += A
+0x81,   ADD,      1,      4,      A += B
+0x82,   ADD,      1,      4,      A += C
+0x83,   ADD,      1,      4,      A += D
+0x84,   ADD,      1,      4,      A += E
+0x85,   ADD,      1,      4,      A += H
+0x86,   ADD,      1,      4,      A += L
+0x87,   ADD,      1,      4,      A += [H:L]
+0x88,   NOP,      1,      4,      A += A
+0x89,   DAD,      1,      10,     "Add B:C to H:L"
+0x8a,   LDAX,     1,      7,      "Load [B:C] into A"
+0x8b,   DCX,      1,      5,      "Decrement B:C"
+0x8c,   INR,      1,      5,      "Increment C"
+0x8d,   DCR,      1,      5,      "Decrement C"
+0x8e,   MVI,      2,      7,      "Move imm8 to C"
+0x8f,   RRC,      1,      4,      "Rotate A right"
+
+0x90,   NOP,      1,      4,      "No op"
+0x91,   LXI,      3,      10,     "Load imm16 into B:C"
+0x92,   STAX,     1,      7,      "Store A at [B:C]"
+0x93,   INX,      1,      5,      "Increment B:C"
+0x94,   INR,      1,      5,      "Increment B"
+0x95,   DCR,      1,      5,      "Decrement B"
+0x96,   HLT,      1,      7,      "Halt"
+0x97,   RLC,      1,      4,      "Rotate A left"
+0x98,   NOP,      1,      4,      "No op"
+0x99,   DAD,      1,      10,     "Add B:C to H:L"
+0x9a,   LDAX,     1,      7,      "Load [B:C] into A"
+0x9b,   DCX,      1,      5,      "Decrement B:C"
+0x9c,   INR,      1,      5,      "Increment C"
+0x9d,   DCR,      1,      5,      "Decrement C"
+0x9e,   MVI,      2,      7,      "Move imm8 to C"
+0x9f,   RRC,      1,      4,      "Rotate A right"
+
+0xa0,   NOP,      1,      4,      "No op"
+0xa1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xa2,   STAX,     1,      7,      "Store A at [B:C]"
+0xa3,   INX,      1,      5,      "Increment B:C"
+0xa4,   INR,      1,      5,      "Increment B"
+0xa5,   DCR,      1,      5,      "Decrement B"
+0xa6,   HLT,      1,      7,      "Halt"
+0xa7,   RLC,      1,      4,      "Rotate A left"
+0xa8,   NOP,      1,      4,      "No op"
+0xa9,   DAD,      1,      10,     "Add B:C to H:L"
+0xaa,   LDAX,     1,      7,      "Load [B:C] into A"
+0xab,   DCX,      1,      5,      "Decrement B:C"
+0xac,   INR,      1,      5,      "Increment C"
+0xad,   DCR,      1,      5,      "Decrement C"
+0xae,   MVI,      2,      7,      "Move imm8 to C"
+0xaf,   RRC,      1,      4,      "Rotate A right"
+
+0xb0,   NOP,      1,      4,      "No op"
+0xb1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xb2,   STAX,     1,      7,      "Store A at [B:C]"
+0xb3,   INX,      1,      5,      "Increment B:C"
+0xb4,   INR,      1,      5,      "Increment B"
+0xb5,   DCR,      1,      5,      "Decrement B"
+0xb6,   HLT,      1,      7,      "Halt"
+0xb7,   RLC,      1,      4,      "Rotate A left"
+0xb8,   NOP,      1,      4,      "No op"
+0xb9,   DAD,      1,      10,     "Add B:C to H:L"
+0xba,   LDAX,     1,      7,      "Load [B:C] into A"
+0xbb,   DCX,      1,      5,      "Decrement B:C"
+0xbc,   INR,      1,      5,      "Increment C"
+0xbd,   DCR,      1,      5,      "Decrement C"
+0xbe,   MVI,      2,      7,      "Move imm8 to C"
+0xbf,   RRC,      1,      4,      "Rotate A right"
+
+0xc0,   NOP,      1,      4,      "No op"
+0xc1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xc2,   STAX,     1,      7,      "Store A at [B:C]"
+0xc3,   INX,      1,      5,      "Increment B:C"
+0xc4,   INR,      1,      5,      "Increment B"
+0xc5,   DCR,      1,      5,      "Decrement B"
+0xc6,   HLT,      1,      7,      "Halt"
+0xc7,   RLC,      1,      4,      "Rotate A left"
+0xc8,   NOP,      1,      4,      "No op"
+0xc9,   DAD,      1,      10,     "Add B:C to H:L"
+0xca,   LDAX,     1,      7,      "Load [B:C] into A"
+0xcb,   DCX,      1,      5,      "Decrement B:C"
+0xcc,   INR,      1,      5,      "Increment C"
+0xcd,   DCR,      1,      5,      "Decrement C"
+0xce,   MVI,      2,      7,      "Move imm8 to C"
+0xcf,   RRC,      1,      4,      "Rotate A right"
+
+0xd0,   NOP,      1,      4,      "No op"
+0xd1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xd2,   STAX,     1,      7,      "Store A at [B:C]"
+0xd3,   INX,      1,      5,      "Increment B:C"
+0xd4,   INR,      1,      5,      "Increment B"
+0xd5,   DCR,      1,      5,      "Decrement B"
+0xd6,   HLT,      1,      7,      "Halt"
+0xd7,   RLC,      1,      4,      "Rotate A left"
+0xd8,   NOP,      1,      4,      "No op"
+0xd9,   DAD,      1,      10,     "Add B:C to H:L"
+0xda,   LDAX,     1,      7,      "Load [B:C] into A"
+0xdb,   DCX,      1,      5,      "Decrement B:C"
+0xdc,   INR,      1,      5,      "Increment C"
+0xdd,   DCR,      1,      5,      "Decrement C"
+0xde,   MVI,      2,      7,      "Move imm8 to C"
+0xdf,   RRC,      1,      4,      "Rotate A right"
+
+0xe0,   NOP,      1,      4,      "No op"
+0xe1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xe2,   STAX,     1,      7,      "Store A at [B:C]"
+0xe3,   INX,      1,      5,      "Increment B:C"
+0xe4,   INR,      1,      5,      "Increment B"
+0xe5,   DCR,      1,      5,      "Decrement B"
+0xe6,   HLT,      1,      7,      "Halt"
+0xe7,   RLC,      1,      4,      "Rotate A left"
+0xe8,   NOP,      1,      4,      "No op"
+0xe9,   DAD,      1,      10,     "Add B:C to H:L"
+0xea,   LDAX,     1,      7,      "Load [B:C] into A"
+0xeb,   DCX,      1,      5,      "Decrement B:C"
+0xec,   INR,      1,      5,      "Increment C"
+0xed,   DCR,      1,      5,      "Decrement C"
+0xee,   MVI,      2,      7,      "Move imm8 to C"
+0xef,   RRC,      1,      4,      "Rotate A right"
+
+0xf0,   NOP,      1,      4,      "No op"
+0xf1,   LXI,      3,      10,     "Load imm16 into B:C"
+0xf2,   STAX,     1,      7,      "Store A at [B:C]"
+0xf3,   INX,      1,      5,      "Increment B:C"
+0xf4,   INR,      1,      5,      "Increment B"
+0xf5,   DCR,      1,      5,      "Decrement B"
+0xf6,   HLT,      1,      7,      "Halt"
+0xf7,   RLC,      1,      4,      "Rotate A left"
+0xf8,   NOP,      1,      4,      "No op"
+0xf9,   DAD,      1,      10,     "Add B:C to H:L"
+0xfa,   LDAX,     1,      7,      "Load [B:C] into A"
+0xfb,   DCX,      1,      5,      "Decrement B:C"
+0xfc,   INR,      1,      5,      "Increment C"
+0xfd,   DCR,      1,      5,      "Decrement C"
+0xfe,   MVI,      2,      7,      "Move imm8 to C"
+0xff,   RRC,      1,      4,      "Rotate A right"
