@@ -118,3 +118,19 @@ void CPU::decrease_stack_pointer(uint16_t by)
 {
   sp -= by;
 }
+
+bool CPU::get_flag(Flag f)
+{
+  return flags & static_cast<uint8_t>(f);
+}
+
+void CPU::set_flag(Flag f, bool set)
+{
+  if (f != Flag::Z1 && f != Flag::Z2 && f != Flag::O)
+  {
+    if (set)
+      flags |= static_cast<uint8_t>(f);
+    else
+      flags &= ~(static_cast<uint8_t>(f));
+  }
+}

@@ -8,7 +8,20 @@
 #include "ram.hh"
 
 enum class Register : uint8_t {
-  A, B, C, D, E, H, L, SP, M
+  A, B, C, D, E, H, L, // main registers
+  SP,                  // stack pointer treated as register
+  M                    // Memory = [H:L]
+};
+
+enum class Flag : uint8_t {
+  S = 0b10000000,  // Sign      - set if the result is negative
+  Z = 0b01000000,  // Zero      - set if the result is zero
+  Z1 = 0b00100000, // 0         - always 0
+  AC = 0b00010000, // Aux carry - used for BCD arithmetic
+  Z2 = 0b00001000, // 0         - always 0
+  P = 0b00000100,  // Parity    - set if the no. of 1 bits is even
+  O = 0b00000010,  // 1         - always 1
+  C = 0b00000001,  // Carry     - set if last op resulted in a carry/borrow
 };
 
 class CPU
@@ -41,6 +54,8 @@ class CPU
     void set_stack_pointer(uint16_t value);
     void increase_stack_pointer(uint16_t by=1);
     void decrease_stack_pointer(uint16_t by=1);
+    bool get_flag(Flag f);
+    void set_flag(Flag f, bool set);
 };
 
 #endif
