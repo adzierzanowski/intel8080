@@ -2,7 +2,7 @@
 
 This is a work in progress.
 
-There is a rather sketchy implementation on the master branch.
+There is a rather sketchy but working implementation on the master branch.
 
 # TODO
 
