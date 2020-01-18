@@ -62,7 +62,7 @@ Test(opcode, 0x04_inr_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
 
   cr_assert_eq(emu->cpu->get_flag(Flag::S), res >= 0b01111111);
   cr_assert_eq(emu->cpu->get_flag(Flag::Z), res == 0);
-  cr_assert_eq(emu->cpu->get_flag(Flag::AC), false); // TODO:
+  cr_assert_eq(emu->cpu->get_flag(Flag::AC), aux_carry(b, res));
   cr_assert_eq(emu->cpu->get_flag(Flag::P), even_parity(res));
 }
 

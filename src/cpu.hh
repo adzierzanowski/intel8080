@@ -21,8 +21,11 @@ enum class Flag : uint8_t {
   Z2 = 0b00001000, // 0         - always 0
   P = 0b00000100,  // Parity    - set if the no. of 1 bits is even
   O = 0b00000010,  // 1         - always 1
-  C = 0b00000001,  // Carry     - set if last op resulted in a carry/borrow
+  C = 0b00000001  // Carry     - set if last op resulted in a carry/borrow
 };
+
+Flag operator |(Flag f, Flag g);
+bool operator &(Flag f, Flag g);
 
 class CPU
 {
@@ -36,6 +39,9 @@ class CPU
     std::unique_ptr<RAM> ram;
 
   public:
+    static bool aux_carry(uint8_t before, uint8_t after);
+    static bool even_parity(uint8_t val);
+
     CPU(void);
     void load_program(std::vector<uint8_t> prog, uint16_t addr);
     size_t get_memory_size(void);
@@ -56,6 +62,7 @@ class CPU
     void decrease_stack_pointer(uint16_t by=1);
     bool get_flag(Flag f);
     void set_flag(Flag f, bool set);
+    void affect_flags(Flag affected, uint8_t before, uint8_t after);
 };
 
 #endif

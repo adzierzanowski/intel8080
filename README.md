@@ -10,6 +10,6 @@ There is a rather sketchy but working implementation on the master branch.
   * flags
   * complete instruction set
   * parralel data port emulation
-2. assembler
-3. C compiler
-4. interpreter
+2. interpreter
+3. assembler
+4. C compiler

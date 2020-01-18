@@ -13,6 +13,8 @@
 int randint(int min, int max);
 uint8_t rand8(void);
 bool even_parity(uint8_t val);
+bool carry(void);
+bool aux_carry(uint8_t before, uint8_t after);
 
 struct Rand16
 {

@@ -26,3 +26,12 @@ bool even_parity(uint8_t val)
   }
   return acc % 2 == 0;
 }
+
+bool aux_carry(uint8_t before, uint8_t after)
+{
+  uint8_t a = before;
+  uint8_t b = after - before;
+  a &= 0x0f;
+  b &= 0x0f;
+  return (a+b) >> 4;
+}

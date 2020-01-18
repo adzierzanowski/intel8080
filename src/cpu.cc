@@ -1,6 +1,42 @@
 #include "cpu.hh"
 
 
+Flag operator |(Flag f, Flag g)
+{
+  return static_cast<Flag>(
+    static_cast<uint8_t>(f) |
+    static_cast<uint8_t>(g)
+  );
+}
+
+bool operator &(Flag f, Flag g)
+{
+  return static_cast<bool>(
+    static_cast<uint8_t>(f) &
+    static_cast<uint8_t>(g)
+  );
+}
+
+bool CPU::aux_carry(uint8_t before, uint8_t after)
+{
+  uint8_t a = before;
+  uint8_t b = after - before;
+  a &= 0x0f;
+  b &= 0x0f;
+  return (a+b) >> 4;
+}
+
+bool CPU::even_parity(uint8_t val)
+{
+  int acc = 0;
+  for (int i = 0; i < 8; i++)
+  {
+    acc += val & 1;
+    val >>= 1;
+  }
+  return acc % 2 == 0;
+}
+
 CPU::CPU(void) :
   a{0}, b{0}, c{0}, d{0}, h{0}, l{0},
   sp{0}, pc{0}, flags{0b00000010},
@@ -133,4 +169,19 @@ void CPU::set_flag(Flag f, bool set)
     else
       flags &= ~(static_cast<uint8_t>(f));
   }
+}
+
+void CPU::affect_flags(Flag affected, uint8_t before, uint8_t after)
+{
+  if (affected & Flag::S)
+    set_flag(Flag::S, after >= 0x7f);
+
+  if (affected & Flag::Z)
+    set_flag(Flag::Z, after == 0);
+
+  if (affected & Flag::AC)
+    set_flag(Flag::AC, CPU::aux_carry(before, after));
+  
+  if (affected & Flag::P)
+    set_flag(Flag::P, CPU::even_parity(after));
 }
