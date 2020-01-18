@@ -13,6 +13,11 @@ void test_0x0x_fini(void)
   emu.reset();
 }
 
+Test(opcode, 0x00_nop, .init=test_0x0x_init, .fini=test_0x0x_fini)
+{
+  cr_assert_eq(emu->cpu->flags, 0b00000010);
+}
+
 Test(opcode, 0x01_lxi_bc, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
   auto bc = Rand16();
@@ -20,6 +25,7 @@ Test(opcode, 0x01_lxi_bc, .init=test_0x0x_init, .fini=test_0x0x_fini)
   emu->execute();
   cr_assert_eq(emu->cpu->b, bc.to8().first);
   cr_assert_eq(emu->cpu->c, bc.to8().second);
+  cr_assert_eq(emu->cpu->flags, 0b00000010);
 }
 
 Test(opcode, 0x02_stax_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -31,6 +37,7 @@ Test(opcode, 0x02_stax_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
   emu->cpu->c = addr.to8().second;
   emu->execute_opcode(0x02);
   cr_assert_eq(emu->cpu->ram->memory[addr.val], a);
+  cr_assert_eq(emu->cpu->flags, 0b00000010);
 }
 
 Test(opcode, 0x03_inx_bc, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -42,14 +49,21 @@ Test(opcode, 0x03_inx_bc, .init=test_0x0x_init, .fini=test_0x0x_fini)
   emu->execute_opcode(0x03);
   cr_assert_eq(emu->cpu->b, bc.to8().first);
   cr_assert_eq(emu->cpu->c, bc.to8().second);
+  cr_assert_eq(emu->cpu->flags, 0b00000010);
 }
 
 Test(opcode, 0x04_inr_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
   uint8_t b = rand8();
+  uint8_t res = b+1;
   emu->cpu->b = b;
   emu->execute_opcode(0x04);
-  cr_assert_eq(emu->cpu->b, ++b);
+  cr_assert_eq(emu->cpu->b, res);
+
+  cr_assert_eq(emu->cpu->get_flag(Flag::S), res >= 0b01111111);
+  cr_assert_eq(emu->cpu->get_flag(Flag::Z), res == 0);
+  cr_assert_eq(emu->cpu->get_flag(Flag::AC), false); // TODO:
+  cr_assert_eq(emu->cpu->get_flag(Flag::P), even_parity(res));
 }
 
 Test(opcode, 0x05_dcr_b, .init=test_0x0x_init, .fini=test_0x0x_fini)

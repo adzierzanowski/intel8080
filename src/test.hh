@@ -10,10 +10,9 @@
 #include "emu.hh"
 
 
-
 int randint(int min, int max);
 uint8_t rand8(void);
-void exec_op1(uint8_t op);
+bool even_parity(uint8_t val);
 
 struct Rand16
 {

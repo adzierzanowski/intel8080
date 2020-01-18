@@ -15,3 +15,14 @@ uint8_t rand8(void)
 {
   return randint(0x00, 0xff);
 }
+
+bool even_parity(uint8_t val)
+{
+  int acc = 0;
+  for (int i = 0; i < 8; i++)
+  {
+    acc += val & 1;
+    val >>= 1;
+  }
+  return acc % 2 == 0;
+}
