@@ -37,8 +37,7 @@ Test(opcode, 0x33_inx_sp, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   auto sp = Rand16();
   emu->cpu->sp = sp.val;
-  emu->load_program({0x33, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x33);
   cr_assert_eq(emu->cpu->sp, ++sp.val);
 }
 
@@ -49,8 +48,7 @@ Test(opcode, 0x34_inr_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->cpu->ram->memory[hl.val] = val;
-  emu->load_program({0x34, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x34);
   cr_assert_eq(emu->cpu->ram->memory[hl.val], ++val);
 }
 
@@ -61,8 +59,7 @@ Test(opcode, 0x35_dcr_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->cpu->ram->memory[hl.val] = val;
-  emu->load_program({0x35, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x35);
   cr_assert_eq(emu->cpu->ram->memory[hl.val], --val);
 }
 
@@ -89,8 +86,7 @@ Test(opcode, 0x39_dad_sp, .init=test_0x3x_init, .fini=test_0x3x_fini)
   emu->cpu->sp = sp.val;
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
-  emu->load_program({0x39, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x39);
   hl.val += sp.val;
   
   cr_assert_eq(emu->cpu->h, hl.to8().first);
@@ -111,8 +107,7 @@ Test(opcode, 0x3b_dcx_sp, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   auto sp = Rand16();
   emu->cpu->sp = sp.val;
-  emu->load_program({0x3b, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x3b);
   sp.val--;
   cr_assert_eq(emu->cpu->sp, sp.val);
 }
@@ -121,8 +116,7 @@ Test(opcode, 0x3c_inr_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  emu->load_program({0x3c, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x3c);
   cr_assert_eq(emu->cpu->a, ++a);
 }
 
@@ -130,8 +124,7 @@ Test(opcode, 0x3d_dcr_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  emu->load_program({0x3d, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x3d);
   cr_assert_eq(emu->cpu->a, --a);
 }
 
