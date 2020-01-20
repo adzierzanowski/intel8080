@@ -311,15 +311,22 @@ void Emulator::mvi(Register x)
 
 void Emulator::rlc(void)
 {
-  cpu->set_register(Register::A, cpu->get_register(Register::A) << 1);
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t hb = (a & 0x80) >> 7;
+  uint8_t res = (a << 1) | hb;
+  cpu->set_register(Register::A, res);
+  cpu->set_flag(Flag::C, (bool) hb);
 }
 
 void Emulator::dad(
   Register dst_x, Register dst_y, Register src_x, Register src_y)
 {
   uint16_t hl = cpu->get_register_pair(dst_x, dst_y);
-  hl += cpu->get_register_pair(src_x, src_y);
-  cpu->set_register_pair(dst_x, dst_y, hl);
+  uint16_t bc = cpu->get_register_pair(src_x, src_y);
+  uint16_t res = hl + bc;
+
+  cpu->set_register_pair(dst_x, dst_y, res);
+  cpu->set_flag(Flag::C, res < hl || res < bc);
 }
 
 void Emulator::dad(
@@ -353,7 +360,11 @@ void Emulator::dcx(Register x)
 
 void Emulator::rrc(void)
 {
-  cpu->set_register(Register::A, cpu->get_register(Register::A) >> 1);
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t lb = a & 1;
+  uint8_t res = (a >> 1) | (lb << 7);
+  cpu->set_register(Register::A, res);
+  cpu->set_flag(Flag::C, (bool) lb);
 }
 
 void Emulator::ral(void)

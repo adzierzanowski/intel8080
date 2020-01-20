@@ -84,9 +84,11 @@ Test(opcode, 0x07_rlc, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  a <<= 1;
+  uint8_t hb = (a & 0x80) >> 7;
+  uint8_t res = (a << 1) | hb;
   emu->execute_opcode(0x07);
-  cr_assert_eq(emu->cpu->a, a);
+  cr_assert_eq(emu->cpu->a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), (bool) hb);
 }
 
 Test(opcode, 0x09_dad_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -98,10 +100,11 @@ Test(opcode, 0x09_dad_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->execute_opcode(0x09);
-  hl.val += bc.val;
+  uint16_t res = hl.val + bc.val;
   
-  cr_assert_eq(emu->cpu->h, hl.to8().first);
-  cr_assert_eq(emu->cpu->l, hl.to8().second);
+  cr_assert_eq(emu->cpu->h, (res & 0xff00) >> 8);
+  cr_assert_eq(emu->cpu->l, res & 0x00ff);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res < hl.val || res < bc.val);
 }
 
 Test(opcode, 0x0a_ldax_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -132,7 +135,9 @@ Test(opcode, 0x0c_inr_c, .init=test_0x0x_init, .fini=test_0x0x_fini)
   uint8_t c = rand8();
   emu->cpu->c = c;
   emu->execute_opcode(0x0c);
-  cr_assert_eq(emu->cpu->c, ++c);
+  uint8_t res = c + 1;
+  cr_assert_eq(emu->cpu->c, res);
+  test_flags_szap(c, res);
 }
 
 Test(opcode, 0x0d_dcr_c, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -140,7 +145,9 @@ Test(opcode, 0x0d_dcr_c, .init=test_0x0x_init, .fini=test_0x0x_fini)
   uint8_t c = rand8();
   emu->cpu->c = c;
   emu->execute_opcode(0x0d);
-  cr_assert_eq(emu->cpu->c, --c);
+  uint8_t res = c - 1;
+  cr_assert_eq(emu->cpu->c, res);
+  test_flags_szap(c, res);
 }
 
 Test(opcode, 0x0e_mvi_c, .init=test_0x0x_init, .fini=test_0x0x_fini)
@@ -155,7 +162,9 @@ Test(opcode, 0x0f_rrc, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  a >>= 1;
+  uint8_t lb = a & 1;
+  uint8_t res = (a >> 1) | (lb << 7);
   emu->execute_opcode(0x0f);
-  cr_assert_eq(emu->cpu->a, a);
+  cr_assert_eq(emu->cpu->a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), (bool) lb);
 }
