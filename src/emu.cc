@@ -132,14 +132,14 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0x34: inr(Register::M); break;
     case 0x35: dcr(Register::M); break;
     case 0x36: mvi(Register::M); break;
-    // TODO: case 0x37: stc(); break;
+    case 0x37: stc(); break;
     case 0x39: dad(Register::H, Register::L, Register::SP); break;
     case 0x3a: lda(); break;
     case 0x3b: dcx(Register::SP); break;
     case 0x3c: inr(Register::A); break;
     case 0x3d: dcr(Register::A); break;
     case 0x3e: mvi(Register::A); break;
-    // TODO: case 0x3f: cmc(); break;
+    case 0x3f: cmc(); break;
 
     case 0x40: mov(Register::B, Register::B); break;
     case 0x41: mov(Register::B, Register::C); break;
@@ -335,8 +335,10 @@ void Emulator::dad(
   if (src_x == Register::SP)
   {
     uint16_t hl = cpu->get_register_pair(dst_x, dst_y);
-    hl += cpu->get_stack_pointer();
-    cpu->set_register_pair(dst_x, dst_y, hl);
+    uint16_t sp = cpu->get_stack_pointer();
+    uint16_t res = hl + sp;
+    cpu->set_register_pair(dst_x, dst_y, res);
+    cpu->set_flag(Flag::C, res < hl || res < sp);
   }
 }
 
@@ -427,4 +429,14 @@ void Emulator::add(Register src)
 {
   uint8_t sum = cpu->get_register(Register::A) + cpu->get_register(src);
   cpu->set_register(Register::A, sum);
+}
+
+void Emulator::cmc(void)
+{
+  cpu->set_flag(Flag::C, !cpu->get_flag(Flag::C));
+}
+
+void Emulator::stc(void)
+{
+  cpu->set_flag(Flag::C, true);
 }

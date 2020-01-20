@@ -45,22 +45,26 @@ Test(opcode, 0x34_inr_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   auto hl = Rand16();
   uint8_t val = rand8();
+  uint8_t res = val + 1;
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->cpu->ram->memory[hl.val] = val;
   emu->execute_opcode(0x34);
-  cr_assert_eq(emu->cpu->ram->memory[hl.val], ++val);
+  cr_assert_eq(emu->cpu->ram->memory[hl.val], res);
+  test_flags_szap(val, res);
 }
 
 Test(opcode, 0x35_dcr_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   auto hl = Rand16();
   uint8_t val = rand8();
+  uint8_t res = val - 1;
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->cpu->ram->memory[hl.val] = val;
   emu->execute_opcode(0x35);
-  cr_assert_eq(emu->cpu->ram->memory[hl.val], --val);
+  cr_assert_eq(emu->cpu->ram->memory[hl.val], res);
+  test_flags_szap(val, res);
 }
 
 Test(opcode, 0x36_mvi_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
@@ -76,7 +80,10 @@ Test(opcode, 0x36_mvi_m, .init=test_0x3x_init, .fini=test_0x3x_fini)
 
 Test(opcode, 0x37_stc, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
-  // TODO:
+  bool carry = (bool) randint(0, 1);
+  emu->cpu->set_flag(Flag::C, carry);
+  emu->execute_opcode(0x37);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), true);
 }
 
 Test(opcode, 0x39_dad_sp, .init=test_0x3x_init, .fini=test_0x3x_fini)
@@ -87,10 +94,11 @@ Test(opcode, 0x39_dad_sp, .init=test_0x3x_init, .fini=test_0x3x_fini)
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->execute_opcode(0x39);
-  hl.val += sp.val;
+  uint16_t res = hl.val + sp.val;
   
-  cr_assert_eq(emu->cpu->h, hl.to8().first);
-  cr_assert_eq(emu->cpu->l, hl.to8().second);
+  cr_assert_eq(emu->cpu->h, (res & 0xff00) >> 8);
+  cr_assert_eq(emu->cpu->l, res & 0x00ff);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res < hl.val || res < sp.val);
 }
 
 Test(opcode, 0x32_lda, .init=test_0x3x_init, .fini=test_0x3x_fini)
@@ -116,16 +124,20 @@ Test(opcode, 0x3c_inr_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
+  uint8_t res = a + 1;
   emu->execute_opcode(0x3c);
-  cr_assert_eq(emu->cpu->a, ++a);
+  cr_assert_eq(emu->cpu->a, res);
+  test_flags_szap(a, res);
 }
 
 Test(opcode, 0x3d_dcr_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
+  uint8_t res = a - 1;
   emu->execute_opcode(0x3d);
-  cr_assert_eq(emu->cpu->a, --a);
+  cr_assert_eq(emu->cpu->a, res);
+  test_flags_szap(a, res);
 }
 
 Test(opcode, 0x3e_mvi_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
@@ -138,5 +150,8 @@ Test(opcode, 0x3e_mvi_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 
 Test(opcode, 0x3f_cmc_a, .init=test_0x3x_init, .fini=test_0x3x_fini)
 {
-  // TODO:
+  bool carry = (bool) randint(0, 1);
+  emu->cpu->set_flag(Flag::C, carry);
+  emu->execute_opcode(0x3f);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), !carry);
 }
