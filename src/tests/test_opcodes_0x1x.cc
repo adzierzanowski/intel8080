@@ -1,5 +1,6 @@
 #include "test_opcodes_0x1x.hh"
 
+
 extern std::unique_ptr<Emulator> emu;
 
 void test_0x1x_init(void)
@@ -28,8 +29,7 @@ Test(opcode, 0x12_stax_de, .init=test_0x1x_init, .fini=test_0x1x_fini)
   emu->cpu->a = a;
   emu->cpu->d = addr.to8().first;
   emu->cpu->e = addr.to8().second;
-  emu->load_program({0x12, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x12);
   cr_assert_eq(emu->cpu->ram->memory[addr.val], a);
 }
 
@@ -39,8 +39,7 @@ Test(opcode, 0x13_inx_de, .init=test_0x1x_init, .fini=test_0x1x_fini)
   emu->cpu->d = de.to8().first;
   emu->cpu->e = de.to8().second;
   de.val++;
-  emu->load_program({0x13, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x13);
   cr_assert_eq(emu->cpu->d, de.to8().first);
   cr_assert_eq(emu->cpu->e, de.to8().second);
 }
@@ -49,8 +48,7 @@ Test(opcode, 0x14_inr_d, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t d = rand8();
   emu->cpu->d = d;
-  emu->load_program({0x14, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x14);
   cr_assert_eq(emu->cpu->d, ++d);
 }
 
@@ -58,8 +56,7 @@ Test(opcode, 0x15_dcr_d, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t d = rand8();
   emu->cpu->d = d;
-  emu->load_program({0x15, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x15);
   cr_assert_eq(emu->cpu->d, --d);
 }
 
@@ -75,8 +72,7 @@ Test(opcode, 0x17_ral, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  emu->load_program({0x17, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x17);
   a <<= 1;
   cr_assert_eq(emu->cpu->a, a);
 }
@@ -89,8 +85,7 @@ Test(opcode, 0x19_dad_d, .init=test_0x1x_init, .fini=test_0x1x_fini)
   emu->cpu->e = de.to8().second;
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
-  emu->load_program({0x19, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x19);
   hl.val += de.val;
   
   cr_assert_eq(emu->cpu->h, hl.to8().first);
@@ -105,8 +100,7 @@ Test(opcode, 0x1a_ldax_d, .init=test_0x1x_init, .fini=test_0x1x_fini)
   emu->cpu->a = rand8();
   emu->cpu->d = addr.to8().first;
   emu->cpu->e = addr.to8().second;
-  emu->load_program({0x1a, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x1a);
   cr_assert_eq(emu->cpu->a, val);
 }
 
@@ -115,8 +109,7 @@ Test(opcode, 0x1b_dcx_d, .init=test_0x1x_init, .fini=test_0x1x_fini)
   auto de = Rand16();
   emu->cpu->d = de.to8().first;
   emu->cpu->e = de.to8().second;
-  emu->load_program({0x1b, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x1b);
   de.val--;
   cr_assert_eq(emu->cpu->d, de.to8().first);
   cr_assert_eq(emu->cpu->e, de.to8().second);
@@ -126,8 +119,7 @@ Test(opcode, 0x1c_inr_e, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t e = rand8();
   emu->cpu->e = e;
-  emu->load_program({0x1c, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x1c);
   cr_assert_eq(emu->cpu->e, ++e);
 }
 
@@ -135,8 +127,7 @@ Test(opcode, 0x1d_dcr_e, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t e = rand8();
   emu->cpu->e = e;
-  emu->load_program({0x1d, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x1d);
   cr_assert_eq(emu->cpu->e, --e);
 }
 
@@ -152,8 +143,7 @@ Test(opcode, 0x1f_rar, .init=test_0x1x_init, .fini=test_0x1x_fini)
 {
   uint8_t a = rand8();
   emu->cpu->a = a;
-  emu->load_program({0x1f, 0x76});
-  emu->execute();
+  emu->execute_opcode(0x1f);
   a >>= 1;
   cr_assert_eq(emu->cpu->a, a);
 }
