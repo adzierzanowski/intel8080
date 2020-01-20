@@ -278,14 +278,23 @@ void Emulator::inr(Register x)
 
 void Emulator::dcr(Register x)
 {
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t before, after;
+
   if (x == Register::M)
   {
     uint16_t addr = cpu->get_register_pair(Register::H, Register::L);
-    cpu->store(addr, cpu->load(addr) - 1);
+    before = cpu->load(addr);
+    after = before - 1;
+    cpu->store(addr, after);
+    cpu->affect_flags(affected, before, after);
     return;
   }
 
-  cpu->set_register(x, cpu->get_register(x) - 1);
+  before = cpu->get_register(x);
+  after = before - 1;
+  cpu->set_register(x, after);
+  cpu->affect_flags(affected, before, after);
 }
 
 void Emulator::mvi(Register x)

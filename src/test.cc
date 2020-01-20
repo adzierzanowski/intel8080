@@ -15,23 +15,3 @@ uint8_t rand8(void)
 {
   return randint(0x00, 0xff);
 }
-
-bool even_parity(uint8_t val)
-{
-  int acc = 0;
-  for (int i = 0; i < 8; i++)
-  {
-    acc += val & 1;
-    val >>= 1;
-  }
-  return acc % 2 == 0;
-}
-
-bool aux_carry(uint8_t before, uint8_t after)
-{
-  uint8_t a = before;
-  uint8_t b = after - before;
-  a &= 0x0f;
-  b &= 0x0f;
-  return (a+b) >> 4;
-}

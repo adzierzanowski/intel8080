@@ -59,19 +59,17 @@ Test(opcode, 0x04_inr_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
   emu->cpu->b = b;
   emu->execute_opcode(0x04);
   cr_assert_eq(emu->cpu->b, res);
-
-  cr_assert_eq(emu->cpu->get_flag(Flag::S), res >= 0b01111111);
-  cr_assert_eq(emu->cpu->get_flag(Flag::Z), res == 0);
-  cr_assert_eq(emu->cpu->get_flag(Flag::AC), aux_carry(b, res));
-  cr_assert_eq(emu->cpu->get_flag(Flag::P), even_parity(res));
+  test_flags_szap(b, res);
 }
 
 Test(opcode, 0x05_dcr_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
   uint8_t b = rand8();
+  uint8_t res = b-1;
   emu->cpu->b = b;
   emu->execute_opcode(0x05);
-  cr_assert_eq(emu->cpu->b, --b);
+  cr_assert_eq(emu->cpu->b, res);
+  test_flags_szap(b, res);
 }
 
 Test(opcode, 0x06_mvi_b, .init=test_0x0x_init, .fini=test_0x0x_fini)

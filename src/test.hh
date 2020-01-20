@@ -9,12 +9,15 @@
 
 #include "emu.hh"
 
+#define test_flags_szap(b, a) do { \
+  cr_assert_eq(emu->cpu->get_flag(Flag::S), a >= 0x7f); \
+  cr_assert_eq(emu->cpu->get_flag(Flag::Z), a == 0); \
+  cr_assert_eq(emu->cpu->get_flag(Flag::AC), CPU::aux_carry(b, a)); \
+  cr_assert_eq(emu->cpu->get_flag(Flag::P), CPU::even_parity(a)); \
+} while (0);
 
 int randint(int min, int max);
 uint8_t rand8(void);
-bool even_parity(uint8_t val);
-bool carry(void);
-bool aux_carry(uint8_t before, uint8_t after);
 
 struct Rand16
 {
