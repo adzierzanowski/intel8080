@@ -82,6 +82,7 @@ Test(opcode, 0x06_mvi_b, .init=test_0x0x_init, .fini=test_0x0x_fini)
 
 Test(opcode, 0x07_rlc, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
+  emu->cpu->set_flag(Flag::C, (bool) randint(0, 1));
   uint8_t a = rand8();
   emu->cpu->a = a;
   uint8_t hb = (a & 0x80) >> 7;
@@ -160,6 +161,7 @@ Test(opcode, 0x0e_mvi_c, .init=test_0x0x_init, .fini=test_0x0x_fini)
 
 Test(opcode, 0x0f_rrc, .init=test_0x0x_init, .fini=test_0x0x_fini)
 {
+  emu->cpu->set_flag(Flag::C, (bool) randint(0, 1));
   uint8_t a = rand8();
   emu->cpu->a = a;
   uint8_t lb = a & 1;
