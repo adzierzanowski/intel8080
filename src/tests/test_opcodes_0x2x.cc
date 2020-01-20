@@ -49,16 +49,20 @@ Test(opcode, 0x24_inr_h, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   uint8_t h = rand8();
   emu->cpu->h = h;
+  uint8_t res = h + 1;
   emu->execute_opcode(0x24);
-  cr_assert_eq(emu->cpu->h, ++h);
+  cr_assert_eq(emu->cpu->h, res);
+  test_flags_szap(h, res);
 }
 
 Test(opcode, 0x25_dcr_h, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   uint8_t h = rand8();
   emu->cpu->h = h;
+  uint8_t res = h - 1;
   emu->execute_opcode(0x25);
-  cr_assert_eq(emu->cpu->h, --h);
+  cr_assert_eq(emu->cpu->h, h - 1);
+  test_flags_szap(h, res);
 }
 
 Test(opcode, 0x26_mvi_h, .init=test_0x2x_init, .fini=test_0x2x_fini)
@@ -75,10 +79,11 @@ Test(opcode, 0x29_dad_hl, .init=test_0x2x_init, .fini=test_0x2x_fini)
   emu->cpu->h = hl.to8().first;
   emu->cpu->l = hl.to8().second;
   emu->execute_opcode(0x29);
-  hl.val += hl.val;
+  uint16_t res = hl.val + hl.val;
   
-  cr_assert_eq(emu->cpu->h, hl.to8().first);
-  cr_assert_eq(emu->cpu->l, hl.to8().second);
+  cr_assert_eq(emu->cpu->h, (res & 0xff00) >> 8);
+  cr_assert_eq(emu->cpu->l, res & 0x00ff);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res < hl.val);
 }
 
 Test(opcode, 0x2a_lhld, .init=test_0x2x_init, .fini=test_0x2x_fini)
@@ -108,16 +113,20 @@ Test(opcode, 0x2c_inr_l, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   uint8_t l = rand8();
   emu->cpu->l = l;
+  uint8_t res = l + 1;
   emu->execute_opcode(0x2c);
-  cr_assert_eq(emu->cpu->l, ++l);
+  cr_assert_eq(emu->cpu->l, res);
+  test_flags_szap(l, res);
 }
 
 Test(opcode, 0x2d_dcr_l, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   uint8_t l = rand8();
   emu->cpu->l = l;
+  uint8_t res = l - 1;
   emu->execute_opcode(0x2d);
-  cr_assert_eq(emu->cpu->l, --l);
+  cr_assert_eq(emu->cpu->l, res);
+  test_flags_szap(l, res);
 }
 
 Test(opcode, 0x2e_mvi_l, .init=test_0x2x_init, .fini=test_0x2x_fini)
