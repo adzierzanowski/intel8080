@@ -243,6 +243,40 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0x9e: sbb(Register::M); break;
     case 0x9f: sbb(Register::A); break;
 
+    case 0xa0: ana(Register::B); break;
+    case 0xa1: ana(Register::C); break;
+    case 0xa2: ana(Register::D); break;
+    case 0xa3: ana(Register::E); break;
+    case 0xa4: ana(Register::H); break;
+    case 0xa5: ana(Register::L); break;
+    case 0xa6: ana(Register::M); break;
+    case 0xa7: ana(Register::A); break;
+    case 0xa8: xra(Register::B); break;
+    case 0xa9: xra(Register::C); break;
+    case 0xaa: xra(Register::D); break;
+    case 0xab: xra(Register::E); break;
+    case 0xac: xra(Register::H); break;
+    case 0xad: xra(Register::L); break;
+    case 0xae: xra(Register::M); break;
+    case 0xaf: xra(Register::A); break;
+
+    case 0xb0: ora(Register::B); break;
+    case 0xb1: ora(Register::C); break;
+    case 0xb2: ora(Register::D); break;
+    case 0xb3: ora(Register::E); break;
+    case 0xb4: ora(Register::H); break;
+    case 0xb5: ora(Register::L); break;
+    case 0xb6: ora(Register::M); break;
+    case 0xb7: ora(Register::A); break;
+    case 0xb8: cmp(Register::B); break;
+    case 0xb9: cmp(Register::C); break;
+    case 0xba: cmp(Register::D); break;
+    case 0xbb: cmp(Register::E); break;
+    case 0xbc: cmp(Register::H); break;
+    case 0xbd: cmp(Register::L); break;
+    case 0xbe: cmp(Register::M); break;
+    case 0xbf: cmp(Register::A); break;
+
     default: std::cerr << "Unknown opcode\n"; break;
   }
 
@@ -498,6 +532,47 @@ void Emulator::sbb(Register src)
   cpu->set_register(Register::A, res);
   cpu->affect_flags(affected, a, res);
   cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::ana(Register src)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t res = a & val;
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, false);
+}
+
+void Emulator::xra(Register src)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t res = a ^ val;
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, false);
+}
+
+void Emulator::ora(Register src)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t res = a | val;
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, false);
+}
+
+void Emulator::cmp(Register src)
+{
+
 }
 
 void Emulator::cmc(void)

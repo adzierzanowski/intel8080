@@ -56,6 +56,10 @@ class Emulator
     void adc(Register src);
     void sub(Register src);
     void sbb(Register src);
+    void ana(Register src);
+    void xra(Register src);
+    void ora(Register src);
+    void cmp(Register src);
 
   public:
     static const std::string opcodes_filename;
