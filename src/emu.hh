@@ -60,6 +60,8 @@ class Emulator
     void xra(Register src);
     void ora(Register src);
     void cmp(Register src);
+    void call(void);
+    void ret(void);
 
   public:
     static const std::string opcodes_filename;

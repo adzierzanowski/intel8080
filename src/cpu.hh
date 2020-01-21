@@ -63,6 +63,8 @@ class CPU
     bool get_flag(Flag f);
     void set_flag(Flag f, bool set);
     void affect_flags(Flag affected, uint8_t before, uint8_t after);
+    void push(uint16_t addr);
+    uint16_t pop(void);
 };
 
 #endif

@@ -590,3 +590,14 @@ void Emulator::stc(void)
 {
   cpu->set_flag(Flag::C, true);
 }
+
+void Emulator::call(void)
+{
+  cpu->push(pc);
+  pc = cpu->get_imm16();
+}
+
+void Emulator::ret(void)
+{
+  pc = cpu->pop();
+}

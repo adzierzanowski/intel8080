@@ -185,3 +185,16 @@ void CPU::affect_flags(Flag affected, uint8_t before, uint8_t after)
   if (affected & Flag::P)
     set_flag(Flag::P, CPU::even_parity(after));
 }
+
+void CPU::push(uint16_t val)
+{
+  store(sp - 1, val >> 8);
+  store(sp - 2, pc & 0x00ff);
+  sp -= 2;
+}
+
+uint16_t pop(void)
+{
+  return (load(sp + 1) << 8) | load(sp);
+  sp += 2;
+}
