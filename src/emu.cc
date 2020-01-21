@@ -217,6 +217,14 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0x85: add(Register::L); break;
     case 0x86: add(Register::M); break;
     case 0x87: add(Register::A); break;
+    case 0x88: adc(Register::B); break;
+    case 0x89: adc(Register::C); break;
+    case 0x8a: adc(Register::D); break;
+    case 0x8b: adc(Register::E); break;
+    case 0x8c: adc(Register::H); break;
+    case 0x8d: adc(Register::L); break;
+    case 0x8e: adc(Register::M); break;
+    case 0x8f: adc(Register::A); break;
 
     default: std::cerr << "Unknown opcode\n"; break;
   }
@@ -427,8 +435,27 @@ void Emulator::mov(Register dst, Register src)
 
 void Emulator::add(Register src)
 {
-  uint8_t sum = cpu->get_register(Register::A) + cpu->get_register(src);
-  cpu->set_register(Register::A, sum);
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t res = a + val;
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res < a);
+}
+
+void Emulator::adc(Register src)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t carry = cpu->get_flag(Flag::C) ? 1 : 0;
+  uint8_t res = a + val + carry;
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::cmc(void)

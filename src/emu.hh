@@ -53,6 +53,7 @@ class Emulator
     void cmc(void);
     void mov(Register dst, Register src);
     void add(Register src);
+    void adc(Register src);
 
   public:
     static const std::string opcodes_filename;
