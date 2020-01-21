@@ -11,7 +11,8 @@ test_opcodes_0x1x.o \
 test_opcodes_0x2x.o \
 test_opcodes_0x3x.o \
 test_opcodes_mov.o \
-test_opcodes_add.o
+test_opcodes_add.o \
+test_opcodes_sub.o
 
 all: $(EXE)
 clean:
