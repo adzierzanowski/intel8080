@@ -572,7 +572,13 @@ void Emulator::ora(Register src)
 
 void Emulator::cmp(Register src)
 {
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
 
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t val = cpu->get_register(src);
+  uint8_t res = a - val;
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res > a);
 }
 
 void Emulator::cmc(void)

@@ -165,3 +165,59 @@ Test(opcode, sbb, .init=test_sub_init, .fini=test_sub_fini)
   test_flags_szap(a, res);
   cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
 }
+
+Test(opcode, cmp, .init=test_sub_init, .fini=test_sub_fini)
+{
+  uint8_t res;
+
+  res = a - b;
+  emu->execute_opcode(0xb8);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - c;
+  emu->execute_opcode(0xb9);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - d;
+  emu->execute_opcode(0xba);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - e;
+  emu->execute_opcode(0xbb);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - h;
+  emu->execute_opcode(0xbc);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - l;
+  emu->execute_opcode(0xbd);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  emu->cpu->h = hl.to8().first;
+  emu->cpu->l = hl.to8().second;
+  emu->cpu->ram->memory[hl.val] = m;
+  res = a - m;
+  emu->execute_opcode(0xbe);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+
+  res = a - a;
+  emu->execute_opcode(0xbf);
+  cr_assert_eq(emu->cpu->a, a);
+  test_flags_szap(a, res);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), res > a);
+}
