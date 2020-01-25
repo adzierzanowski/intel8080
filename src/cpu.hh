@@ -29,7 +29,9 @@ bool operator &(Flag f, Flag g);
 
 class CPU
 {
-  public:
+  friend class Emulator;
+
+  private:
     // Registers
     uint8_t a, b, c, d, e, h, l;
     uint16_t sp; // Stack pointer

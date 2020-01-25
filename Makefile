@@ -1,7 +1,7 @@
 SRC = src
 BUILD = build
 
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 -Wall -Wpedantic #-DDEBUG
 
 EXE = $(addprefix $(BUILD)/, emu test)
 OBJECTS = $(addprefix $(BUILD)/, opcode.o ram.o cpu.o emu.o)
@@ -13,7 +13,8 @@ test_opcodes_0x3x.o \
 test_opcodes_mov.o \
 test_opcodes_add.o \
 test_opcodes_sub.o \
-test_opcodes_bitwise.o
+test_opcodes_bitwise.o \
+test_opcodes_0xcx.o
 
 all: $(EXE)
 clean:
@@ -26,7 +27,7 @@ $(BUILD)/test: $(addprefix $(BUILD)/, test.o) $(OBJECTS) $(addprefix $(BUILD)/, 
 	$(CXX) $(CXXFLAGS) -lcriterion $(OBJECTS) $(addprefix $(BUILD)/, $(TEST_OBJECTS)) $< -o $@
 
 $(BUILD)/test_%.o: $(SRC)/tests/test_%.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Wno-keyword-macro -c $< -o $@
 
 $(BUILD)/%.o: $(SRC)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -204,22 +204,22 @@ number, mnemonic, length, cycles, description
 0xbe,   CMP,      2,      7,      A == [H:L]
 0xbf,   CMP,      1,      4,      A == A
 
-0xc0,   NOP,      1,      4,      "No op"
-0xc1,   LXI,      3,      10,     "Load imm16 into B:C"
-0xc2,   STAX,     1,      7,      "Store A at [B:C]"
-0xc3,   INX,      1,      5,      "Increment B:C"
-0xc4,   INR,      1,      5,      "Increment B"
-0xc5,   DCR,      1,      5,      "Decrement B"
-0xc6,   HLT,      1,      7,      "Halt"
-0xc7,   RLC,      1,      4,      "Rotate A left"
-0xc8,   NOP,      1,      4,      "No op"
-0xc9,   DAD,      1,      10,     "Add B:C to H:L"
-0xca,   LDAX,     1,      7,      "Load [B:C] into A"
-0xcb,   DCX,      1,      5,      "Decrement B:C"
-0xcc,   INR,      1,      5,      "Increment C"
-0xcd,   DCR,      1,      5,      "Decrement C"
-0xce,   MVI,      2,      7,      "Move imm8 to C"
-0xcf,   RRC,      1,      4,      "Rotate A right"
+0xc0,   RNZ,      1,      8,      Return if != 0
+0xc1,   POP,      1,      10,     POP B:C
+0xc2,   JNZ,      3,      10,     Jump if != 0
+0xc3,   JMP,      3,      10,     Jump
+0xc4,   CNZ,      3,      14,     Call if != 0
+0xc5,   PUSH,     1,      11,     Push B:C
+0xc6,   ADI,      2,      7,      A += imm8
+0xc7,   RST,      1,      11,     Reset
+0xc8,   RZ,       1,      8,       Return if == 0
+0xc9,   RET,      1,      10,     Return
+0xca,   JZ,       3,      10,     Jump if == 0
+0xcb,   JMP,      3,      10,     Jump
+0xcc,   CZ,       3,      14,     Call if == 0
+0xcd,   CALL,     3,      17,     Call
+0xce,   ACI,      2,      7,      A += imm8 (carry)
+0xcf,   RST,      1,      11,     Reset
 
 0xd0,   NOP,      1,      4,      "No op"
 0xd1,   LXI,      3,      10,     "Load imm16 into B:C"

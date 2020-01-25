@@ -60,8 +60,14 @@ class Emulator
     void xra(Register src);
     void ora(Register src);
     void cmp(Register src);
-    void call(void);
-    void ret(void);
+    bool call(bool condition);
+    bool ret(bool condition);
+    bool jmp(bool condition);
+    void rst(uint8_t n);
+    void aci(void);
+    void adi(void);
+    void push(Register x, Register y);
+    void pop(Register x, Register y);
 
   public:
     static const std::string opcodes_filename;

@@ -193,7 +193,7 @@ void CPU::push(uint16_t val)
   sp -= 2;
 }
 
-uint16_t pop(void)
+uint16_t CPU::pop(void)
 {
   return (load(sp + 1) << 8) | load(sp);
   sp += 2;
