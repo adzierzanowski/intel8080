@@ -21,6 +21,7 @@ Test(cpu, cpu_initialization, .init=test_cpu_init, .fini=test_cpu_fini)
   cr_assert_eq(cpu->h, 0);
   cr_assert_eq(cpu->l, 0);
   cr_assert_eq(cpu->flags, 0b00000010);
+  cr_assert_eq(cpu->pc, 0);
 }
 
 Test(cpu, set_flag, .init=test_cpu_init, .fini=test_cpu_fini)

@@ -60,10 +60,6 @@ void Emulator::execute(void)
 
   if (execute_flag)
     execute();
-
-  #ifdef DEBUG
-    std::cout << "Execute\n";
-  #endif
 }
 
 void Emulator::execute_opcode(uint8_t opcode)
@@ -71,11 +67,13 @@ void Emulator::execute_opcode(uint8_t opcode)
   auto op = opcodes[opcode];
 
   #ifdef DEBUG
-    std::cout << boost::format("0x%04x %-6s %-20s")
-      % cpu->get_pc()
-      % op.mnemonic
-      % op.description;
-
+    printf(
+      "0x%04x %02x %-5s %-20s",
+      cpu->get_pc(),
+      opcode,
+      op.mnemonic.c_str(),
+      op.description.c_str()
+    );
     printf("[A:%02x ", cpu->get_register(Register::A));
     printf("B:%02x ", cpu->get_register(Register::B));
     printf("C:%02x ", cpu->get_register(Register::C));
@@ -84,7 +82,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     printf("H:%02x ", cpu->get_register(Register::H));
     printf("L:%02x] ", cpu->get_register(Register::L));
 
-    printf("[F:%04x SP:%04x]\n", cpu->flags, cpu->sp);
+    printf("[F:%04x SP:%04x -> %04x]\n", cpu->flags, cpu->sp, cpu->load(cpu->sp));
   #endif
 
   bool inc_pc = true;
@@ -298,15 +296,14 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xbe: cmp(Register::M); break;
     case 0xbf: cmp(Register::A); break;
 
-    
     case 0xc0: inc_pc = ret(!cpu->get_flag(Flag::Z)); break;
     case 0xc1: pop(Register::B, Register::C); break;
-    case 0xc2: jmp(!cpu->get_flag(Flag::Z)); break;
-    case 0xc3: jmp(true); break;
+    case 0xc2: inc_pc = jmp(!cpu->get_flag(Flag::Z)); break;
+    case 0xc3: inc_pc = jmp(true); break;
     case 0xc4: inc_pc = call(!cpu->get_flag(Flag::Z)); break;
     case 0xc5: push(Register::B, Register::C); break;
     case 0xc6: adi(); break;
-    case 0xc7: rst(0); break;
+    case 0xc7: rst(0); inc_pc = false; break;
     case 0xc8: inc_pc = ret(cpu->get_flag(Flag::Z)); break;
     case 0xc9: inc_pc = ret(true); break;
     case 0xca: inc_pc = jmp(cpu->get_flag(Flag::Z)); break;
@@ -314,13 +311,13 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xcc: inc_pc = call(cpu->get_flag(Flag::Z)); break;
     case 0xcd: inc_pc = call(true); break;
     case 0xce: aci(); break;
-    case 0xcf: rst(1); break;
+    case 0xcf: rst(1); inc_pc = false; break;
 
     default: std::cerr << "Unknown opcode\n"; break;
   }
 
   if (inc_pc)
-    cpu->increase_program_counter(op.length);
+    cpu->increment_pc(op.length);
 }
 
 void Emulator::nop() {}
@@ -333,7 +330,7 @@ void Emulator::lxi(Register x, Register y)
 void Emulator::lxi(Register x)
 {
   if (x == Register::SP)
-    cpu->set_stack_pointer(cpu->get_imm16());
+    cpu->set_sp(cpu->get_imm16());
 }
 
 void Emulator::stax(Register x, Register y)
@@ -351,7 +348,7 @@ void Emulator::inx(Register x, Register y)
 void Emulator::inx(Register x)
 {
   if (x == Register::SP)
-    cpu->increase_stack_pointer(1);
+    cpu->increment_sp(1);
 }
 
 void Emulator::inr(Register x)
@@ -434,7 +431,7 @@ void Emulator::dad(
   if (src_x == Register::SP)
   {
     uint16_t hl = cpu->get_register_pair(dst_x, dst_y);
-    uint16_t sp = cpu->get_stack_pointer();
+    uint16_t sp = cpu->get_sp();
     uint16_t res = hl + sp;
     cpu->set_register_pair(dst_x, dst_y, res);
     cpu->set_flag(Flag::C, res < hl || res < sp);
@@ -456,7 +453,7 @@ void Emulator::dcx(Register x, Register y)
 void Emulator::dcx(Register x)
 {
   if (x == Register::SP)
-    cpu->decrease_stack_pointer(1);
+    cpu->decrement_sp(1);
 }
 
 void Emulator::rrc(void)
@@ -633,43 +630,75 @@ void Emulator::stc(void)
 
 bool Emulator::call(bool condition)
 {
+  if (condition)
+  {
+    cpu->push(cpu->get_pc() + 3);
+    cpu->set_pc(cpu->get_imm16());
+    return false;
+  }
+
+  return true;
 }
 
 bool Emulator::ret(bool condition)
 {
+  if (condition)
+  {
+    uint16_t addr = cpu->pop();
+    cpu->set_pc(addr);
+    return false;
+  }
 
+  return true;
 }
 
 bool Emulator::jmp(bool condition)
 {
+  if (condition)
+  {
+    cpu->set_pc(cpu->get_imm16());
+    return false;
+  }
 
+  return true;
 }
 
 void Emulator::rst(uint8_t n)
 {
-
+  cpu->push(cpu->get_pc() + 1);
+  cpu->set_pc(n*8);
 }
 
 void Emulator::aci(void)
 {
-
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a + cpu->get_imm8() + (uint8_t) cpu->get_flag(Flag::C);
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::adi(void)
 {
-
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a + cpu->get_imm8();
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::push(Register x, Register y)
 {
-  cpu->store(cpu->get_stack_pointer() - 1, cpu->get_register(x));
-  cpu->store(cpu->get_stack_pointer() - 2, cpu->get_register(y));
-  cpu->decrease_stack_pointer(2);
+  cpu->store(cpu->get_sp() - 1, cpu->get_register(x));
+  cpu->store(cpu->get_sp() - 2, cpu->get_register(y));
+  cpu->decrement_sp(2);
 }
 
 void Emulator::pop(Register x, Register y)
 {
-  cpu->set_register(y, cpu->load(cpu->get_stack_pointer()));
-  cpu->set_register(x, cpu->load(cpu->get_stack_pointer() + 1));
-  cpu->increase_stack_pointer(2);
+  cpu->set_register(y, cpu->load(cpu->get_sp()));
+  cpu->set_register(x, cpu->load(cpu->get_sp() + 1));
+  cpu->increment_sp(2);
 }

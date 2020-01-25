@@ -115,7 +115,7 @@ uint16_t CPU::get_imm16(void)
   return ram->get(pc+2) << 8 | ram->get(pc+1);
 }
 
-void CPU::increase_program_counter(uint16_t by)
+void CPU::increment_pc(uint16_t by)
 {
   pc += by;
 }
@@ -135,22 +135,27 @@ uint16_t CPU::get_pc(void)
   return pc;
 }
 
-uint16_t CPU::get_stack_pointer(void)
+void CPU::set_pc(uint16_t addr)
+{
+  pc = addr;
+}
+
+uint16_t CPU::get_sp(void)
 {
   return sp;
 }
 
-void CPU::set_stack_pointer(uint16_t value)
+void CPU::set_sp(uint16_t value)
 {
   sp = value;
 }
 
-void CPU::increase_stack_pointer(uint16_t by)
+void CPU::increment_sp(uint16_t by)
 {
   sp += by;
 }
 
-void CPU::decrease_stack_pointer(uint16_t by)
+void CPU::decrement_sp(uint16_t by)
 {
   sp -= by;
 }
@@ -189,12 +194,12 @@ void CPU::affect_flags(Flag affected, uint8_t before, uint8_t after)
 void CPU::push(uint16_t val)
 {
   store(sp - 1, val >> 8);
-  store(sp - 2, pc & 0x00ff);
+  store(sp - 2, val & 0x00ff);
   sp -= 2;
 }
 
 uint16_t CPU::pop(void)
 {
-  return (load(sp + 1) << 8) | load(sp);
   sp += 2;
+  return (load(sp + 1 - 2) << 8) | load(sp - 2);
 }

@@ -48,23 +48,30 @@ class CPU
     void load_program(std::vector<uint8_t> prog, uint16_t addr);
     size_t get_memory_size(void);
     uint8_t get_opcode(void);
-    void increase_program_counter(uint16_t by=1);
+
     uint8_t get_register(Register x);
     void set_register(Register x, uint8_t value);
     uint16_t get_register_pair(Register x, Register y);
     void set_register_pair(Register x, Register y, uint16_t value);
+
     uint8_t get_imm8(void);
     uint16_t get_imm16(void);
     void store(uint16_t addr, uint8_t value);
     uint8_t load(uint16_t addr);
+
     uint16_t get_pc(void);
-    uint16_t get_stack_pointer(void);
-    void set_stack_pointer(uint16_t value);
-    void increase_stack_pointer(uint16_t by=1);
-    void decrease_stack_pointer(uint16_t by=1);
+    void set_pc(uint16_t addr);
+    void increment_pc(uint16_t by=1);
+
+    uint16_t get_sp(void);
+    void set_sp(uint16_t value);
+    void increment_sp(uint16_t by=1);
+    void decrement_sp(uint16_t by=1);
+
     bool get_flag(Flag f);
     void set_flag(Flag f, bool set);
     void affect_flags(Flag affected, uint8_t before, uint8_t after);
+
     void push(uint16_t addr);
     uint16_t pop(void);
 };
