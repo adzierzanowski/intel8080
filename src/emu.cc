@@ -313,6 +313,23 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xce: aci(); break;
     case 0xcf: rst(1); inc_pc = false; break;
 
+    case 0xd0: inc_pc = ret(!cpu->get_flag(Flag::C)); break;
+    case 0xd1: pop(Register::D, Register::E); break;
+    case 0xd2: inc_pc = jmp(!cpu->get_flag(Flag::C)); break;
+    // TODO: case 0xd3: out(); break;
+    case 0xd4: inc_pc = call(!cpu->get_flag(Flag::C)); break;
+    case 0xd5: push(Register::D, Register::E); break;
+    case 0xd6: sui(); break;
+    case 0xd7: rst(2); inc_pc = false; break;
+    case 0xd8: inc_pc = ret(cpu->get_flag(Flag::C)); break;
+    case 0xd9: inc_pc = ret(true); break;
+    case 0xda: inc_pc = jmp(cpu->get_flag(Flag::C)); break;
+    // TODO: case 0xdb: in(); break;
+    case 0xdc: inc_pc = call(cpu->get_flag(Flag::C)); break;
+    case 0xdd: inc_pc = call(true); break;
+    case 0xde: sbi(); break;
+    case 0xdf: rst(3); inc_pc = false; break;
+
     default: std::cerr << "Unknown opcode\n"; break;
   }
 
@@ -701,4 +718,24 @@ void Emulator::pop(Register x, Register y)
   cpu->set_register(y, cpu->load(cpu->get_sp()));
   cpu->set_register(x, cpu->load(cpu->get_sp() + 1));
   cpu->increment_sp(2);
+}
+
+void Emulator::sui(void)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a - cpu->get_imm8();
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::sbi(void)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a - cpu->get_imm8() - (uint8_t) cpu->get_flag(Flag::C);
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res > a);
 }

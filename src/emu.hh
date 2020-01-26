@@ -68,6 +68,8 @@ class Emulator
     void adi(void);
     void push(Register x, Register y);
     void pop(Register x, Register y);
+    void sui(void);
+    void sbi(void);
 
   public:
     static const std::string opcodes_filename;

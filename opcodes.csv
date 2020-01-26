@@ -211,32 +211,32 @@ number, mnemonic, length, cycles, description
 0xc4,   CNZ,      3,      14,     Call if != 0
 0xc5,   PUSH,     1,      11,     Push B:C
 0xc6,   ADI,      2,      7,      A += imm8
-0xc7,   RST,      1,      11,     Reset
-0xc8,   RZ,       1,      8,       Return if == 0
+0xc7,   RST,      1,      11,     Reset 0
+0xc8,   RZ,       1,      8,      Return if == 0
 0xc9,   RET,      1,      10,     Return
 0xca,   JZ,       3,      10,     Jump if == 0
 0xcb,   JMP,      3,      10,     Jump
 0xcc,   CZ,       3,      14,     Call if == 0
 0xcd,   CALL,     3,      17,     Call
 0xce,   ACI,      2,      7,      A += imm8 (carry)
-0xcf,   RST,      1,      11,     Reset
+0xcf,   RST,      1,      11,     Reset 1
 
-0xd0,   NOP,      1,      4,      "No op"
-0xd1,   LXI,      3,      10,     "Load imm16 into B:C"
-0xd2,   STAX,     1,      7,      "Store A at [B:C]"
-0xd3,   INX,      1,      5,      "Increment B:C"
-0xd4,   INR,      1,      5,      "Increment B"
-0xd5,   DCR,      1,      5,      "Decrement B"
-0xd6,   HLT,      1,      7,      "Halt"
-0xd7,   RLC,      1,      4,      "Rotate A left"
-0xd8,   NOP,      1,      4,      "No op"
-0xd9,   DAD,      1,      10,     "Add B:C to H:L"
-0xda,   LDAX,     1,      7,      "Load [B:C] into A"
-0xdb,   DCX,      1,      5,      "Decrement B:C"
-0xdc,   INR,      1,      5,      "Increment C"
-0xdd,   DCR,      1,      5,      "Decrement C"
-0xde,   MVI,      2,      7,      "Move imm8 to C"
-0xdf,   RRC,      1,      4,      "Rotate A right"
+0xd0,   RNC,      1,      8,      Return if not carry
+0xd1,   POP,      1,      10,     POP D:E
+0xd2,   JNC,      3,      10,     Jump if not carry
+0xd3,   OUT,      2,      10,     Output
+0xd4,   CNC,      3,      14,     Call if not carry
+0xd5,   PUSH,     1,      11,     Push D:E
+0xd6,   SUI,      2,      7,      A -= imm8 (carry)
+0xd7,   RST,      1,      11,     Reset 2
+0xd8,   RC,       1,      8,      Return if carry
+0xd9,   RET,      1,      10,     Return
+0xda,   JC,       3,      10,     Jump if carry
+0xdb,   IN,       3,      10,     Input
+0xdc,   CC,       3,      14,     Call if carry
+0xdd,   CALL,     3,      17,     Call
+0xde,   SBI,      2,      7,      A -= imm8 (carry)
+0xdf,   RST,      1,      11,     Reset 3
 
 0xe0,   NOP,      1,      4,      "No op"
 0xe1,   LXI,      3,      10,     "Load imm16 into B:C"

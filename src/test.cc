@@ -5,7 +5,7 @@ uint8_t a, b, c, d, e, h, l;
 uint8_t m;
 Rand16 hl, val;
 uint16_t sp;
-bool zero_flag;
+bool zero_flag, carry_flag;
 
 int randint(int min, int max)
 {
