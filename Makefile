@@ -16,7 +16,8 @@ test_opcodes_sub.o \
 test_opcodes_bitwise.o \
 test_opcodes_0xcx.o \
 test_opcodes_0xdx.o \
-test_opcodes_0xex.o
+test_opcodes_0xex.o \
+test_opcodes_0xfx.o
 
 all: $(EXE)
 clean:

@@ -72,6 +72,7 @@ uint8_t CPU::get_register(Register x)
     case Register::H: return h; break; 
     case Register::L: return l; break; 
     case Register::M: return load(h<<8|l); break;
+    case Register::FLAGS: return flags; break;
     default: return 0; break;
   }
 }
@@ -88,6 +89,7 @@ void CPU::set_register(Register x, uint8_t value)
     case Register::H: h = value; break; 
     case Register::L: l = value; break; 
     case Register::M: store(h<<8|l, value); break;
+    case Register::FLAGS: flags = value; break;
     default: break;
   }
 }

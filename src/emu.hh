@@ -75,6 +75,9 @@ class Emulator
     void pchl(void);
     void xri(void);
     void xchg(void);
+    void ori(void);
+    void sphl(void);
+    void cpi(void);
 
   public:
     static const std::string opcodes_filename;

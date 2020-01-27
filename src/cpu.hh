@@ -10,7 +10,8 @@
 enum class Register : uint8_t {
   A, B, C, D, E, H, L, // main registers
   SP,                  // stack pointer treated as register
-  M                    // Memory = [H:L]
+  M,                   // Memory = [H:L]
+  FLAGS                // FLAGS
 };
 
 enum class Flag : uint8_t {
