@@ -82,7 +82,12 @@ void Emulator::execute_opcode(uint8_t opcode)
     printf("H:%02x ", cpu->get_register(Register::H));
     printf("L:%02x] ", cpu->get_register(Register::L));
 
-    printf("[F:%04x SP:%04x -> %04x]\n", cpu->flags, cpu->sp, cpu->load(cpu->sp));
+    printf(
+      "[F:%04x SP:%04x -> %04x]\n",
+      cpu->flags,
+      cpu->sp,
+      cpu->load(cpu->sp+1) << 8 | cpu->load(cpu->sp)
+    );
   #endif
 
   bool inc_pc = true;
@@ -329,6 +334,23 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xdd: inc_pc = call(true); break;
     case 0xde: sbi(); break;
     case 0xdf: rst(3); inc_pc = false; break;
+
+    case 0xe0: inc_pc = ret(!cpu->get_flag(Flag::P)); break;
+    case 0xe1: pop(Register::H, Register::L); break;
+    case 0xe2: inc_pc = jmp(!cpu->get_flag(Flag::P)); break;
+    case 0xe3: xthl(); break;
+    case 0xe4: inc_pc = call(!cpu->get_flag(Flag::P)); break;
+    case 0xe5: push(Register::H, Register::L); break;
+    case 0xe6: ani(); break;
+    case 0xe7: rst(4); inc_pc = false; break;
+    case 0xe8: inc_pc = ret(cpu->get_flag(Flag::P)); break;
+    case 0xe9: pchl(); inc_pc = false; break;
+    case 0xea: inc_pc = jmp(cpu->get_flag(Flag::P)); break;
+    case 0xeb: xchg(); break;
+    case 0xec: inc_pc = call(cpu->get_flag(Flag::P)); break;
+    case 0xed: inc_pc = call(true); break;
+    case 0xee: xri(); break;
+    case 0xef: rst(5); inc_pc = false; break;
 
     default: std::cerr << "Unknown opcode\n"; break;
   }
@@ -738,4 +760,50 @@ void Emulator::sbi(void)
   cpu->set_register(Register::A, res);
   cpu->affect_flags(affected, a, res);
   cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::xthl(void)
+{
+  uint8_t h = cpu->get_register(Register::H);
+  uint8_t l = cpu->get_register(Register::L);
+  uint8_t sp_h = cpu->load(cpu->get_sp() + 1);
+  uint8_t sp_l = cpu->load(cpu->get_sp());
+
+  cpu->set_register(Register::H, sp_h);
+  cpu->set_register(Register::L, sp_l);
+  cpu->store(cpu->get_sp() + 1, h);
+  cpu->store(cpu->get_sp(), l);
+}
+
+void Emulator::ani(void)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a & cpu->get_imm8();
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::pchl(void)
+{
+  cpu->set_pc(cpu->get_register_pair(Register::H, Register::L));
+}
+
+void Emulator::xri(void)
+{
+  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
+  uint8_t a = cpu->get_register(Register::A);
+  uint8_t res = a ^ cpu->get_imm8();
+  cpu->set_register(Register::A, res);
+  cpu->affect_flags(affected, a, res);
+  cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::xchg(void)
+{
+  uint16_t hl = cpu->get_register_pair(Register::H, Register::L);
+  uint16_t de = cpu->get_register_pair(Register::D, Register::E);
+  cpu->set_register_pair(Register::H, Register::L, de);
+  cpu->set_register_pair(Register::D, Register::E, hl);
 }

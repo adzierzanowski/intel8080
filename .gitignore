@@ -5,3 +5,4 @@ test
 i8080emu
 *.bin
 __pycache__
+debug

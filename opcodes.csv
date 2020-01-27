@@ -238,36 +238,36 @@ number, mnemonic, length, cycles, description
 0xde,   SBI,      2,      7,      A -= imm8 (carry)
 0xdf,   RST,      1,      11,     Reset 3
 
-0xe0,   NOP,      1,      4,      "No op"
-0xe1,   LXI,      3,      10,     "Load imm16 into B:C"
-0xe2,   STAX,     1,      7,      "Store A at [B:C]"
-0xe3,   INX,      1,      5,      "Increment B:C"
-0xe4,   INR,      1,      5,      "Increment B"
-0xe5,   DCR,      1,      5,      "Decrement B"
-0xe6,   HLT,      1,      7,      "Halt"
-0xe7,   RLC,      1,      4,      "Rotate A left"
-0xe8,   NOP,      1,      4,      "No op"
-0xe9,   DAD,      1,      10,     "Add B:C to H:L"
-0xea,   LDAX,     1,      7,      "Load [B:C] into A"
-0xeb,   DCX,      1,      5,      "Decrement B:C"
-0xec,   INR,      1,      5,      "Increment C"
-0xed,   DCR,      1,      5,      "Decrement C"
-0xee,   MVI,      2,      7,      "Move imm8 to C"
-0xef,   RRC,      1,      4,      "Rotate A right"
+0xe0,   RPO,      1,      8,      Return if parity odd
+0xe1,   POP,      1,      10,     POP H:L
+0xe2,   JPO,      3,      10,     Jump if parity odd
+0xe3,   XTHL,     1,      18,     [SP] <-> H:L
+0xe4,   CPO,      3,      14,     Call if parity odd
+0xe5,   PUSH,     1,      11,     Push H:L
+0xe6,   ANI,      2,      7,      A &= imm8
+0xe7,   RST,      1,      11,     Reset 4
+0xe8,   RPE,      1,      8,      Return if parity even
+0xe9,   PCHL,     1,      5,      PC <- H:L
+0xea,   JPE,      3,      10,     Jump if parity even
+0xeb,   XCHG,     1,      5,      D:E <-> H:L
+0xec,   CPE,      3,      14,     Call if parity even
+0xed,   CALL,     3,      17,     Call
+0xee,   XRI,      2,      7,      A ^= imm8
+0xef,   RST,      1,      11,     Reset 5
 
-0xf0,   NOP,      1,      4,      "No op"
-0xf1,   LXI,      3,      10,     "Load imm16 into B:C"
-0xf2,   STAX,     1,      7,      "Store A at [B:C]"
-0xf3,   INX,      1,      5,      "Increment B:C"
-0xf4,   INR,      1,      5,      "Increment B"
-0xf5,   DCR,      1,      5,      "Decrement B"
-0xf6,   HLT,      1,      7,      "Halt"
-0xf7,   RLC,      1,      4,      "Rotate A left"
-0xf8,   NOP,      1,      4,      "No op"
-0xf9,   DAD,      1,      10,     "Add B:C to H:L"
-0xfa,   LDAX,     1,      7,      "Load [B:C] into A"
-0xfb,   DCX,      1,      5,      "Decrement B:C"
-0xfc,   INR,      1,      5,      "Increment C"
-0xfd,   DCR,      1,      5,      "Decrement C"
-0xfe,   MVI,      2,      7,      "Move imm8 to C"
-0xff,   RRC,      1,      4,      "Rotate A right"
+0xf0,   RP,       1,      8,      Return if sign +
+0xf1,   POP,      1,      10,     POP A:FLAGS
+0xf2,   JP,       3,      10,     Jump if sign +
+0xf3,   DI,       1,      4,      Disable interrupts
+0xf4,   CP,       3,      14,     Call if sign +
+0xf5,   PUSH,     1,      11,     Push A:FLAGS
+0xf6,   ORI,      2,      7,      A |= imm8
+0xf7,   RST,      1,      11,     Reset 6
+0xf8,   RM,       1,      8,      Return if sign -
+0xf9,   SPHL,     1,      5,      SP <- H:L
+0xfa,   JM,       3,      10,     Jump if sign -
+0xfb,   EI,       1,      4,      Enable interrupts
+0xfc,   CM,       3,      14,     Call if sign +
+0xfd,   CALL,     3,      17,     Call
+0xfe,   CPI,      2,      7,      A == imm8
+0xff,   RST,      1,      11,     Reset 8

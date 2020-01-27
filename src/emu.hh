@@ -70,6 +70,11 @@ class Emulator
     void pop(Register x, Register y);
     void sui(void);
     void sbi(void);
+    void xthl(void);
+    void ani(void);
+    void pchl(void);
+    void xri(void);
+    void xchg(void);
 
   public:
     static const std::string opcodes_filename;
