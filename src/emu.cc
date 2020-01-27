@@ -321,7 +321,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xd0: inc_pc = ret(!cpu->get_flag(Flag::C)); break;
     case 0xd1: pop(Register::D, Register::E); break;
     case 0xd2: inc_pc = jmp(!cpu->get_flag(Flag::C)); break;
-    // TODO: case 0xd3: out(); break;
+    case 0xd3: out(); break;
     case 0xd4: inc_pc = call(!cpu->get_flag(Flag::C)); break;
     case 0xd5: push(Register::D, Register::E); break;
     case 0xd6: sui(); break;
@@ -409,7 +409,6 @@ void Emulator::inx(Register x)
 
 void Emulator::inr(Register x)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t before, after;
 
   if (x == Register::M)
@@ -418,19 +417,18 @@ void Emulator::inr(Register x)
     before = cpu->load(addr);
     after = before + 1;
     cpu->store(addr, after);
-    cpu->affect_flags(affected, before, after);
+    cpu->affect_flags_szap(before, after);
     return;
   }
 
   before = cpu->get_register(x);
   after = before + 1;
   cpu->set_register(x, cpu->get_register(x) + 1);
-  cpu->affect_flags(affected, before, after);
+  cpu->affect_flags_szap(before, after);
 }
 
 void Emulator::dcr(Register x)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t before, after;
 
   if (x == Register::M)
@@ -439,14 +437,14 @@ void Emulator::dcr(Register x)
     before = cpu->load(addr);
     after = before - 1;
     cpu->store(addr, after);
-    cpu->affect_flags(affected, before, after);
+    cpu->affect_flags_szap(before, after);
     return;
   }
 
   before = cpu->get_register(x);
   after = before - 1;
   cpu->set_register(x, after);
-  cpu->affect_flags(affected, before, after);
+  cpu->affect_flags_szap(before, after);
 }
 
 void Emulator::mvi(Register x)
@@ -579,98 +577,82 @@ void Emulator::mov(Register dst, Register src)
 
 void Emulator::add(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a + val;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::adc(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t carry = cpu->get_flag(Flag::C) ? 1 : 0;
   uint8_t res = a + val + carry;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::sub(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a - val;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
 void Emulator::sbb(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t carry = cpu->get_flag(Flag::C) ? 1 : 0;
   uint8_t res = a - val - carry;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
 void Emulator::ana(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a & val;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, false);
 }
 
 void Emulator::xra(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a ^ val;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, false);
 }
 
 void Emulator::ora(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a | val;
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, false);
 }
 
 void Emulator::cmp(Register src)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
-
   uint8_t a = cpu->get_register(Register::A);
   uint8_t val = cpu->get_register(src);
   uint8_t res = a - val;
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
@@ -727,21 +709,19 @@ void Emulator::rst(uint8_t n)
 
 void Emulator::aci(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a + cpu->get_imm8() + (uint8_t) cpu->get_flag(Flag::C);
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res < a);
 }
 
 void Emulator::adi(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a + cpu->get_imm8();
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res < a);
 }
 
@@ -761,21 +741,19 @@ void Emulator::pop(Register x, Register y)
 
 void Emulator::sui(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a - cpu->get_imm8();
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
 void Emulator::sbi(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a - cpu->get_imm8() - (uint8_t) cpu->get_flag(Flag::C);
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
@@ -794,11 +772,10 @@ void Emulator::xthl(void)
 
 void Emulator::ani(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a & cpu->get_imm8();
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
@@ -809,11 +786,10 @@ void Emulator::pchl(void)
 
 void Emulator::xri(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a ^ cpu->get_imm8();
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
@@ -827,11 +803,10 @@ void Emulator::xchg(void)
 
 void Emulator::ori(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a | cpu->get_imm8();
   cpu->set_register(Register::A, res);
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
 }
 
@@ -842,9 +817,13 @@ void Emulator::sphl(void)
 
 void Emulator::cpi(void)
 {
-  Flag affected = Flag::S | Flag::Z | Flag::AC | Flag::P;
   uint8_t a = cpu->get_register(Register::A);
   uint8_t res = a - cpu->get_imm8();
-  cpu->affect_flags(affected, a, res);
+  cpu->affect_flags_szap(a, res);
   cpu->set_flag(Flag::C, res > a);
+}
+
+void Emulator::out(void)
+{
+  printf("%c", cpu->get_register(Register::A));
 }

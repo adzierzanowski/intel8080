@@ -1,22 +1,6 @@
 #include "cpu.hh"
 
 
-Flag operator |(Flag f, Flag g)
-{
-  return static_cast<Flag>(
-    static_cast<uint8_t>(f) |
-    static_cast<uint8_t>(g)
-  );
-}
-
-bool operator &(Flag f, Flag g)
-{
-  return static_cast<bool>(
-    static_cast<uint8_t>(f) &
-    static_cast<uint8_t>(g)
-  );
-}
-
 bool CPU::aux_carry(uint8_t before, uint8_t after)
 {
   uint8_t a = before;
@@ -178,19 +162,12 @@ void CPU::set_flag(Flag f, bool set)
   }
 }
 
-void CPU::affect_flags(Flag affected, uint8_t before, uint8_t after)
+void CPU::affect_flags_szap(uint8_t before, uint8_t after)
 {
-  if (affected & Flag::S)
-    set_flag(Flag::S, after >= 0x7f);
-
-  if (affected & Flag::Z)
-    set_flag(Flag::Z, after == 0);
-
-  if (affected & Flag::AC)
-    set_flag(Flag::AC, CPU::aux_carry(before, after));
-  
-  if (affected & Flag::P)
-    set_flag(Flag::P, CPU::even_parity(after));
+  set_flag(Flag::S, after >= 0x7f);
+  set_flag(Flag::Z, after == 0);
+  set_flag(Flag::AC, CPU::aux_carry(before, after));
+  set_flag(Flag::P, CPU::even_parity(after));
 }
 
 void CPU::push(uint16_t val)

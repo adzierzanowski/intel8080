@@ -25,9 +25,6 @@ enum class Flag : uint8_t {
   C = 0b00000001  // Carry     - set if last op resulted in a carry/borrow
 };
 
-Flag operator |(Flag f, Flag g);
-bool operator &(Flag f, Flag g);
-
 class CPU
 {
   friend class Emulator;
@@ -71,7 +68,7 @@ class CPU
 
     bool get_flag(Flag f);
     void set_flag(Flag f, bool set);
-    void affect_flags(Flag affected, uint8_t before, uint8_t after);
+    void affect_flags_szap(uint8_t before, uint8_t after);
 
     void push(uint16_t addr);
     uint16_t pop(void);
