@@ -3,7 +3,11 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
 
+#include <boost/algorithm/string.hpp>
 
 struct Opcode
 {
@@ -21,5 +25,7 @@ struct Opcode
     std::string description
   );
 };
+
+std::vector<Opcode> load_opcodes(std::string filename);
 
 #endif

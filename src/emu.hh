@@ -5,12 +5,10 @@
 #include <cstdlib>
 #include <memory>
 #include <vector>
-#include <fstream>
 #include <string>
 #include <iostream> // DEBUG
 #include <boost/format.hpp> // DEBUG
 
-#include <boost/algorithm/string.hpp>
 
 #include "cpu.hh"
 #include "opcode.hh"
@@ -23,8 +21,6 @@ class Emulator
     std::unique_ptr<CPU> cpu;
     std::vector<Opcode> opcodes;
     bool execute_flag;
-
-    void load_opcodes(void);
 
     void nop(void);
     void lxi(Register x, Register y);

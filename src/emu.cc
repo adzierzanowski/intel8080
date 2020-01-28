@@ -8,48 +8,12 @@ Emulator::Emulator(void) :
   opcodes{std::vector<Opcode>()},
   execute_flag{false}
 {
-  load_opcodes();
+  opcodes = load_opcodes(Emulator::opcodes_filename);
 }
 
 void Emulator::load_program(std::vector<uint8_t> prog, uint16_t address)
 {
   cpu->load_program(prog, address);
-}
-
-void Emulator::load_opcodes(void)
-{
-  std::ifstream opfile(Emulator::opcodes_filename);
-  if (opfile.fail())
-  {
-    std::cerr << "Failed to load opcodes\n";
-    std::exit(1);
-  }
-
-  std::string line;
-  std::getline(opfile, line); // Skip the header
-  int i = 0;
-  while (std::getline(opfile, line))
-  {
-    if (line != "")
-    {
-      std::vector<std::string> split_line;
-      boost::split(split_line, line, boost::is_any_of(","));
-
-      uint8_t op_number = i;
-      std::string op_mnemonic = split_line[1];
-      uint8_t op_length = std::stoul(split_line[2]);
-      uint8_t op_cycles = std::stoul(split_line[3]);
-      std::string op_description = split_line[4];
-
-      boost::trim(op_mnemonic);
-      boost::trim(op_description);
-
-      Opcode op(op_number, op_length, op_cycles, op_mnemonic, op_description);
-      opcodes.push_back(op);
-
-      i++;
-    }
-  }
 }
 
 void Emulator::execute(void)
