@@ -48,8 +48,8 @@ void Emulator::execute_opcode(uint8_t opcode)
 
     printf(
       "[F:%04x SP:%04x -> %04x]\n",
-      cpu->flags,
-      cpu->sp,
+      cpu->get_register(Register::FLAGS),
+      cpu->get_sp(),
       cpu->load(cpu->sp+1) << 8 | cpu->load(cpu->sp)
     );
   #endif
