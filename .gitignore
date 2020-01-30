@@ -6,3 +6,5 @@ i8080emu
 *.bin
 __pycache__
 debug
+scratchpad.cc
+a.out

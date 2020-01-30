@@ -80,6 +80,7 @@ class Emulator
     static const std::string opcodes_filename;
     Emulator(void);
     void load_program(std::vector<uint8_t> prog, uint16_t address=0);
+    void load_hex(std::string filename);
     void execute(void);
     void execute_opcode(uint8_t opcode);
 };
