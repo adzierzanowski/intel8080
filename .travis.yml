@@ -2,12 +2,14 @@ language: cpp
 compiler: clang
 addons: 
   apt: 
-    packages: libboost-all-dev
+    sources: 
+      - sourceline: 'ppa:snaipewastaken/ppa'
+    packages:
+      - criterion-dev
+      - clang
+      - libboost-all-dev
+    update: true
 install:
-  - sudo add-apt-repository ppa:snaipewastaken/ppa
-  - sudo apt-get update
-  - sudo apt-get install criterion-dev
-  - sudo apt-get install clang
   - make build
   - make
 script:
