@@ -1,3 +1,4 @@
+os: linux
 language: cpp
 compiler: clang
 addons: 
@@ -10,6 +11,7 @@ addons:
       - libboost-all-dev
     update: true
 install:
+  - git submodule update --init
   - make build
   - make
 script:

@@ -3,16 +3,38 @@
 #include <boost/format.hpp>
 
 #include "emu.hh"
+#include "../argparser/src/argparser.h"
 
 
 int main(int argc, char *argv[])
 {
-  Emulator emu;
-  emu.load_program({
-    0x21, 0x10, 0x00, 0x7E, 0xB7, 0xCA, 0x0E, 0x00, 0xD3, 0x01, 0x23, 0xC3,
-    0x03, 0x00, 0x76, 0x00, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F,
-    0x72, 0x6C, 0x64, 0x21, 0x76
-  });
-  emu.execute();
+  struct argparser_t *parser = argparser_new("emu");
+  struct option_init_t opt;
+
+  opt.short_name = "-h";
+  opt.long_name = "--help";
+  opt.help = "show this help message and exit";
+  opt.required = false;
+  opt.takes_arg = false;
+  argparser_from_struct(parser, &opt);
+
+  opt.short_name = "-i";
+  opt.long_name = "--interpreter";
+  opt.help = "run in interpreter mode";
+  opt.required = false;
+  opt.takes_arg = false;
+  argparser_from_struct(parser, &opt);
+
+  argparser_parse(parser, argc, argv);
+
+  if (argparser_passed(parser, "--help"))
+  {
+    std::cout << "Intel8080 emulator\n\n";
+    argparser_usage(parser);
+    return 0;
+  }
+
+  argparser_free(parser);
+
   return 0;
 }

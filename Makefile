@@ -4,7 +4,7 @@ BUILD = build
 CXXFLAGS = -std=c++17 -Wall -Wpedantic -Og -g -DDEBUG
 
 EXE = $(addprefix $(BUILD)/, emu test)
-OBJECTS = $(addprefix $(BUILD)/, opcode.o ram.o cpu.o emu.o)
+OBJECTS = $(addprefix $(BUILD)/, opcode.o ram.o cpu.o emu.o argparser.o)
 TEST_OBJECTS = test_cpu.o \
 test_opcodes_0x0x.o \
 test_opcodes_0x1x.o \
@@ -28,6 +28,9 @@ $(BUILD)/emu: $(addprefix $(BUILD)/, main.o) $(OBJECTS)
 
 $(BUILD)/test: $(addprefix $(BUILD)/, test.o) $(OBJECTS) $(addprefix $(BUILD)/, $(TEST_OBJECTS))
 	$(CXX) $(CXXFLAGS) -lcriterion $(OBJECTS) $(addprefix $(BUILD)/, $(TEST_OBJECTS)) $< -o $@
+
+$(BUILD)/argparser.o: argparser/src/argparser.c
+	$(CC) -c $< -o $@
 
 $(BUILD)/test_%.o: $(SRC)/tests/test_%.cc
 	$(CXX) $(CXXFLAGS) -Wno-keyword-macro -c $< -o $@

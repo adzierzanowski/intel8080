@@ -1,5 +1,7 @@
 # Intel 8080 emulator
 
+[![Build Status](https://travis-ci.com/adzierzanowski/intel8080.svg?branch=rewrite)](https://travis-ci.com/adzierzanowski/intel8080)
+
 This is a work in progress.
 
 There is a rather sketchy but working implementation on the master branch.
