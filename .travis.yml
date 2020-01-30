@@ -5,6 +5,7 @@ addons:
     packages: libboost-all-dev
 install:
   - sudo apt-get install clang
+  - make build
   - make
 script:
   - ./build/test
