@@ -1,6 +1,7 @@
 #ifndef RAM_H
 #define RAM_H
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 

@@ -1,6 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <vector>
