@@ -1,12 +1,15 @@
-os: osx
+os: linux
 language: cpp
 compiler: clang
 addons: 
-  homebrew: 
+  apt: 
+    sources: 
+      - sourceline: 'ppa:snaipewastaken/ppa'
     packages:
       - cmake
-      - snaipe/soft/criterion
-      - boost
+      - criterion-dev
+      - clang
+      - libboost-all-dev
     update: true
 install:
   - git submodule update --init
