@@ -6,7 +6,8 @@ const std::string Emulator::opcodes_filename = "opcodes.csv";
 Emulator::Emulator(void) :
   cpu{std::make_unique<CPU>()},
   opcodes{std::vector<Opcode>()},
-  execute_flag{false}
+  execute_flag{false},
+  verbose_execution{false}
 {
   opcodes = load_opcodes(Emulator::opcodes_filename);
 }
@@ -26,33 +27,42 @@ void Emulator::execute(void)
     execute();
 }
 
+std::string Emulator::dump(void)
+{
+  std::stringstream out;
+  out << "A:" << boost::format("%02x") % cpu->get_register(Register::A) << " ";
+  out << "B:" << boost::format("%02x") % cpu->get_register(Register::B) << " ";
+  out << "C:" << boost::format("%02x") % cpu->get_register(Register::C) << " ";
+  out << "D:" << boost::format("%02x") % cpu->get_register(Register::D) << " ";
+  out << "E:" << boost::format("%02x") % cpu->get_register(Register::E) << " ";
+  out << "H:" << boost::format("%02x") % cpu->get_register(Register::H) << " ";
+  out << "L:" << boost::format("%02x") % cpu->get_register(Register::L) << " ";
+
+  out << "[PC:" << boost::format("%04x") % cpu->get_pc() << " ";
+  out << "SP:" << boost::format("%04x->%04x")
+    % cpu->get_sp()
+    % (cpu->load(cpu->get_sp() + 1) << 8 | cpu->load(cpu->get_sp()));
+
+  out << " FLAGS:" << +cpu->get_register(Register::FLAGS) << "]";
+
+  return out.str();
+}
+
+void Emulator::set_verbose_execution(bool flag)
+{
+  verbose_execution = flag;
+}
+
 void Emulator::execute_opcode(uint8_t opcode)
 {
   auto op = opcodes[opcode];
 
-  #ifdef DEBUG
-    printf(
-      "0x%04x %02x %-5s %-20s",
-      cpu->get_pc(),
-      opcode,
-      op.mnemonic.c_str(),
-      op.description.c_str()
-    );
-    printf("[A:%02x ", cpu->get_register(Register::A));
-    printf("B:%02x ", cpu->get_register(Register::B));
-    printf("C:%02x ", cpu->get_register(Register::C));
-    printf("D:%02x ", cpu->get_register(Register::D));
-    printf("E:%02x ", cpu->get_register(Register::E));
-    printf("H:%02x ", cpu->get_register(Register::H));
-    printf("L:%02x] ", cpu->get_register(Register::L));
-
-    printf(
-      "[F:%04x SP:%04x -> %04x]\n",
-      cpu->get_register(Register::FLAGS),
-      cpu->get_sp(),
-      cpu->load(cpu->sp+1) << 8 | cpu->load(cpu->sp)
-    );
-  #endif
+  if (verbose_execution)
+  {
+    std::cout << boost::format("%02x %-5s %-20s")
+      % +opcode % op.mnemonic % op.description;
+    std::cout << dump() << "\n";
+  }
 
   bool inc_pc = true;
 

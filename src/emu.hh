@@ -7,20 +7,22 @@
 #include <vector>
 #include <string>
 #include <iostream> // DEBUG
+#include <sstream>
 #include <boost/format.hpp> // DEBUG
 
 
 #include "cpu.hh"
 #include "opcode.hh"
 
-
 class Emulator
 {
+  friend class Interpreter;
 
   private:
     std::unique_ptr<CPU> cpu;
     std::vector<Opcode> opcodes;
     bool execute_flag;
+    bool verbose_execution;
 
     void nop(void);
     void lxi(Register x, Register y);
@@ -83,6 +85,8 @@ class Emulator
     void load_hex(std::string filename);
     void execute(void);
     void execute_opcode(uint8_t opcode);
+    std::string dump(void);
+    void set_verbose_execution(bool flag);
 };
 
 #endif
