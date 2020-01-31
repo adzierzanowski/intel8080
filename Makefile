@@ -4,7 +4,15 @@ BUILD = build
 CXXFLAGS = -std=c++17 -Wall -Wpedantic -Og -g -DDEBUG
 
 EXE = $(addprefix $(BUILD)/, emu test)
-OBJECTS = $(addprefix $(BUILD)/, opcode.o ram.o cpu.o emu.o argparser.o)
+OBJECTS_ = opcode.o \
+ram.o \
+cpu.o \
+emu.o \
+argparser.o \
+interpreter.o \
+file_loader.o
+OBJECTS = $(addprefix $(BUILD)/, $(OBJECTS_))
+
 TEST_OBJECTS = test_cpu.o \
 test_opcodes_0x0x.o \
 test_opcodes_0x1x.o \
