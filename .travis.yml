@@ -9,7 +9,7 @@ addons:
       - cmake
       - criterion-dev
       - clang
-      - libboost-all-dev
+      - libboost1.71-all-dev
     update: true
 install:
   - git submodule update --init
