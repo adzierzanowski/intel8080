@@ -1,12 +1,10 @@
 os: linux
-dist: bionic
 language: cpp
 compiler: clang
 addons: 
   apt: 
     sources: 
       - sourceline: 'ppa:snaipewastaken/ppa'
-      - sourceline: 'ppa:mhier/libboost-latest'
     packages:
       - cmake
       - criterion-dev
