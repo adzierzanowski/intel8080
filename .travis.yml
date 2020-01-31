@@ -13,6 +13,7 @@ addons:
     update: true
 install:
   - git submodule update --init
-  - make
+  - mkdir build
+  - cd build && cmake .. && make
 script:
   - ./build/test
