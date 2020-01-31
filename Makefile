@@ -1,7 +1,7 @@
 SRC = src
 BUILD = build
 
-CXXFLAGS = -std=c++17 -Wall -Wpedantic -Og -g -DDEBUG
+CXXFLAGS = -std=c++17 -Wall -Wpedantic -O3
 
 EXE = $(addprefix $(BUILD)/, emu test)
 OBJECTS_ = opcode.o \

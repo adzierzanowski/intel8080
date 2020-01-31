@@ -1,6 +1,6 @@
 #include "emu.hh"
 
-
+// TODO: relative to exe location
 const std::string Emulator::opcodes_filename = "opcodes.csv";
 
 Emulator::Emulator(void) :
@@ -27,23 +27,31 @@ void Emulator::execute(void)
     execute();
 }
 
-std::string Emulator::dump(void)
+std::string Emulator::dump_gpr(void)
 {
   std::stringstream out;
-  out << "A:" << boost::format("%02x") % cpu->get_register(Register::A) << " ";
-  out << "B:" << boost::format("%02x") % cpu->get_register(Register::B) << " ";
-  out << "C:" << boost::format("%02x") % cpu->get_register(Register::C) << " ";
-  out << "D:" << boost::format("%02x") % cpu->get_register(Register::D) << " ";
-  out << "E:" << boost::format("%02x") % cpu->get_register(Register::E) << " ";
-  out << "H:" << boost::format("%02x") % cpu->get_register(Register::H) << " ";
-  out << "L:" << boost::format("%02x") % cpu->get_register(Register::L) << " ";
+
+  out << "A:" << boost::format("%02x") % +cpu->get_register(Register::A) << " ";
+  out << "B:" << boost::format("%02x") % +cpu->get_register(Register::B) << " ";
+  out << "C:" << boost::format("%02x") % +cpu->get_register(Register::C) << " ";
+  out << "D:" << boost::format("%02x") % +cpu->get_register(Register::D) << " ";
+  out << "E:" << boost::format("%02x") % +cpu->get_register(Register::E) << " ";
+  out << "H:" << boost::format("%02x") % +cpu->get_register(Register::H) << " ";
+  out << "L:" << boost::format("%02x") % +cpu->get_register(Register::L);
+
+  return out.str();
+}
+
+std::string Emulator::dump_state_registers(void)
+{
+  std::stringstream out;
 
   out << "[PC:" << boost::format("%04x") % cpu->get_pc() << " ";
   out << "SP:" << boost::format("%04x->%04x")
     % cpu->get_sp()
     % (cpu->load(cpu->get_sp() + 1) << 8 | cpu->load(cpu->get_sp()));
 
-  out << " FLAGS:" << +cpu->get_register(Register::FLAGS) << "]";
+  out << " FLAGS:" << std::bitset<8>(cpu->get_register(Register::FLAGS)) << "]";
 
   return out.str();
 }
@@ -59,9 +67,10 @@ void Emulator::execute_opcode(uint8_t opcode)
 
   if (verbose_execution)
   {
+    std::cout << dump_state_registers() << "\n";
+    std::cout << dump_gpr() << "\n";
     std::cout << boost::format("%02x %-5s %-20s")
-      % +opcode % op.mnemonic % op.description;
-    std::cout << dump() << "\n";
+      % +opcode % op.mnemonic % op.description << "\n\n";
   }
 
   bool inc_pc = true;

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include <boost/format.hpp>
@@ -51,19 +52,34 @@ int main(int argc, char *argv[])
   if (parser->positional_count > 1)
   {
     std::string filename = std::string(parser->positional[1]);
-    if (boost::algorithm::ends_with(filename, ".hex"))
+    FileLoader file(filename);
+    std::vector<std::string> fname_split;
+    boost::split(fname_split, filename, boost::is_any_of("."));
+    std::string extension = fname_split.back();
+
+    if (extension == "hex")
     {
-      FileLoader hexfile_loader(filename);
-      hexfile_loader.load_hex();
+      file.load_hex();
+    }
+    else if (extension == "bin")
+    {
+      file.load_bin();
+    }
+
+    std::vector<std::string> exe_exts = {"bin", "hex"};
+    if (std::find(exe_exts.begin(), exe_exts.end(), extension) != exe_exts.end())
+    {
       Emulator emu;
       if (argparser_passed(parser, "--verbose"))
+      {
         emu.set_verbose_execution(true);
-      emu.load_program(hexfile_loader.get_binary());
+      }
+      emu.load_program(file.get_binary());
       emu.execute();
     }
     else
     {
-      std::cerr << "Unrecognized file format for " << filename << ".\n";
+      std::cerr << "Unrecognized file format for '" << filename << "'.\n";
       argparser_free(parser);
       return 1;
     }

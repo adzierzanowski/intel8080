@@ -10,7 +10,8 @@ void Interpreter::parse_line(std::string line)
 
   if (splitline[0] == ".dump")
   {
-    std::cout << emu->dump() << "\n";
+    std::cout << emu->dump_state_registers() << "\n";
+    std::cout << emu->dump_gpr() << "\n";
   }
 }
 

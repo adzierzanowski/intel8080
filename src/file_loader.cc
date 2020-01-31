@@ -88,7 +88,13 @@ void FileLoader::load_hex(void)
 
 void FileLoader::load_bin(void)
 {
+  std::ifstream binfile(filename);
 
+  char c;
+  while(binfile.read(&c, 1))
+  {
+    binary.push_back(static_cast<uint8_t>(c));
+  }
 }
 
 void FileLoader::load_text(void)

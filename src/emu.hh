@@ -1,14 +1,16 @@
 #ifndef EMU_H
 #define EMU_H
 
+#include <bitset>
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <vector>
 #include <string>
-#include <iostream> // DEBUG
+#include <iostream>
 #include <sstream>
-#include <boost/format.hpp> // DEBUG
+#include <boost/format.hpp>
+#include <boost/dll.hpp>
 
 
 #include "cpu.hh"
@@ -85,7 +87,8 @@ class Emulator
     void load_hex(std::string filename);
     void execute(void);
     void execute_opcode(uint8_t opcode);
-    std::string dump(void);
+    std::string dump_gpr(void);
+    std::string dump_state_registers(void);
     void set_verbose_execution(bool flag);
 };
 
