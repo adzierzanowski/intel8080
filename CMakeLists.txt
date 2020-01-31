@@ -7,8 +7,8 @@ project(intel8080)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(boost)
-find_package(criterion)
+find_package(boost 1.72 REQUIRED)
+find_package(criterion REQUIRED)
 
 include_directories(inc)
 include_directories(argparser/src)

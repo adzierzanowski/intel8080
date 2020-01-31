@@ -11,8 +11,15 @@
 
 int main(int argc, char *argv[])
 {
-  struct argparser_t *parser = argparser_new("emu");
+  struct argparser_t *parser = argparser_new("i8080");
   struct option_init_t opt;
+
+  opt.short_name = "-a";
+  opt.long_name = "--assemble";
+  opt.help = "assemble file";
+  opt.required = false;
+  opt.takes_arg = false;
+  argparser_from_struct(parser, &opt);
 
   opt.short_name = "-h";
   opt.long_name = "--help";
@@ -37,10 +44,19 @@ int main(int argc, char *argv[])
 
   argparser_parse(parser, argc, argv);
 
-  if (argparser_passed(parser, "--help"))
+  if (argparser_passed(parser, "--help") || argc == 1)
   {
     std::cout << "Intel8080 emulator\n\n";
-    argparser_usage(parser);
+    std::cout << "usage: " << parser->prog_name << " ";
+    std::cout << "[-hiv] [filename]" << "\n\n";
+    for ( int i = 0; i < parser->count; i++)
+    {
+      struct option_t *opt = parser->options[i];
+      std::cout << boost::format("  %2s, %-20s %-40s")
+        % opt->short_name
+        % opt->long_name
+        % opt->help << "\n";
+    }
     return 0;
   }
   if (argparser_passed(parser, "--interpreter"))

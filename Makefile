@@ -1,5 +1,8 @@
 BUILD = build
 
+main: $(BUILD)
+	cd $< && make i8080
+
 all: $(BUILD) 
 	cd $< && make
 
