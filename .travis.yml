@@ -4,6 +4,7 @@ compiler: clang
 addons: 
   apt: 
     sources: 
+      - universe
       - sourceline: 'ppa:snaipewastaken/ppa'
     packages:
       - cmake
