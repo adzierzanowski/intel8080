@@ -6,13 +6,13 @@ addons:
     sources: 
       - sourceline: 'ppa:snaipewastaken/ppa'
     packages:
+      - cmake
       - criterion-dev
       - clang
       - libboost-all-dev
     update: true
 install:
   - git submodule update --init
-  - make build
   - make
 script:
   - ./build/test

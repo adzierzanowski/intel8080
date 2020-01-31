@@ -3,7 +3,7 @@
 
 #include <criterion/criterion.h>
 
-#include "../test.hh"
+#include "test.hh"
 
 
 void test_mov_init();

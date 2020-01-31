@@ -3,8 +3,8 @@
 
 #include <criterion/criterion.h>
 
-#include "../test.hh"
-#include "../emu.hh"
+#include "test.hh"
+#include "emu.hh"
 
 
 void test_0x1x_init(void);

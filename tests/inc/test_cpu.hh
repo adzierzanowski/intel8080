@@ -5,8 +5,8 @@
 
 #include <criterion/criterion.h>
 
-#include "../test.hh"
-#include "../cpu.hh"
+#include "test.hh"
+#include "cpu.hh"
 
 
 std::unique_ptr<CPU> cpu;
