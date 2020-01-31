@@ -11,13 +11,16 @@
 class FileLoader
 {
   std::string filename;
-  std::vector<uint8_t> content;
+  std::vector<uint8_t> binary;
+  std::vector<std::string> text;
 
   public:
     FileLoader(std::string filename);
     void load_hex(void);
     void load_bin(void);
-    std::vector<uint8_t> get_content(void);
+    void load_text(void);
+    std::vector<uint8_t> get_binary(void);
+    std::vector<std::string> get_text(void);
 };
 
 #endif

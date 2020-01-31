@@ -12,7 +12,6 @@ void FileLoader::load_hex(void)
   while (std::getline(hexfile, line))
   {
     line_number++;
-    std::cout << line << std::endl;
     if (line[0] != ':')
     {
       std::cerr << filename << ":" << line_number << ": ";
@@ -35,6 +34,7 @@ void FileLoader::load_hex(void)
 
     uint8_t bytes_in_line = (uint8_t) std::stoi(bytes_in_line_str, 0, 0x10);
     uint16_t addr = (uint16_t) std::stoi(addr_str, 0, 0x10);
+    (void) addr; // Silence unused warning.
 
     std::string record_type;
     try
@@ -57,7 +57,7 @@ void FileLoader::load_hex(void)
         try
         {
           byte_str = line.substr(9+i*2, 2);
-          content.push_back((uint8_t) std::stoi(byte_str, 0, 0x10));
+          binary.push_back((uint8_t) std::stoi(byte_str, 0, 0x10));
         }
         catch (const std::out_of_range& _)
         {
@@ -91,7 +91,23 @@ void FileLoader::load_bin(void)
 
 }
 
-std::vector<uint8_t> FileLoader::get_content(void)
+void FileLoader::load_text(void)
 {
-  return content;
+  std::string line;
+  std::ifstream text_file(filename);
+
+  while (std::getline(text_file, line))
+  {
+    text.push_back(line);
+  }
+}
+
+std::vector<uint8_t> FileLoader::get_binary(void)
+{
+  return binary;
+}
+
+std::vector<std::string> FileLoader::get_text(void)
+{
+  return text;
 }
