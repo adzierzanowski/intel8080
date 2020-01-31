@@ -17,7 +17,7 @@ include_directories(${Boost_INCLUDE_DIR})
 # Main
 file(GLOB SOURCES src/*.cc)
 add_executable(i8080 ${SOURCES} argparser/src/argparser.c)
-target_link_libraries(i8080 ${CRITERION_LIBRARIES})
+target_link_libraries(i8080 ${CRITERION_LIBRARIES} ${Boost_LIBRARIES})
 
 # Tests
 file(GLOB TEST_SOURCES tests/src/*.cc ${SOURCES})
