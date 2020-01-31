@@ -5,13 +5,13 @@ compiler: clang
 addons: 
   apt: 
     sources: 
-      - universe
       - sourceline: 'ppa:snaipewastaken/ppa'
+      - sourceline: 'ppa:mhier/libboost-latest'
     packages:
       - cmake
       - criterion-dev
       - clang
-      - libboost1.65-all-dev
+      - libboost
     update: true
 install:
   - git submodule update --init
