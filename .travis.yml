@@ -10,7 +10,6 @@ addons:
     update: true
 install:
   - git submodule update --init
-  - mkdir build
   - make all
 script:
   - ./build/test
