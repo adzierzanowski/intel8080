@@ -1,12 +1,14 @@
-all: build
-	cd build && make
+BUILD = build
 
-tests:
-	cd build && make test
+all: $(BUILD) 
+	cd $< && make
 
-build:
-	- mkdir $@
-	cmake -B build
+tests: $(BUILD)
+	cd $< && make test
+
+$(BUILD):
+	mkdir $@
+	cmake -S . -B $@
 
 clean:
-	- rm -rf build
+	- rm -rf $(BUILD)
