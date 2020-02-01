@@ -80,6 +80,8 @@ class Emulator
     void sphl(void);
     void cpi(void);
     void out(void);
+    void ei(void);
+    void di(void);
 
   public:
     static const std::string opcodes_filename;

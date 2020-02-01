@@ -17,6 +17,14 @@ all: main tests
 clean:
 	- rm -rf $(BUILD)
 
+.PHONY: test
+test: rmgcda
+	./$(BUILD)/test
+
+.PHONY: rmgcda
+rmgcda:
+	find . | grep ".gcda" | xargs rm
+
 $(BUILD):
 	mkdir $@
 	cmake -S . -B $@

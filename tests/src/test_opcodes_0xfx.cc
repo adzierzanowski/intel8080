@@ -73,11 +73,11 @@ Test(opcode, 0xf2_jp, .init=test_0xfx_init, .fini=test_0xfx_fini)
   }
 }
 
-/* TODO:
 Test(opcode, 0xf3_di, .init=test_0xfx_init, .fini=test_0xfx_fini)
 {
+  emu->execute_opcode(0xf3);
+  cr_assert_eq(emu->cpu->interrupts_enabled, false);
 }
-*/
 
 Test(opcode, 0xf4_cp, .init=test_0xfx_init, .fini=test_0xfx_fini)
 {
@@ -197,11 +197,11 @@ Test(opcode, 0xfa_jm, .init=test_0xfx_init, .fini=test_0xfx_fini)
   }
 }
 
-/* TODO:
 Test(opcode, 0xfb_ei, .init=test_0xfx_init, .fini=test_0xfx_fini)
 {
+  emu->execute_opcode(0xfb);
+  cr_assert_eq(emu->cpu->interrupts_enabled, true);
 }
-*/
 
 Test(opcode, 0xfc_cm, .init=test_0xfx_init, .fini=test_0xfx_fini)
 {

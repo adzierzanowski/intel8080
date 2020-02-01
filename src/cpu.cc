@@ -24,6 +24,7 @@ bool CPU::even_parity(uint8_t val)
 CPU::CPU(void) :
   a{0}, b{0}, c{0}, d{0}, h{0}, l{0},
   sp{0}, pc{0}, flags{0b00000010},
+  interrupts_enabled{false},
   ram{std::make_unique<RAM>()}
 {
 }
@@ -181,4 +182,14 @@ uint16_t CPU::pop(void)
 {
   sp += 2;
   return (load(sp + 1 - 2) << 8) | load(sp - 2);
+}
+
+void CPU::enable_interrupts(void)
+{
+  interrupts_enabled = true;
+}
+
+void CPU::disable_interrupts(void)
+{
+  interrupts_enabled = false;
 }

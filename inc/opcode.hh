@@ -26,6 +26,4 @@ struct Opcode
   );
 };
 
-std::vector<Opcode> load_opcodes(std::string filename);
-
 #endif

@@ -340,7 +340,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xf0: inc_pc = ret(!cpu->get_flag(Flag::S)); break;
     case 0xf1: pop(Register::A, Register::FLAGS); break;
     case 0xf2: inc_pc = jmp(!cpu->get_flag(Flag::S)); break;
-    //TODO: case 0xf3: di(); break;
+    case 0xf3: di(); break;
     case 0xf4: inc_pc = call(!cpu->get_flag(Flag::S)); break;
     case 0xf5: push(Register::A, Register::FLAGS); break;
     case 0xf6: ori(); break;
@@ -348,7 +348,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xf8: inc_pc = ret(cpu->get_flag(Flag::S)); break;
     case 0xf9: sphl(); break;
     case 0xfa: inc_pc = jmp(cpu->get_flag(Flag::S)); break;
-    //TODO: case 0xfb: ei(); break;
+    case 0xfb: ei(); break;
     case 0xfc: inc_pc = call(cpu->get_flag(Flag::S)); break;
     case 0xfd: inc_pc = call(true); break;
     case 0xfe: cpi(); break;
@@ -811,4 +811,14 @@ void Emulator::cpi(void)
 void Emulator::out(void)
 {
   printf("%c", cpu->get_register(Register::A));
+}
+
+void Emulator::ei(void)
+{
+  cpu->enable_interrupts();
+}
+
+void Emulator::di(void)
+{
+  cpu->disable_interrupts();
 }
