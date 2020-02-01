@@ -6,7 +6,16 @@
 
 This is a work in progress.
 
+# Dependencies
+
+* [boost](https://www.boost.org/) 1.72
+* [criterion](https://github.com/Snaipe/Criterion)
+* [lcov](http://ltp.sourceforge.net/coverage/lcov.php)
+
 # Building
+
+This project is tested on macOS with clang. It may fail with gcc, I'll
+check that later ;)
 
 ```bash
 $ mkdir build
