@@ -1,6 +1,8 @@
 # Intel 8080 emulator
 
 [![Build Status](https://travis-ci.com/adzierzanowski/intel8080.svg?branch=master)](https://travis-ci.com/adzierzanowski/intel8080)
+[![codecov](https://codecov.io/gh/adzierzanowski/intel8080/branch/master/graph/badge.svg)](https://codecov.io/gh/adzierzanowski/intel8080)
+
 
 This is a work in progress.
 
