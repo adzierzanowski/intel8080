@@ -73,6 +73,27 @@ Test(opcode, 0x26_mvi_h, .init=test_0x2x_init, .fini=test_0x2x_fini)
   cr_assert_eq(emu->cpu->h, val);
 }
 
+Test(opcode, 0x27_daa, .init=test_0x2x_init, .fini=test_0x2x_fini)
+{
+  uint8_t a = rand8();
+  bool c = (bool) randint(0, 1);
+  bool ac = (bool) randint(0, 1);
+  emu->cpu->a = a;
+  emu->cpu->set_flag(Flag::C, c);
+  emu->cpu->set_flag(Flag::AC, ac);
+
+  bool lb_condition = ((a & 0x0f) > 9) || ac;
+  uint8_t lb_adjusted = lb_condition ? a+6 : a;
+  bool hb_condition = ((a & 0xf0) > 9) || c;
+  uint8_t hb = (a & 0xf0) >> 4;
+  uint8_t hb_adjusted = hb_condition ? lb_adjusted | ((hb+9) << 4) : lb_adjusted;
+
+
+  cr_assert_eq(emu->cpu->a, hb_adjusted);
+  test_flags_szap(a, hb_adjusted);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), hb_adjusted > a);
+}
+
 Test(opcode, 0x29_dad_hl, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   auto hl = Rand16();
