@@ -15,6 +15,7 @@
 
 #include "cpu.hh"
 #include "opcode.hh"
+#include "file_loader.hh"
 
 class Emulator
 {

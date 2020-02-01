@@ -7,12 +7,15 @@ project(intel8080)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(boost 1.72 REQUIRED)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost 1.72 REQUIRED COMPONENTS filesystem)
 find_package(criterion REQUIRED)
 
 include_directories(inc)
 include_directories(argparser/src)
 include_directories(${Boost_INCLUDE_DIR})
+
+link_libraries(Boost::filesystem)
 
 # Coverage
 add_definitions("-fprofile-arcs -ftest-coverage")
