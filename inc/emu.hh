@@ -82,6 +82,7 @@ class Emulator
     void out(void);
     void ei(void);
     void di(void);
+    void daa(void);
 
   public:
     static const std::string opcodes_filename;

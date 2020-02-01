@@ -126,7 +126,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0x24: inr(Register::H); break;
     case 0x25: dcr(Register::H); break;
     case 0x26: mvi(Register::H); break;
-    // TODO: case 0x27: daa(); break;
+    case 0x27: daa(); break;
     case 0x29: dad(Register::H, Register::L, Register::H, Register::L); break;
     case 0x2a: lhld(); break;
     case 0x2b: dcx(Register::H, Register::L); break;
@@ -821,4 +821,31 @@ void Emulator::ei(void)
 void Emulator::di(void)
 {
   cpu->disable_interrupts();
+}
+
+void Emulator::daa(void)
+{
+  uint8_t a = cpu->get_register(Register::A);
+
+  uint8_t lb = a & 0x0f;
+  bool lb_condition = (lb > 9) || cpu->get_flag(Flag::AC);
+  uint8_t lb_adj = lb_condition ? (a + 6) : a;
+
+  uint8_t hb = (lb_adj & 0xf0) >> 4;
+  bool hb_condition = (hb > 9) || cpu->get_flag(Flag::C);
+  uint8_t hb_adj;
+  if (hb_condition)
+  {
+    hb_adj = ((hb + 6) << 4) | (lb_adj & 0x0f);
+  }
+  else
+  {
+    hb_adj = lb_adj;
+  }
+
+  bool carry = ((hb_adj & 0xf0) >> 4) < hb;
+
+  cpu->set_register(Register::A, hb_adj);
+  cpu->affect_flags_szap(a, hb_adj);
+  cpu->set_flag(Flag::C, carry);
 }
