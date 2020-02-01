@@ -1,10 +1,24 @@
 # Intel 8080 emulator
 
-[![Build Status](https://travis-ci.com/adzierzanowski/intel8080.svg?branch=rewrite)](https://travis-ci.com/adzierzanowski/intel8080)
+[![Build Status](https://travis-ci.com/adzierzanowski/intel8080.svg?branch=master)](https://travis-ci.com/adzierzanowski/intel8080)
 
 This is a work in progress.
 
-There is a rather sketchy but working implementation on the master branch.
+# Building
+
+```bash
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+```
+
+or you can just use a Makefile wrapper over cmake:
+
+```bash
+$ make # make emulator
+$ make tests # build tests
+```
 
 # TODO
 
