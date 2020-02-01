@@ -314,7 +314,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xd8: inc_pc = ret(cpu->get_flag(Flag::C)); break;
     case 0xd9: inc_pc = ret(true); break;
     case 0xda: inc_pc = jmp(cpu->get_flag(Flag::C)); break;
-    // TODO: case 0xdb: in(); break;
+    case 0xdb: in(); break;
     case 0xdc: inc_pc = call(cpu->get_flag(Flag::C)); break;
     case 0xdd: inc_pc = call(true); break;
     case 0xde: sbi(); break;
@@ -810,7 +810,13 @@ void Emulator::cpi(void)
 
 void Emulator::out(void)
 {
-  printf("%c", cpu->get_register(Register::A));
+  std::cout << cpu->get_register(Register::A);
+}
+
+void Emulator::in(void)
+{
+  char c = std::cin.get();
+  cpu->set_register(Register::A, static_cast<uint8_t>(c));
 }
 
 void Emulator::ei(void)
