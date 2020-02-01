@@ -2,25 +2,26 @@ BUILD = build
 COV_EXCLUDE = **/usr/** **/argparser/** **/tests/**
 COV_OUT = coverage.info
 
-main: $(BUILD)/i8080
-all: $(BUILD)/i8080 $(BUILD)/test
-tests: $(BUILD)/test 
+.PHONY: main
+main: $(BUILD)
+	cd $< && make i8080
+
+.PHONY: tests
+tests: $(BUILD)
+	cd $< && make test
+
+.PHONY: all
+all: main tests
 
 .PHONY: clean
 clean:
 	- rm -rf $(BUILD)
 
-$(BUILD)/i8080: $(BUILD)
-	cd $< && make i8080
-
-$(BUILD)/test: $(BUILD)
-	cd $< && make test
-
 $(BUILD):
 	mkdir $@
 	cmake -S . -B $@
 
-src/emu.cc.gcda: $(BUILD)/test
+src/emu.cc.gcda: tests
 	./$(BUILD)/test
 
 .PHONY: cov

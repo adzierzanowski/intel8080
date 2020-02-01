@@ -22,7 +22,7 @@ std::vector<Opcode> load_opcodes(std::string filename)
   std::ifstream opfile(filename);
   if (opfile.fail())
   {
-    std::cerr << "Failed to load opcodes\n";
+    std::cerr << "Failed to load opcodes: make sure '" << filename << "' exists.\n";
     std::exit(1);
   }
 

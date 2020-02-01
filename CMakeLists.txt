@@ -22,6 +22,7 @@ set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "--coverage")
 file(GLOB SOURCES src/*.cc)
 add_executable(i8080 ${SOURCES} argparser/src/argparser.c)
 target_link_libraries(i8080 ${CRITERION_LIBRARIES} ${Boost_LIBRARIES})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/opcodes.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Tests
 file(GLOB TEST_SOURCES tests/src/*.cc ${SOURCES})
