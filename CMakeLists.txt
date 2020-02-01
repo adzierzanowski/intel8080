@@ -14,6 +14,10 @@ include_directories(inc)
 include_directories(argparser/src)
 include_directories(${Boost_INCLUDE_DIR})
 
+# Coverage
+add_definitions("-fprofile-arcs -ftest-coverage")
+set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "--coverage")
+
 # Main
 file(GLOB SOURCES src/*.cc)
 add_executable(i8080 ${SOURCES} argparser/src/argparser.c)
