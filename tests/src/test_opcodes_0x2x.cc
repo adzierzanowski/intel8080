@@ -84,8 +84,8 @@ Test(opcode, 0x27_daa, .init=test_0x2x_init, .fini=test_0x2x_fini)
 
   bool lb_condition = ((a & 0x0f) > 9) || ac;
   uint8_t lb_adjusted = lb_condition ? a+6 : a;
-  bool hb_condition = ((a & 0xf0) > 9) || c;
   uint8_t hb = (a & 0xf0) >> 4;
+  bool hb_condition = (hb > 9) || c;
   uint8_t hb_adjusted = hb_condition ? lb_adjusted | ((hb+9) << 4) : lb_adjusted;
 
 
