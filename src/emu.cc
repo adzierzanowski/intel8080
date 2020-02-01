@@ -9,7 +9,9 @@ Emulator::Emulator(void) :
   execute_flag{false},
   verbose_execution{false}
 {
-  opcodes = load_opcodes(Emulator::opcodes_filename);
+  FileLoader fl(FileLoader::OPCODES_FILENAME);
+  fl.load_opcodes();
+  opcodes = fl.get_opcodes();
 }
 
 void Emulator::load_program(std::vector<uint8_t> prog, uint16_t address)
