@@ -76,22 +76,35 @@ Test(opcode, 0x26_mvi_h, .init=test_0x2x_init, .fini=test_0x2x_fini)
 Test(opcode, 0x27_daa, .init=test_0x2x_init, .fini=test_0x2x_fini)
 {
   uint8_t a = rand8();
-  bool c = (bool) randint(0, 1);
-  bool ac = (bool) randint(0, 1);
+  uint8_t c = (bool) randint(0, 1);
+  uint8_t ac = (bool) randint(0, 1);
+
   emu->cpu->a = a;
   emu->cpu->set_flag(Flag::C, c);
   emu->cpu->set_flag(Flag::AC, ac);
 
-  bool lb_condition = ((a & 0x0f) > 9) || ac;
-  uint8_t lb_adjusted = lb_condition ? a+6 : a;
-  uint8_t hb = (a & 0xf0) >> 4;
+  uint8_t lb = a & 0x0f;
+  bool lb_condition = lb > 9 || ac;
+  uint8_t lb_adj = lb_condition ? (a + 6) | a : a;
+
+  uint8_t hb = (lb_adj & 0xf0) >> 4;
   bool hb_condition = (hb > 9) || c;
-  uint8_t hb_adjusted = hb_condition ? lb_adjusted | ((hb+9) << 4) : lb_adjusted;
+  uint8_t hb_adj;
+  if (hb_condition)
+  {
+    hb_adj = ((hb + 6) << 4) | (lb_adj & 0x0f);
+  }
+  else
+  {
+    hb_adj = lb_adj;
+  }
 
+  bool carry = ((hb_adj & 0xf0) >> 4) < hb;
 
-  cr_assert_eq(emu->cpu->a, hb_adjusted);
-  test_flags_szap(a, hb_adjusted);
-  cr_assert_eq(emu->cpu->get_flag(Flag::C), hb_adjusted > a);
+  emu->execute_opcode(0x27);
+  cr_assert_eq(emu->cpu->a, hb_adj);
+  test_flags_szap(a, hb_adj);
+  cr_assert_eq(emu->cpu->get_flag(Flag::C), carry);
 }
 
 Test(opcode, 0x29_dad_hl, .init=test_0x2x_init, .fini=test_0x2x_fini)
