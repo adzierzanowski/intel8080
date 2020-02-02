@@ -65,19 +65,25 @@ void Assembler::load_lines(std::vector<std::string> lines)
 
 void Assembler::filter_overlapping_tokens(std::vector<Token>& tokens)
 {
-  auto end = tokens.end() - 1;
-  for (auto it = tokens.begin(); it != end; it++)
+  auto end = tokens.end();
+  for (auto it = tokens.begin()+1; it != end; it++)
   {
-    const Token& next = *(it+1);
+    const Token& current = *it;
+    const Token& next = *(it-1);
 
     if (it->overlaps(next))
     {
-      if (static_cast<int>(it->type) < static_cast<int>(next.type))
-        end = std::remove(it, end, next);
+      if (static_cast<int>(current.type) < static_cast<int>(next.type))
+      {
+        end = std::remove(it-1, end, next);
+      }
       else
-        end = std::remove(it, end, *it);
+      {
+        end = std::remove(it-1, end, *it);
+      }
     }
   }
+
   tokens.erase(end, tokens.end());
 }
 
@@ -132,9 +138,6 @@ std::vector<Token> Assembler::tokenize(void)
   }
 
   filter_overlapping_tokens(tokens);
-
-  for (auto tok : tokens)
-    std::cout << tok << std::endl;
 
   return tokens;
 }

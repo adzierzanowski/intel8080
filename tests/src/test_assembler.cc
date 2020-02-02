@@ -76,9 +76,9 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
 
   auto tokens = assembler->tokenize();
 
+  cr_assert_eq(tokens.size(), expected_tokens.size());
   for (int i = 0; i < tokens.size(); i++)
   {
-    //std::cout << "exp: " << expected_tokens[i] << " got: " << tokens[i] << std::endl;
     cr_assert_eq(tokens[i], expected_tokens[i]);
   }
 }
