@@ -36,6 +36,7 @@ class CPU
     uint16_t sp; // Stack pointer
     uint16_t pc; // Program counter
     uint8_t flags; // Flags register
+    bool interrupts_enabled; // EI, DI flag
 
     std::unique_ptr<RAM> ram;
 
@@ -73,6 +74,9 @@ class CPU
 
     void push(uint16_t addr);
     uint16_t pop(void);
+
+    void enable_interrupts(void);
+    void disable_interrupts(void);
 };
 
 #endif

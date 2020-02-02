@@ -126,7 +126,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0x24: inr(Register::H); break;
     case 0x25: dcr(Register::H); break;
     case 0x26: mvi(Register::H); break;
-    // TODO: case 0x27: daa(); break;
+    case 0x27: daa(); break;
     case 0x29: dad(Register::H, Register::L, Register::H, Register::L); break;
     case 0x2a: lhld(); break;
     case 0x2b: dcx(Register::H, Register::L); break;
@@ -314,7 +314,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xd8: inc_pc = ret(cpu->get_flag(Flag::C)); break;
     case 0xd9: inc_pc = ret(true); break;
     case 0xda: inc_pc = jmp(cpu->get_flag(Flag::C)); break;
-    // TODO: case 0xdb: in(); break;
+    case 0xdb: in(); break;
     case 0xdc: inc_pc = call(cpu->get_flag(Flag::C)); break;
     case 0xdd: inc_pc = call(true); break;
     case 0xde: sbi(); break;
@@ -340,7 +340,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xf0: inc_pc = ret(!cpu->get_flag(Flag::S)); break;
     case 0xf1: pop(Register::A, Register::FLAGS); break;
     case 0xf2: inc_pc = jmp(!cpu->get_flag(Flag::S)); break;
-    //TODO: case 0xf3: di(); break;
+    case 0xf3: di(); break;
     case 0xf4: inc_pc = call(!cpu->get_flag(Flag::S)); break;
     case 0xf5: push(Register::A, Register::FLAGS); break;
     case 0xf6: ori(); break;
@@ -348,7 +348,7 @@ void Emulator::execute_opcode(uint8_t opcode)
     case 0xf8: inc_pc = ret(cpu->get_flag(Flag::S)); break;
     case 0xf9: sphl(); break;
     case 0xfa: inc_pc = jmp(cpu->get_flag(Flag::S)); break;
-    //TODO: case 0xfb: ei(); break;
+    case 0xfb: ei(); break;
     case 0xfc: inc_pc = call(cpu->get_flag(Flag::S)); break;
     case 0xfd: inc_pc = call(true); break;
     case 0xfe: cpi(); break;
@@ -810,5 +810,48 @@ void Emulator::cpi(void)
 
 void Emulator::out(void)
 {
-  printf("%c", cpu->get_register(Register::A));
+  std::cout << cpu->get_register(Register::A);
+}
+
+void Emulator::in(void)
+{
+  char c = std::cin.get();
+  cpu->set_register(Register::A, static_cast<uint8_t>(c));
+}
+
+void Emulator::ei(void)
+{
+  cpu->enable_interrupts();
+}
+
+void Emulator::di(void)
+{
+  cpu->disable_interrupts();
+}
+
+void Emulator::daa(void)
+{
+  uint8_t a = cpu->get_register(Register::A);
+
+  uint8_t lb = a & 0x0f;
+  bool lb_condition = (lb > 9) || cpu->get_flag(Flag::AC);
+  uint8_t lb_adj = lb_condition ? (a + 6) : a;
+
+  uint8_t hb = (lb_adj & 0xf0) >> 4;
+  bool hb_condition = (hb > 9) || cpu->get_flag(Flag::C);
+  uint8_t hb_adj;
+  if (hb_condition)
+  {
+    hb_adj = ((hb + 6) << 4) | (lb_adj & 0x0f);
+  }
+  else
+  {
+    hb_adj = lb_adj;
+  }
+
+  bool carry = ((hb_adj & 0xf0) >> 4) < hb;
+
+  cpu->set_register(Register::A, hb_adj);
+  cpu->affect_flags_szap(a, hb_adj);
+  cpu->set_flag(Flag::C, carry);
 }
