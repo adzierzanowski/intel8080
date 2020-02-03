@@ -3,12 +3,10 @@
 
 void test_assembler_init(void)
 {
-  assembler = std::make_unique<Assembler>();
 }
 
 void test_assembler_fini(void)
 {
-  assembler.reset();
 }
 
 Test(assembler, test_token_eq, .init=test_assembler_init, .fini=test_assembler_fini)
@@ -40,10 +38,10 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
   src.push_back("mov b,c");
   src.push_back("hlt lxi sp, 0x44ae");
   src.push_back("    ");
-  src.push_back("label:");
+  src.push_back("main:");
   src.push_back("push psw");
   src.push_back("cpi 8");
-  src.push_back("jnz label");
+  src.push_back("jnz main");
 
   std::vector<Token> expected_tokens = {
     Token(Token::Type::DIRECTIVE, 0, 1, ".org"),
@@ -69,7 +67,7 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::REGISTER, 5, 8, "sp"),
     Token(Token::Type::HEXADECIMAL, 5, 12, "0x44ae"),
 
-    Token(Token::Type::LABEL, 7, 0, "label:"),
+    Token(Token::Type::LABEL, 7, 0, "main:"),
 
     Token(Token::Type::INSTRUCTION, 8, 0, "push"),
     Token(Token::Type::REGISTER, 8, 5, "psw"),
@@ -78,46 +76,89 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::NUMBER, 9, 4, "8"),
 
     Token(Token::Type::INSTRUCTION, 10, 0, "jnz"),
-    Token(Token::Type::SYMBOL, 10, 4, "label"),
+    Token(Token::Type::SYMBOL, 10, 4, "main"),
   };
 
 
-  assembler->load_lines(src);
-
-  auto tokens = assembler->tokenize();
+  auto tokens = Assembler::tokenize(src);
 
   cr_assert_eq(tokens.size(), expected_tokens.size());
   for (int i = 0; i < tokens.size(); i++)
   {
-    //std::cout << tokens[i] << " " << expected_tokens[i] << std::endl;
     cr_assert_eq(tokens[i], expected_tokens[i]);
   }
 }
 
+Test(assembler, test_convert_numbers, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+  auto tokens = Assembler::tokenize(R"(
+    mvi c, 10
+    mvi c, 0xa
+    mvi c, 0b1010
+  )");
+
+  auto converted_tokens = Assembler::convert_numbers(tokens);
+
+  Token tok_dec = tokens[2];
+  tok_dec.type = Token::Type::NUMBER;
+  tok_dec.value = "10";
+
+  Token tok_hex = tokens[5];
+  tok_hex.type = Token::Type::NUMBER;
+  tok_hex.value = "10";
+
+
+  Token tok_bin = tokens[8];
+  tok_bin.type = Token::Type::NUMBER;
+  tok_bin.value = "10";
+
+  cr_assert_eq(converted_tokens.size(), tokens.size());
+  cr_assert_eq(converted_tokens[2], tok_dec);
+  cr_assert_eq(converted_tokens[5], tok_hex);
+  cr_assert_eq(converted_tokens[8], tok_bin);
+}
+
+Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+
+  std::string source = R"(
+    .org 0x100
+
+    main:
+      mov c, a
+      mvi c, 9
+
+    label:
+      jmp label
+    
+    .org 31
+    
+    cpi 0
+    jnz main
+  )";
+
+  auto tokens = Assembler::tokenize(source);
+  tokens = Assembler::convert_numbers(tokens);
+  auto converted = Assembler::convert_labels(tokens);
+}
+
 Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_fini)
 {
-  /*
-  assembler->load_lines({
-    ".org 0x100",
-    "main:",
-    "  push psw",
-    " ",
-    "mainloop:",
-    "  mvi c, 10" 
-    "  dcr c",
-    "  mov a, c",
-    "  out 0",
-    "  cpi 0",
-    "  jnz mainloop",
-    "pop psw",
-    "hlt"
-  });
-  */
-  assembler->load_lines({
-    "mvi c, 5" 
-  });
-
-  auto tokens = assembler->tokenize();
+  std::string source = R"(
+    .org 0x100
+    main:
+      push psw
+     
+    mainloop:
+      mvi c, 10
+      dcr c
+      mov a, c
+      out 0
+      cpi 0
+      jnz mainloop
+    pop psw
+    hlt
+  )";
 
   std::vector<uint8_t> expected_bin = {
     0xf5, // push psw
@@ -131,6 +172,6 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
     0x76 // hlt
   };
 
-  auto result_bin = assembler->assemble(tokens);
+  auto result_bin = Assembler::assemble(source);
   cr_assert_eq(expected_bin, result_bin);
 }

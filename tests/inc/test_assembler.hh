@@ -9,8 +9,6 @@
 #include "assembler.hh"
 
 
-std::unique_ptr<Assembler> assembler;
-
 void test_assembler_init(void);
 void test_assembler_fini(void);
 

@@ -1,5 +1,82 @@
 #include "assembler.hh"
 
+using T = Token::Type;
+using C = AsmOp::Constraint;
+std::map<const std::string, AsmOp> Assembler::instructions = {
+  {"stax", AsmOp({T::REGISTER}, {C::BD})},
+  {"ldax", AsmOp({T::REGISTER}, {C::BD})},
+  {"lhld", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"shld", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"push", AsmOp({T::REGISTER}, {C::BDHPSW})},
+  {"call", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"xthl", AsmOp({}, {})},
+  {"pchl", AsmOp({}, {})},
+  {"xchg", AsmOp({}, {})},
+  {"sphl", AsmOp({}, {})},
+
+  {"cpi", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"nop", AsmOp({}, {})},
+  {"lxi", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"inx", AsmOp({T::REGISTER}, {C::BDHSP})},
+  {"inr", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"dcr", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"mvi", AsmOp({T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8})},
+  {"rlc", AsmOp({}, {})},
+  {"dad", AsmOp({T::REGISTER}, {C::BDHSP})},
+  {"dcx", AsmOp({T::REGISTER}, {C::BDHSP})},
+  {"rrc", AsmOp({}, {})},
+  {"ral", AsmOp({}, {})},
+  {"rar", AsmOp({}, {})},
+  {"daa", AsmOp({}, {})},
+  {"daa", AsmOp({}, {})},
+  {"cma", AsmOp({}, {})},
+  {"sta", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"stc", AsmOp({}, {})},
+  {"lda", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"cmc", AsmOp({}, {})},
+  {"mov", AsmOp({T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM})},
+  {"hlt", AsmOp({}, {})},
+  {"add", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"adc", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"sub", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"sbb", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"ana", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"xra", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"ora", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"cmp", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
+  {"rnz", AsmOp({}, {})},
+  {"pop", AsmOp({T::REGISTER}, {C::BDHPSW})},
+  {"jnz", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"out", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"cnc", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"sui", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"sbi", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"rpo", AsmOp({}, {})},
+  {"jpo", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"cpo", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"ani", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"rpe", AsmOp({}, {})},
+  {"jpe", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"cpe", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"xri", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"ori", AsmOp({T::NUMBER}, {C::IMM8})},
+
+  {"rz", AsmOp({}, {})},
+  {"jz", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"cz", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"rc", AsmOp({}, {})},
+  {"jc", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"in", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"cc", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"rp", AsmOp({}, {})},
+  {"jp", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"di", AsmOp({}, {})},
+  {"ei", AsmOp({}, {})},
+  {"cp", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"rm", AsmOp({}, {})},
+  {"jm", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"cm", AsmOp({T::NUMBER}, {C::IMM16})},
+};
 
 const std::vector<const std::string> Assembler::mnemonics = {
   "stax", "ldax", "lhld", "shld", "push", "call", "xthl", "pchl", "xchg", "sphl",
@@ -21,7 +98,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
   { Token::Type::BINARY, R"(0b([01]+))" },
   { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
-  { Token::Type::INSTRUCTION, "(" + boost::join(mnemonics, "|") + ")" },
+  { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
   { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
 };
 
@@ -66,6 +143,7 @@ std::ostream& operator<<(std::ostream &os, const Token::Type& type_)
     case Token::Type::DIRECTIVE: os << "DIRECTIVE"; break;
     case Token::Type::NUMBER: os << "NUMBER"; break;
     case Token::Type::HEXADECIMAL: os << "HEXADECIMAL"; break;
+    case Token::Type::BINARY: os << "BINARY"; break;
     case Token::Type::LABEL: os << "LABEL"; break;
     case Token::Type::REGISTER: os << "REGISTER"; break;
     case Token::Type::SYMBOL: os << "SYMBOL"; break;
@@ -83,13 +161,6 @@ std::ostream& operator<<(std::ostream &os, const Token& token)
   os << boost::format("Token(%s, \"%s\") @ pos(%d,%d)")
     % token.type % token.value % token.line % token.column;
   return os;
-}
-
-Assembler::Assembler() {}
-
-void Assembler::load_lines(std::vector<std::string> lines)
-{
-  source = lines;
 }
 
 std::vector<Token> Assembler::filter_overlapping_tokens(std::vector<Token>& tokens)
@@ -126,8 +197,14 @@ std::vector<Token> Assembler::filter_overlapping_tokens(std::vector<Token>& toke
   return filtered;
 }
   
+std::vector<Token> Assembler::tokenize(std::string source)
+{
+  std::vector<std::string> source_lines;
+  boost::split(source_lines, source, boost::is_any_of("\n"));
+  return tokenize(source_lines);
+}
 
-std::vector<Token> Assembler::tokenize(void)
+std::vector<Token> Assembler::tokenize(std::vector<std::string> source)
 {
   std::vector<Token> tokens;
 
@@ -170,52 +247,177 @@ std::vector<Token> Assembler::tokenize(void)
   return tokens;
 }
 
-std::vector<uint8_t> Assembler::assemble(std::vector<Token>& tokens)
+std::vector<Token> Assembler::convert_numbers(std::vector<Token>& tokens)
 {
-  std::vector<uint8_t> binary = {1,2,3};
+  std::vector<Token> converted;
+  std::transform(
+    tokens.begin(),
+    tokens.end(),
+    std::back_inserter(converted),
+    [](const Token& tok) {
+      if (tok.type == Token::Type::HEXADECIMAL)
+      {
+        unsigned int tokval = std::stoul(
+          tok.value.substr(2, tok.value.length()-2),
+          nullptr,
+          16
+        );
+        return Token(Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
+      }
+      else if (tok.type == Token::Type::BINARY)
+      {
+        unsigned int tokval = std::stoul(
+          tok.value.substr(2, tok.value.length()-2),
+          nullptr,
+          2
+        );
+        return Token(Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
+      }
+
+      return tok;
+    }
+  );
+
+  return converted;
+}
+
+std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
+{
+  std::vector<uint8_t> binary;
 
   for (auto it = tokens.begin(); it != tokens.end(); it++)
   {
-    const Token &tok = *it;
-    bool last_token = it == tokens.end() - 1;
+    const Token& tok = *it;
+    std::cout << "ASSEMBLING " << tok << std::endl;
+
+    bool last_token = (it == (tokens.end() - 1));
+
     switch (tok.type)
     {
       case Token::Type::INSTRUCTION:
-        if (tok.value == "mvi")
+      {
+        auto op = instructions[tok.value];
+        int argc = op.operands.size();
+
+        if (argc > 0 && last_token)
         {
-          if (last_token)
-          {
-            std::cerr << tok.line << ":" << tok.column << " ";
-            std::cerr << "Instruction mvi expects two operands." << std::endl;
-          }
-
-          const Token& dst = *(it+1);
-          const Token& imm8 = *(it+2);
-
-          if (dst.type != Token::Type::REGISTER)
-          {
-            std::cerr << tok.line << ":" << tok.column << " ";
-            std::cerr << "Instruction mvi expects REGISTER to be the first operand." << std::endl;
-          }
-
-          if (imm8.type != Token::Type::NUMBER)
-          {
-            std::cerr << tok.line << ":" << tok.column << " ";
-            std::cerr << "Instruction mvi expects NUMBER to be the second operand." << std::endl;
-          }
-
-          int imm8_val = std::stoul(imm8.value);
-
-          if (imm8_val > 0xff)
-          {
-            std::cerr << tok.line << ":" << tok.column << " ";
-            std::cerr << "Instruction mvi expects second operand to be 8-bit immediate." << std::endl;
-          }
+          std::cerr << tok.line << ":" << tok.column << " ";
+          std::cerr << "Instruction '" << tok.value << "' ";
+          std::cerr << "expects " << argc << " argument(s).\n";
+          return binary;
         }
 
+        for (int i = 0; i < argc; i++)
+        {
+          const Token& optok = *(it+i+1);
+          std::cout << "OPERAND " << i << " " << optok << std::endl;
+
+          if (op.operands[i] != optok.type)
+          {
+            std::cerr << tok.line << ":" << tok.column << " ";
+            std::cerr << "Instruction '" << tok.value << "' ";
+            std::cerr << "expects operand #" << (i+1) << " to be of type ";
+            std::cerr << op.operands[i] << ", not " << optok.type << ".\n";
+
+            return binary;
+          }
+        }
+        std::cout << std::endl;
+
+        it += argc;
+
+        break;
+      }
+      default:
         break;
     }
   }
 
   return binary;
+}
+
+std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
+{
+  std::vector<Token> converted;
+  std::map<std::string, uint16_t> labels;
+
+  unsigned int origin = 0;
+  uint16_t token_position = 0;
+
+  for (auto it = tokens.begin(); it != tokens.end(); it++)
+  {
+    const Token& tok = *it;
+    bool last_token = (it == (tokens.end() - 1));
+
+    if (tok.type == Token::Type::DIRECTIVE && tok.value == ".org")
+    {
+      if (last_token)
+      {
+        std::cerr << "Directive .org expects an argument.\n";
+        return converted;
+      }
+
+      const Token& next = *(it + 1);
+      origin = std::stoul(next.value);
+      if (origin > 0xffff)
+      {
+        std::cerr << "Directive .org expects a 16-bit value." << std::endl;
+        return converted;
+      }
+
+      converted.push_back(tok);
+    }
+    else if (tok.type == Token::Type::LABEL)
+    {
+      auto label = labels.find(tok.value);
+
+      if (label != labels.end())
+      {
+        std::cerr << "Found two labels with the same name: '" << tok.value << "'.";
+        return converted;
+      }
+
+      labels.insert({tok.value, origin + token_position});
+      converted.push_back(tok);
+    }
+    else if (tok.type == Token::Type::SYMBOL)
+    {
+      auto label = labels.find(tok.value + ":");
+
+      if (label == labels.end())
+      {
+        std::cerr << "No such label: '" << tok.value << "'.\n";
+        return converted;
+      }
+
+      Token new_token = tok; 
+      new_token.type = Token::Type::NUMBER;
+      new_token.value = std::to_string(labels[tok.value + ":"]);
+      converted.push_back(new_token);
+    }
+    else
+    {
+      converted.push_back(tok);
+    }
+
+    token_position++;
+  }
+
+  return converted;
+}
+
+std::vector<uint8_t> Assembler::assemble(std::string source)
+{
+  auto tokens = tokenize(source);
+  tokens = convert_numbers(tokens);
+  tokens = convert_labels(tokens);
+  return generate_opcodes(tokens);
+}
+
+std::vector<uint8_t> Assembler::assemble(std::vector<std::string> source_lines)
+{
+  auto tokens = tokenize(source_lines);
+  tokens = convert_numbers(tokens);
+  tokens = convert_labels(tokens);
+  return generate_opcodes(tokens);
 }

@@ -9,6 +9,7 @@
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #include "cpu.hh"
 #include "file_loader.hh"
@@ -21,10 +22,11 @@ struct Token
     DIRECTIVE = 0,
     INSTRUCTION = 1,
     HEXADECIMAL = 2,
-    NUMBER = 3,
-    REGISTER = 4,
-    LABEL = 5,
-    SYMBOL = 6
+    BINARY = 3,
+    NUMBER = 4,
+    REGISTER = 5,
+    LABEL = 6,
+    SYMBOL = 7
   };
 
   Type type;
@@ -45,31 +47,45 @@ std::ostream& operator<<(std::ostream& os, const Token& token);
 
 struct AsmOp
 {
+  enum class Constraint : uint32_t
+  {
+    NONE,
+    IMM8,
+    IMM16,
+    BD,
+    BDHSP,
+    BDHPSW,
+    ABCDEHLM,
+  };
+
   const std::string mnemonic;
-  const std::vector<Token::Type> expected_args;
-  AsmOp(std::string mnemonic, std::initializer_list<Token::Type> expargs)
-    : mnemonic{mnemonic}, expected_args{expargs} {}
+  const std::vector<Token::Type> operands;
+  const std::vector<Constraint> constraints;
+
+  AsmOp() {}
+  AsmOp(
+    std::initializer_list<Token::Type> operands,
+    std::initializer_list<Constraint> constraints
+  )
+    : operands{operands}, constraints{constraints} {}
 };
 
 struct Assembler
 {
-  std::vector<std::string> source;
+  static const std::map<Token::Type, const std::string> token_regexes;
+  static const std::vector<const std::string> mnemonics;
+  static std::map<const std::string, AsmOp> instructions;
 
-  public:
-    static const std::map<Token::Type, const std::string> token_regexes;
-    static const std::vector<const std::string> mnemonics;
-    static const std::vector<AsmOp> instructions;
+  static std::vector<Token> filter_overlapping_tokens(std::vector<Token>& tokens);
+  static std::vector<Token> convert_numbers(std::vector<Token>& tokens);
+  static std::vector<Token> convert_labels(std::vector<Token>& tokens);
+  static std::vector<uint8_t> generate_opcodes(std::vector<Token>& tokens);
 
-    static std::vector<Token> filter_overlapping_tokens(std::vector<Token>& tokens);
-    static std::vector<Token> convert_numbers(std::vector<Token>& tokens);
-    static std::vector<uint8_t> assemble(std::vector<Token>& tokens);
+  static std::vector<Token> tokenize(std::string source);
+  static std::vector<Token> tokenize(std::vector<std::string> source_lines);
+  static std::vector<uint8_t> assemble(std::string source);
+  static std::vector<uint8_t> assemble(std::vector<std::string> source_lines);
 
-    Assembler();
-    std::vector<Token> tokenize(void);
-
-    void load_text(std::string src);
-    void load_file(std::string filename);
-    void load_lines(std::vector<std::string> lines);
 };
 
 #endif
