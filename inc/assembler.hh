@@ -33,24 +33,30 @@ struct Token
   std::string value;
 
   Token(Type type, int line, int column, std::string value);
-  bool overlaps(const Token& other);
+  bool overlaps(const Token& other) const;
 
   bool operator!=(const Token& other);
   bool operator==(const Token& other);
+  bool operator<(const Token& other);
 };
 
 std::ostream& operator<<(std::ostream& os, const Token::Type& type_);
 std::ostream& operator<<(std::ostream& os, const Token& token);
 
-class Assembler
+struct Assembler
 {
   std::vector<std::string> source;
-  void filter_overlapping_tokens(std::vector<Token>& tokens);
 
   public:
+    static const std::map<Token::Type, const std::string> token_regexes;
+    static const std::vector<const std::string> mnemonics;
+
+    static std::vector<Token> filter_overlapping_tokens(std::vector<Token>& tokens);
+    static std::vector<uint8_t> assemble(std::vector<Token>& tokens);
+
     Assembler();
     std::vector<Token> tokenize(void);
-    std::vector<uint8_t> assemble(void);
+
     void load_text(std::string src);
     void load_file(std::string filename);
     void load_lines(std::vector<std::string> lines);

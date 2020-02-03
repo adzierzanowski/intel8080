@@ -1,5 +1,18 @@
 #include "assembler.hh"
 
+const std::vector<const std::string> Assembler::mnemonics = {
+  "mvi", "mov", "lxi", "hlt", "push", "jnz", "cpi"
+};
+
+const std::map<Token::Type, const std::string> Assembler::token_regexes = {
+  { Token::Type::DIRECTIVE, R"((\.\w+))" },
+  { Token::Type::LABEL, R"((\w+):)" },
+  { Token::Type::NUMBER, R"(\b(\d+)\b)" },
+  { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
+  { Token::Type::REGISTER, R"(\b([a-ehl]|sp|psw)\b)" },
+  { Token::Type::INSTRUCTION, "(" + boost::join(mnemonics, "|") + ")" },
+  { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
+};
 
 Token::Token(Type type, int line, int column, std::string value)
     : type{type}, line{line}, column{column}, value{value} {}
@@ -17,7 +30,12 @@ bool Token::operator!=(const Token& other)
   return ! (*this == other);
 }
 
-bool Token::overlaps(const Token& other)
+bool Token::operator<(const Token& other)
+{
+  return static_cast<int>(type) < static_cast<int>(other.type);
+}
+
+bool Token::overlaps(const Token& other) const
 {
   int start1 = column;
   int end1 = column + value.length();
@@ -63,51 +81,50 @@ void Assembler::load_lines(std::vector<std::string> lines)
   source = lines;
 }
 
-void Assembler::filter_overlapping_tokens(std::vector<Token>& tokens)
+std::vector<Token> Assembler::filter_overlapping_tokens(std::vector<Token>& tokens)
 {
-  auto end = tokens.end();
-  for (auto it = tokens.begin()+1; it != end; it++)
-  {
-    const Token& current = *it;
-    const Token& next = *(it-1);
+  std::vector<Token> filtered;
 
-    if (it->overlaps(next))
+  for (auto it = tokens.begin(); it != tokens.end(); it++)
+  {
+    auto tok = *it;
+
+    if (!filtered.empty())
     {
-      if (static_cast<int>(current.type) < static_cast<int>(next.type))
+      auto last = filtered.back();
+
+      if (last.overlaps(tok))
       {
-        end = std::remove(it-1, end, next);
+        if (tok < last)
+        {
+          filtered.pop_back();
+          filtered.push_back(tok);
+        }
       }
       else
       {
-        end = std::remove(it-1, end, *it);
+        filtered.push_back(tok);
       }
+    }
+    else
+    {
+      filtered.push_back(tok);
     }
   }
 
-  tokens.erase(end, tokens.end());
+  return filtered;
 }
+  
 
 std::vector<Token> Assembler::tokenize(void)
 {
   std::vector<Token> tokens;
-  std::vector<std::string> mnemonics = {
-    "mvi", "mov", "lxi", "hlt", "push", "jnz", "cpi"
-  };
-  std::map<Token::Type, std::string> token_regexes = {
-    { Token::Type::DIRECTIVE, R"((\.\w+))" },
-    { Token::Type::LABEL, R"((\w+):)" },
-    { Token::Type::NUMBER, R"(\b(\d+)\b)" },
-    { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
-    { Token::Type::REGISTER, R"(\b([a-ehl]|sp|psw)\b)" },
-    { Token::Type::INSTRUCTION, "(" + boost::join(mnemonics, "|") + ")" },
-    { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
-  };
 
   int line_index = 0;
   for (auto line : source)
   {
     std::vector<Token> tmp_tokens;
-    for (auto const& [tok_type, tok_rxp] : token_regexes)
+    for (auto const& [tok_type, tok_rxp] : Assembler::token_regexes)
     {
       std::smatch matches;
       std::regex rxp(tok_rxp, std::regex_constants::icase);
@@ -137,7 +154,7 @@ std::vector<Token> Assembler::tokenize(void)
     line_index++;
   }
 
-  filter_overlapping_tokens(tokens);
+  tokens = filter_overlapping_tokens(tokens);
 
   return tokens;
 }

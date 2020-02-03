@@ -1,5 +1,6 @@
 #include "test_assembler.hh"
 
+
 void test_assembler_init(void)
 {
   assembler = std::make_unique<Assembler>();
@@ -18,6 +19,15 @@ Test(assembler, test_token_eq, .init=test_assembler_init, .fini=test_assembler_f
 
   cr_assert_eq(t1, t2);
   cr_assert_neq(t1, t3);
+}
+
+Test(assembler, test_token_lt, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+  Token t1(Token::Type::SYMBOL, 10, 10, "abcdef");
+  Token t2(Token::Type::LABEL, 10, 10, "abcdef");
+  cr_assert_eq(t1.overlaps(t2), true);
+  cr_assert(t2 < t1);
+  cr_assert(!(t1 < t2));
 }
 
 Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_fini)
@@ -81,4 +91,40 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
   {
     cr_assert_eq(tokens[i], expected_tokens[i]);
   }
+}
+
+Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+  assembler->load_lines({
+    ".org 0x100",
+    "main:",
+    "  push psw",
+    " ",
+    "mainloop:",
+    "  mvi c, 10" 
+    "  dcr c",
+    "  mov a, c",
+    "  out 0",
+    "  cpi 0",
+    "  jnz mainloop",
+    "pop psw",
+    "hlt"
+  });
+
+  auto tokens = assembler->tokenize();
+  std::vector<uint8_t> expected_bin = {
+    0xf5, // push psw
+    0x0e, 0x0d, // mvi c, 10
+    0x0d, // dcr c
+    0x79, // mov a, c
+    0xd3, 0x00, // out 0
+    0xfe, // cpi 0
+    0xc2, 0x01, 0x10, // jnz mainloop
+    0xf1, // pop psw
+    0x76 // hlt
+  };
+
+  auto result_bin = assembler->assemble(tokens);
+
+  cr_assert_eq(expected_bin, result_bin);
 }
