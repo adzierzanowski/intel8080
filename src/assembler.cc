@@ -1,7 +1,17 @@
 #include "assembler.hh"
 
+
 const std::vector<const std::string> Assembler::mnemonics = {
-  "mvi", "mov", "lxi", "hlt", "push", "jnz", "cpi"
+  "stax", "ldax", "lhld", "shld", "push", "call", "xthl", "pchl", "xchg", "sphl",
+  
+  "cpi", "nop", "lxi", "inx", "inr", "dcr", "mvi", "rlc", "dad", "dcx", "rrc",
+  "ral", "rar", "daa", "cma", "sta", "stc", "lda", "cmc", "mov", "hlt", "add",
+  "adc", "sub", "sbb", "ana", "xra", "ora", "cmp", "rnz", "pop", "jnz", "jmp",
+  "cnz", "adi", "rst", "ret", "aci", "rnc", "jnc", "out", "cnc", "sui", "sbi",
+  "rpo", "jpo", "cpo", "ani", "rpe", "jpe", "cpe", "xri", "ori",
+
+  "rz", "jz", "cz", "rc", "jc", "in", "cc", "rp", "jp", "di", "cp", "rm", "jm",
+  "ei", "cm"
 };
 
 const std::map<Token::Type, const std::string> Assembler::token_regexes = {
@@ -9,7 +19,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::LABEL, R"((\w+):)" },
   { Token::Type::NUMBER, R"(\b(\d+)\b)" },
   { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
-  { Token::Type::REGISTER, R"(\b([a-ehl]|sp|psw)\b)" },
+  { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
   { Token::Type::INSTRUCTION, "(" + boost::join(mnemonics, "|") + ")" },
   { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
 };
@@ -157,4 +167,54 @@ std::vector<Token> Assembler::tokenize(void)
   tokens = filter_overlapping_tokens(tokens);
 
   return tokens;
+}
+
+std::vector<uint8_t> Assembler::assemble(std::vector<Token>& tokens)
+{
+  std::vector<uint8_t> binary = {1,2,3};
+
+  for (auto it = tokens.begin(); it != tokens.end(); it++)
+  {
+    const Token &tok = *it;
+    bool last_token = it == tokens.end() - 1;
+    switch (tok.type)
+    {
+      case Token::Type::INSTRUCTION:
+        if (tok.value == "mvi")
+        {
+          if (last_token)
+          {
+            std::cerr << tok.line << ":" << tok.column << " ";
+            std::cerr << "Instruction mvi expects two operands." << std::endl;
+          }
+
+          const Token& dst = *(it+1);
+          const Token& imm8 = *(it+2);
+
+          if (dst.type != Token::Type::REGISTER)
+          {
+            std::cerr << tok.line << ":" << tok.column << " ";
+            std::cerr << "Instruction mvi expects REGISTER to be the first operand." << std::endl;
+          }
+
+          if (imm8.type != Token::Type::NUMBER)
+          {
+            std::cerr << tok.line << ":" << tok.column << " ";
+            std::cerr << "Instruction mvi expects NUMBER to be the second operand." << std::endl;
+          }
+
+          int imm8_val = std::stoul(imm8.value);
+
+          if (imm8_val > 0xff)
+          {
+            std::cerr << tok.line << ":" << tok.column << " ";
+            std::cerr << "Instruction mvi expects second operand to be 8-bit immediate." << std::endl;
+          }
+        }
+
+        break;
+    }
+  }
+
+  return binary;
 }

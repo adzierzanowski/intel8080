@@ -43,6 +43,14 @@ struct Token
 std::ostream& operator<<(std::ostream& os, const Token::Type& type_);
 std::ostream& operator<<(std::ostream& os, const Token& token);
 
+struct AsmOp
+{
+  const std::string mnemonic;
+  const std::vector<Token::Type> expected_args;
+  AsmOp(std::string mnemonic, std::initializer_list<Token::Type> expargs)
+    : mnemonic{mnemonic}, expected_args{expargs} {}
+};
+
 struct Assembler
 {
   std::vector<std::string> source;
@@ -50,8 +58,10 @@ struct Assembler
   public:
     static const std::map<Token::Type, const std::string> token_regexes;
     static const std::vector<const std::string> mnemonics;
+    static const std::vector<AsmOp> instructions;
 
     static std::vector<Token> filter_overlapping_tokens(std::vector<Token>& tokens);
+    static std::vector<Token> convert_numbers(std::vector<Token>& tokens);
     static std::vector<uint8_t> assemble(std::vector<Token>& tokens);
 
     Assembler();

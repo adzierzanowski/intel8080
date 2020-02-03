@@ -89,12 +89,14 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
   cr_assert_eq(tokens.size(), expected_tokens.size());
   for (int i = 0; i < tokens.size(); i++)
   {
+    //std::cout << tokens[i] << " " << expected_tokens[i] << std::endl;
     cr_assert_eq(tokens[i], expected_tokens[i]);
   }
 }
 
 Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_fini)
 {
+  /*
   assembler->load_lines({
     ".org 0x100",
     "main:",
@@ -110,8 +112,13 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
     "pop psw",
     "hlt"
   });
+  */
+  assembler->load_lines({
+    "mvi c, 5" 
+  });
 
   auto tokens = assembler->tokenize();
+
   std::vector<uint8_t> expected_bin = {
     0xf5, // push psw
     0x0e, 0x0d, // mvi c, 10
@@ -125,6 +132,5 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
   };
 
   auto result_bin = assembler->assemble(tokens);
-
   cr_assert_eq(expected_bin, result_bin);
 }
