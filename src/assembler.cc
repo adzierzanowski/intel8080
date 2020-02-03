@@ -19,6 +19,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::LABEL, R"((\w+):)" },
   { Token::Type::NUMBER, R"(\b(\d+)\b)" },
   { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
+  { Token::Type::BINARY, R"(0b([01]+))" },
   { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
   { Token::Type::INSTRUCTION, "(" + boost::join(mnemonics, "|") + ")" },
   { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
