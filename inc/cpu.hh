@@ -9,10 +9,18 @@
 #include "ram.hh"
 
 enum class Register : uint8_t {
-  A, B, C, D, E, H, L, // main registers
-  SP,                  // stack pointer treated as register
-  M,                   // Memory = [H:L]
-  FLAGS                // FLAGS
+  // general puprose registers
+  A = 0b111,
+  B = 0b000,
+  C = 0b001,
+  D = 0b010,
+  E = 0b011,
+  H = 0b100,
+  L = 0b101,
+
+  SP = 0b1011, // stack pointer treated as register
+  M = 0b110, // Memory = [H:L]
+  FLAGS = 0b11011 // FLAGS
 };
 
 enum class Flag : uint8_t {

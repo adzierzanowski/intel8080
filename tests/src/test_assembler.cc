@@ -162,16 +162,27 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
 
   std::vector<uint8_t> expected_bin = {
     0xf5, // push psw
-    0x0e, 0x0d, // mvi c, 10
+    0x0e, 0x0a, // mvi c, 10
     0x0d, // dcr c
     0x79, // mov a, c
     0xd3, 0x00, // out 0
-    0xfe, // cpi 0
+    0xfe, 0x00, // cpi 0
     0xc2, 0x01, 0x10, // jnz mainloop
     0xf1, // pop psw
     0x76 // hlt
   };
 
   auto result_bin = Assembler::assemble(source);
+
+  std::cout << "expected: " << std::endl;
+  for (auto byte : expected_bin)
+    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+  std::cout << std::endl;
+
+  std::cout << "result: " << std::endl;
+  for (auto byte : result_bin)
+    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+  std::cout << std::endl;
+
   cr_assert_eq(expected_bin, result_bin);
 }

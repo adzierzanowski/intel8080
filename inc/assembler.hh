@@ -6,6 +6,7 @@
 #include <vector>
 #include <regex>
 #include <map>
+#include <type_traits>
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -37,13 +38,17 @@ struct Token
   Token(Type type, int line, int column, std::string value);
   bool overlaps(const Token& other) const;
 
-  bool operator!=(const Token& other);
-  bool operator==(const Token& other);
-  bool operator<(const Token& other);
+  bool operator !=(const Token& other);
+  bool operator ==(const Token& other);
+  bool operator <(const Token& other);
+
+  Register get_register() const;
+  uint8_t get_uint8() const;
+  uint16_t get_uint16() const;
 };
 
-std::ostream& operator<<(std::ostream& os, const Token::Type& type_);
-std::ostream& operator<<(std::ostream& os, const Token& token);
+std::ostream& operator <<(std::ostream& os, const Token::Type& type_);
+std::ostream& operator <<(std::ostream& os, const Token& token);
 
 struct AsmOp
 {
@@ -58,16 +63,23 @@ struct AsmOp
     ABCDEHLM,
   };
 
-  const std::string mnemonic;
-  const std::vector<Token::Type> operands;
-  const std::vector<Constraint> constraints;
+  uint8_t opcode_template;
+  std::string mnemonic;
+  std::vector<Token::Type> operands;
+  std::vector<Constraint> constraints;
+  std::vector<int> opcode_bit_pos;
 
   AsmOp() {}
   AsmOp(
+    uint8_t opcode_template,
     std::initializer_list<Token::Type> operands,
-    std::initializer_list<Constraint> constraints
+    std::initializer_list<Constraint> constraints,
+    std::initializer_list<int> opcode_bit_pos
   )
-    : operands{operands}, constraints{constraints} {}
+    : opcode_template{opcode_template},
+      operands{operands},
+      constraints{constraints},
+      opcode_bit_pos{opcode_bit_pos} {}
 };
 
 struct Assembler

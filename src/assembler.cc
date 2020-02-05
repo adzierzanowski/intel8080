@@ -3,79 +3,83 @@
 using T = Token::Type;
 using C = AsmOp::Constraint;
 std::map<const std::string, AsmOp> Assembler::instructions = {
-  {"stax", AsmOp({T::REGISTER}, {C::BD})},
-  {"ldax", AsmOp({T::REGISTER}, {C::BD})},
-  {"lhld", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"shld", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"push", AsmOp({T::REGISTER}, {C::BDHPSW})},
-  {"call", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"xthl", AsmOp({}, {})},
-  {"pchl", AsmOp({}, {})},
-  {"xchg", AsmOp({}, {})},
-  {"sphl", AsmOp({}, {})},
+  {"stax", AsmOp(0b00000010, {T::REGISTER}, {C::BD}, {4})},
+  {"ldax", AsmOp(0b00001010, {T::REGISTER}, {C::BD}, {4})},
+  {"lhld", AsmOp(0b00101010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"shld", AsmOp(0b00100010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"push", AsmOp(0b11000101, {T::REGISTER}, {C::BDHPSW}, {4})},
+  {"call", AsmOp(0b11001101, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"xthl", AsmOp(0b11100011, {}, {}, {})},
+  {"pchl", AsmOp(0b11101001, {}, {}, {})},
+  {"xchg", AsmOp(0b11101011, {}, {}, {})},
+  {"sphl", AsmOp(0b11111001, {}, {}, {})},
 
-  {"cpi", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"nop", AsmOp({}, {})},
-  {"lxi", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"inx", AsmOp({T::REGISTER}, {C::BDHSP})},
-  {"inr", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"dcr", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"mvi", AsmOp({T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8})},
-  {"rlc", AsmOp({}, {})},
-  {"dad", AsmOp({T::REGISTER}, {C::BDHSP})},
-  {"dcx", AsmOp({T::REGISTER}, {C::BDHSP})},
-  {"rrc", AsmOp({}, {})},
-  {"ral", AsmOp({}, {})},
-  {"rar", AsmOp({}, {})},
-  {"daa", AsmOp({}, {})},
-  {"daa", AsmOp({}, {})},
-  {"cma", AsmOp({}, {})},
-  {"sta", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"stc", AsmOp({}, {})},
-  {"lda", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"cmc", AsmOp({}, {})},
-  {"mov", AsmOp({T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM})},
-  {"hlt", AsmOp({}, {})},
-  {"add", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"adc", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"sub", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"sbb", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"ana", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"xra", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"ora", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"cmp", AsmOp({T::REGISTER}, {C::ABCDEHLM})},
-  {"rnz", AsmOp({}, {})},
-  {"pop", AsmOp({T::REGISTER}, {C::BDHPSW})},
-  {"jnz", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"out", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"cnc", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"sui", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"sbi", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"rpo", AsmOp({}, {})},
-  {"jpo", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"cpo", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"ani", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"rpe", AsmOp({}, {})},
-  {"jpe", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"cpe", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"xri", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"ori", AsmOp({T::NUMBER}, {C::IMM8})},
+  {"cpi", AsmOp(0b11111110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"nop", AsmOp(0b00000000, {}, {}, {})},
+  {"lxi", AsmOp(0b00000001, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"inx", AsmOp(0b00000011, {T::REGISTER}, {C::BDHSP}, {5})},
+  {"inr", AsmOp(0b00000100, {T::REGISTER}, {C::ABCDEHLM}, {5})},
+  {"dcr", AsmOp(0b00000101, {T::REGISTER}, {C::ABCDEHLM}, {3})},
+  {"mvi", AsmOp(0b00000110, {T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8}, {3, -1})},
+  {"rlc", AsmOp(0b00000111, {}, {}, {})},
+  {"dad", AsmOp(0b00001001, {T::REGISTER}, {C::BDHSP}, {5})},
+  {"dcx", AsmOp(0b00001011, {T::REGISTER}, {C::BDHSP}, {5})},
+  {"rrc", AsmOp(0b00001111, {}, {}, {})},
+  {"ral", AsmOp(0b00010111, {}, {}, {})},
+  {"rar", AsmOp(0b00011111, {}, {}, {})},
+  {"daa", AsmOp(0b00100111, {}, {}, {})},
+  {"cma", AsmOp(0b00101111, {}, {}, {})},
+  {"sta", AsmOp(0b00110010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"stc", AsmOp(0b00110111, {}, {}, {})},
+  {"lda", AsmOp(0b00111010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"cmc", AsmOp(0b00111111, {}, {}, {})},
+  {"mov", AsmOp(0b01000000, {T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM}, {3, 0})},
+  {"hlt", AsmOp(0b01110110, {}, {}, {})},
+  {"add", AsmOp(0b10000000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"adc", AsmOp(0b10001000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"sub", AsmOp(0b10010000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"sbb", AsmOp(0b10011000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"ana", AsmOp(0b10100000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"xra", AsmOp(0b10101000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"ora", AsmOp(0b10110000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"cmp", AsmOp(0b10111000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"rnz", AsmOp(0b11000000, {}, {}, {})},
+  {"pop", AsmOp(0b11000001, {T::REGISTER}, {C::BDHPSW}, {4})},
+  {"jnz", AsmOp(0b11000010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"out", AsmOp(0b11010011, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"cnc", AsmOp(0b11010100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"sui", AsmOp(0b11010110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"sbi", AsmOp(0b11011110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"jpo", AsmOp(0b11100010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"cpo", AsmOp(0b11100100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"ani", AsmOp(0b11100110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"rpe", AsmOp(0b11101000, {}, {}, {})},
+  {"jpe", AsmOp(0b11101010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"cpe", AsmOp(0b11101100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"xri", AsmOp(0b11101110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"ori", AsmOp(0b11110110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"ret", AsmOp(0b11001001, {}, {}, {})},
+  {"rnc", AsmOp(0b11010000, {}, {}, {})},
+  {"rpo", AsmOp(0b11100000, {}, {}, {})},
+  {"jnc", AsmOp(0b11010010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"adi", AsmOp(0b11000110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"aci", AsmOp(0b11001110, {T::NUMBER}, {C::IMM8}, {-1})},
 
-  {"rz", AsmOp({}, {})},
-  {"jz", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"cz", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"rc", AsmOp({}, {})},
-  {"jc", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"in", AsmOp({T::NUMBER}, {C::IMM8})},
-  {"cc", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"rp", AsmOp({}, {})},
-  {"jp", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"di", AsmOp({}, {})},
-  {"ei", AsmOp({}, {})},
-  {"cp", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"rm", AsmOp({}, {})},
-  {"jm", AsmOp({T::NUMBER}, {C::IMM16})},
-  {"cm", AsmOp({T::NUMBER}, {C::IMM16})},
+  {"rz", AsmOp(0b11001000, {}, {}, {})},
+  {"jz", AsmOp(0b11001010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"cz", AsmOp(0b11001100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"rc", AsmOp(0b11011000, {}, {}, {})},
+  {"jc", AsmOp(0b11011010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"in", AsmOp(0b11011011, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"cc", AsmOp(0b11011100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"rp", AsmOp(0b11110000, {}, {}, {})},
+  {"jp", AsmOp(0b11110010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"di", AsmOp(0b11110011, {}, {}, {})},
+  {"ei", AsmOp(0b11111011, {}, {}, {})},
+  {"cp", AsmOp(0b11110100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"rm", AsmOp(0b11111000, {}, {}, {})},
+  {"jm", AsmOp(0b11111010, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"cm", AsmOp(0b11111100, {T::NUMBER}, {C::IMM16}, {-1})},
 };
 
 const std::vector<const std::string> Assembler::mnemonics = {
@@ -133,6 +137,39 @@ bool Token::overlaps(const Token& other) const
   return (line == other.line)
     && ((start2 <= start1 && end2 >= start1)
       || (start2 >= start1 && start2 <= end1));
+}
+Register Token::get_register() const
+{
+  if (type == Token::Type::REGISTER)
+  {
+    if (value == "a") return Register::A;
+    if (value == "b") return Register::B;
+    if (value == "c") return Register::C;
+    if (value == "d") return Register::D;
+    if (value == "e") return Register::E;
+    if (value == "h") return Register::H;
+    if (value == "l") return Register::L;
+    if (value == "sp") return Register::SP;
+
+    // In this case, the opcode alteration is the same as with SP
+    if (value == "psw") return Register::SP;
+  }
+  else
+  {
+    // TODO: throw an exception
+  }
+}
+
+uint8_t Token::get_uint8() const
+{
+  // TODO: check the boundary
+  return std::stoul(value);
+}
+
+uint16_t Token::get_uint16() const
+{
+  // TODO: check the boundary
+  return std::stoul(value);
 }
 
 std::ostream& operator<<(std::ostream &os, const Token::Type& type_)
@@ -228,11 +265,14 @@ std::vector<Token> Assembler::tokenize(std::vector<std::string> source)
       }
     }
 
+    // Sort the tokens by position to make filtering overlapping tokens easier.
     std::sort(
       tmp_tokens.begin(),
       tmp_tokens.end(),
       [](const Token& t1, const Token& t2) -> bool
       {
+        // Tokens are already parsed line by line so checking just columns
+        // works fine.
         return t1.column < t2.column;
       }
     );
@@ -247,6 +287,7 @@ std::vector<Token> Assembler::tokenize(std::vector<std::string> source)
   return tokens;
 }
 
+/* Converts numerical tokens into Type::NUMBER token */
 std::vector<Token> Assembler::convert_numbers(std::vector<Token>& tokens)
 {
   std::vector<Token> converted;
@@ -307,27 +348,86 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
           return binary;
         }
 
+        std::vector<uint8_t> result = {op.opcode_template};
+
+        // Iterate over expected operands
         for (int i = 0; i < argc; i++)
         {
-          const Token& optok = *(it+i+1);
+          auto operand_type = op.operands[i];
+          auto constraint = op.constraints[i];
+          auto bit_shift = op.opcode_bit_pos[i];
+          const Token& optok = *(it+i+1); // Fetch operand token
+
           std::cout << "OPERAND " << i << " " << optok << std::endl;
 
-          if (op.operands[i] != optok.type)
+          if (operand_type != optok.type)
           {
+            // TODO: throw an exception
             std::cerr << tok.line << ":" << tok.column << " ";
             std::cerr << "Instruction '" << tok.value << "' ";
             std::cerr << "expects operand #" << (i+1) << " to be of type ";
-            std::cerr << op.operands[i] << ", not " << optok.type << ".\n";
+            std::cerr << operand_type << ", not " << optok.type << ".\n";
 
             return binary;
           }
+
+          switch (operand_type)
+          {
+            case Token::Type::REGISTER:
+            {
+              // If the operand alters the instruction opcode
+              if (bit_shift > -1)
+              {
+                uint8_t register_value = static_cast<uint8_t>(optok.get_register());
+                std::cout << "ALTER REGISTER_VALUE=";
+                std::cout << +register_value;
+                std::cout << " TEMPLATE=" << +op.opcode_template;
+                std::cout << " BIT_SHIFT=" << +bit_shift << std::endl;
+
+                // This is an ugly hack:
+                // In order to prevent duplicates in the Register enum,
+                // SP is defined to 0b1011 although it really should be 0b11
+                // so we have to & it with 0b111 mask to get the real thing.
+                result[0] |= (register_value & 0b111) << bit_shift;
+              }
+
+              break;
+            }
+            case Token::Type::NUMBER:
+            {
+              if (constraint == AsmOp::Constraint::IMM8)
+              {
+                result.push_back(optok.get_uint8());
+              }
+              else if (constraint == AsmOp::Constraint::IMM16)
+              {
+                uint16_t val = optok.get_uint16();
+                // Little-endian
+                result.push_back(val & 0x00ff);
+                result.push_back((val & 0xff00) >> 8);
+              }
+              else
+              {
+                // TODO: throw an exception
+              }
+              break;
+            }
+
+            default:
+              break;
+          }
         }
+
+        binary.insert(binary.end(), result.begin(), result.end());
+
         std::cout << std::endl;
 
+        // Next token after the instruction AND its operands
         it += argc;
 
         break;
       }
+
       default:
         break;
     }
