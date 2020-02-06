@@ -466,6 +466,10 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
       }
 
       converted.push_back(tok);
+
+      // Move past the directive argument to not increase token_position
+      it++;
+      continue;
     }
     else if (tok.type == Token::Type::LABEL)
     {
@@ -500,7 +504,19 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
       converted.push_back(tok);
     }
 
-    token_position++;
+    if (tok.type == Token::Type::NUMBER)
+    {
+      unsigned int val = std::stoul(tok.value);
+      if (val > 0xffff)
+      {
+        // TODO: exception
+      }
+      token_position += val > 0xff ? 2 : 1;
+    }
+    else if (tok.type == Token::Type::INSTRUCTION)
+    {
+      token_position++;
+    }
   }
 
   return converted;

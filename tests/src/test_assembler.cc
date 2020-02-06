@@ -120,7 +120,6 @@ Test(assembler, test_convert_numbers, .init=test_assembler_init, .fini=test_asse
 
 Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assembler_fini)
 {
-
   std::string source = R"(
     .org 0x100
 
@@ -131,8 +130,6 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
     label:
       jmp label
     
-    .org 31
-    
     cpi 0
     jnz main
   )";
@@ -140,6 +137,10 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
   auto tokens = Assembler::tokenize(source);
   tokens = Assembler::convert_numbers(tokens);
   auto converted = Assembler::convert_labels(tokens);
+  std::cout << "LABEL: " << converted[15].value << " " << std::to_string(0x100 + 3) << std::endl;
+  cr_assert_eq(std::stoul(converted[10].value), 0x103);
+  cr_assert_eq(std::stoul(converted[14].value), 0x100);
+  // TODO: add test for intermediate .org
 }
 
 Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_fini)
@@ -167,7 +168,7 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
     0x79, // mov a, c
     0xd3, 0x00, // out 0
     0xfe, 0x00, // cpi 0
-    0xc2, 0x01, 0x10, // jnz mainloop
+    0xc2, 0x01, 0x01, // jnz mainloop
     0xf1, // pop psw
     0x76 // hlt
   };
