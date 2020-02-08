@@ -35,14 +35,15 @@ std::map<const std::string, AsmOp> Assembler::instructions = {
   {"cmc", AsmOp(0b00111111, {}, {}, {})},
   {"mov", AsmOp(0b01000000, {T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM}, {3, 0})},
   {"hlt", AsmOp(0b01110110, {}, {}, {})},
-  {"add", AsmOp(0b10000000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"adc", AsmOp(0b10001000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"sub", AsmOp(0b10010000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"sbb", AsmOp(0b10011000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"ana", AsmOp(0b10100000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"xra", AsmOp(0b10101000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"ora", AsmOp(0b10110000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
-  {"cmp", AsmOp(0b10111000, {T::REGISTER}, {C::ABCDEHLM}, {2})},
+  {"add", AsmOp(0b10000000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"adc", AsmOp(0b10001000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"sub", AsmOp(0b10010000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"sbb", AsmOp(0b10011000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"ana", AsmOp(0b10100000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"xra", AsmOp(0b10101000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"ora", AsmOp(0b10110000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"cmp", AsmOp(0b10111000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
+  {"jmp", AsmOp(0b11000011, {T::NUMBER}, {C::IMM16}, {-1})},
   {"rnz", AsmOp(0b11000000, {}, {}, {})},
   {"pop", AsmOp(0b11000001, {T::REGISTER}, {C::BDHPSW}, {4})},
   {"jnz", AsmOp(0b11000010, {T::NUMBER}, {C::IMM16}, {-1})},
@@ -64,6 +65,8 @@ std::map<const std::string, AsmOp> Assembler::instructions = {
   {"jnc", AsmOp(0b11010010, {T::NUMBER}, {C::IMM16}, {-1})},
   {"adi", AsmOp(0b11000110, {T::NUMBER}, {C::IMM8}, {-1})},
   {"aci", AsmOp(0b11001110, {T::NUMBER}, {C::IMM8}, {-1})},
+  {"cnz", AsmOp(0b11000100, {T::NUMBER}, {C::IMM16}, {-1})},
+  {"rst", AsmOp(0b11000111, {T::NUMBER}, {C::IMM8}, {3})},
 
   {"rz", AsmOp(0b11001000, {}, {}, {})},
   {"jz", AsmOp(0b11001010, {T::NUMBER}, {C::IMM16}, {-1})},
@@ -425,9 +428,17 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
             }
             case Token::Type::NUMBER:
             {
+
               if (constraint == AsmOp::Constraint::IMM8)
               {
-                result.push_back(optok.get_uint8());
+                if (bit_shift > -1)
+                {
+                  result[0] |= (optok.get_uint8() << bit_shift);
+                }
+                else
+                {
+                  result.push_back(optok.get_uint8());
+                }
               }
               else if (constraint == AsmOp::Constraint::IMM16)
               {
