@@ -16,14 +16,14 @@ std::map<const std::string, AsmOp> Assembler::instructions = {
 
   {"cpi", AsmOp(0b11111110, {T::NUMBER}, {C::IMM8}, {-1})},
   {"nop", AsmOp(0b00000000, {}, {}, {})},
-  {"lxi", AsmOp(0b00000001, {T::NUMBER}, {C::IMM16}, {-1})},
-  {"inx", AsmOp(0b00000011, {T::REGISTER}, {C::BDHSP}, {5})},
-  {"inr", AsmOp(0b00000100, {T::REGISTER}, {C::ABCDEHLM}, {5})},
+  {"lxi", AsmOp(0b00000001, {T::REGISTER, T::NUMBER}, {C::BDHSP, C::IMM16}, {4, -1})},
+  {"inx", AsmOp(0b00000011, {T::REGISTER}, {C::BDHSP}, {4})},
+  {"inr", AsmOp(0b00000100, {T::REGISTER}, {C::ABCDEHLM}, {3})},
   {"dcr", AsmOp(0b00000101, {T::REGISTER}, {C::ABCDEHLM}, {3})},
   {"mvi", AsmOp(0b00000110, {T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8}, {3, -1})},
   {"rlc", AsmOp(0b00000111, {}, {}, {})},
-  {"dad", AsmOp(0b00001001, {T::REGISTER}, {C::BDHSP}, {5})},
-  {"dcx", AsmOp(0b00001011, {T::REGISTER}, {C::BDHSP}, {5})},
+  {"dad", AsmOp(0b00001001, {T::REGISTER}, {C::BDHSP}, {4})},
+  {"dcx", AsmOp(0b00001011, {T::REGISTER}, {C::BDHSP}, {4})},
   {"rrc", AsmOp(0b00001111, {}, {}, {})},
   {"ral", AsmOp(0b00010111, {}, {}, {})},
   {"rar", AsmOp(0b00011111, {}, {}, {})},
@@ -150,14 +150,17 @@ Register Token::get_register() const
     if (value == "e") return Register::E;
     if (value == "h") return Register::H;
     if (value == "l") return Register::L;
+    if (value == "m") return Register::M;
     if (value == "sp") return Register::SP;
 
     // In this case, the opcode alteration is the same as with SP
     if (value == "psw") return Register::SP;
+
+    throw assembler_exception("No register conversion for value '" + value + "'");
   }
   else
   {
-    // TODO: throw an exception
+    throw assembler_exception("get_register expects REGISTER type");
   }
 }
 
@@ -384,7 +387,28 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
               // If the operand alters the instruction opcode
               if (bit_shift > -1)
               {
-                uint8_t register_value = static_cast<uint8_t>(optok.get_register());
+                uint8_t register_value;
+                if (constraint == AsmOp::Constraint::BD
+                  || constraint == AsmOp::Constraint::BDHSP
+                  || constraint == AsmOp::Constraint::BDHPSW)
+                {
+                  register_value = static_cast<uint8_t>(
+                    to_regpair(optok.get_register())
+                  );
+                }
+                else if (constraint == AsmOp::Constraint::ABCDEHLM)
+                {
+                  register_value = static_cast<uint8_t>(optok.get_register());
+                }
+                else
+                {
+                  throw assembler_exception(boost::str(
+                    boost::format(
+                      "%d:%d Wrong constraint for instruction '%s'"
+                    ) % tok.line % tok.column % tok.value
+                  ));
+                }
+
                 std::cout << "ALTER REGISTER_VALUE=";
                 std::cout << +register_value;
                 std::cout << " TEMPLATE=" << +op.opcode_template;

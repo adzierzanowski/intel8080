@@ -187,3 +187,171 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
 
   cr_assert_eq(expected_bin, result_bin);
 }
+
+Test(assembler, test_assemble_all, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+  std::string source = R"(
+    .org 0x100
+    op_0x:
+      nop
+      lxi b, 0xdead
+      stax b
+      inx b
+      inr b
+      dcr b
+      mvi b, 0xbe
+      rlc
+      dad b
+      ldax b
+      dcx b
+      inr c
+      dcr c
+      mvi c, 0xef
+      rrc
+
+    op_1x:
+      lxi d, 0xdead
+      stax d
+      inx d
+      inr d
+      dcr d
+      mvi d, 0xbe
+      ral
+      dad d
+      ldax d
+      dcx d
+      inr e
+      dcr e
+      mvi e, 0xef
+      rar
+
+    op_2x:
+      lxi h, 0xdead
+      shld, 0xbeef
+      inx h
+      inr h
+      dcr h
+      mvi h, 0xbe
+      daa
+      dad h
+      lhld 0xdead
+      dcx h
+      inr l
+      dcr l
+      mvi l, 0xef
+      cma
+
+    op_3x:
+      lxi sp, 0xdead
+      sta, 0xbeef
+      inx sp
+      inr m
+      dcr m
+      mvi m, 0xbe
+      stc
+      dad sp
+      lda 0xdead
+      dcx sp
+      inr a
+      dcr a
+      mvi a, 0xef
+      cmc
+
+    op_4x:
+      mov b, b
+      mov b, c
+      mov b, d
+      mov b, e
+      mov b, h
+      mov b, l
+      mov b, m
+      mov b, a
+      mov c, b
+      mov c, c
+      mov c, d
+      mov c, e
+      mov c, h
+      mov c, l
+      mov c, m
+      mov c, a
+
+    op_5x:
+      mov d, b
+      mov d, c
+      mov d, d
+      mov d, e
+      mov d, h
+      mov d, l
+      mov d, m
+      mov d, a
+      mov e, b
+      mov e, c
+      mov e, d
+      mov e, e
+      mov e, h
+      mov e, l
+      mov e, m
+      mov e, a
+
+    op_6x:
+      mov h, b
+      mov h, c
+      mov h, d
+      mov h, e
+      mov h, h
+      mov h, l
+      mov h, m
+      mov h, a
+      mov l, b
+      mov l, c
+      mov l, d
+      mov l, e
+      mov l, h
+      mov l, l
+      mov l, m
+      mov l, a
+
+    op_7x:
+      mov m, b
+      mov m, c
+      mov m, d
+      mov m, e
+      mov m, h
+      mov m, l
+      hlt
+      mov m, a
+      mov a, b
+      mov a, c
+      mov a, d
+      mov a, e
+      mov a, h
+      mov a, l
+      mov a, m
+      mov a, a
+  )";
+
+  std::vector<uint8_t> expected_bin = {
+    0x00, 0x01, 0xad, 0xde, 0x02, 0x03, 0x04, 0x05, 0x06, 0xbe, 0x07, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0xef, 0x0f,
+    0x11, 0xad, 0xde, 0x12, 0x13, 0x14, 0x15, 0x16, 0xbe, 0x17, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0xef, 0x1f,
+    0x21, 0xad, 0xde, 0x22, 0xef, 0xbe, 0x23, 0x24, 0x25, 0x26, 0xbe, 0x27, 0x29, 0x2a, 0xad, 0xde, 0x2b, 0x2c, 0x2d, 0x2e, 0xef, 0x2f,
+    0x31, 0xad, 0xde, 0x32, 0xef, 0xbe, 0x33, 0x34, 0x35, 0x36, 0xbe, 0x37, 0x39, 0x3a, 0xad, 0xde, 0x3b, 0x3c, 0x3d, 0x3e, 0xef, 0x3f,
+    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f
+  };
+
+  auto result_bin = Assembler::assemble(source);
+
+  std::cout << "expected: " << std::endl;
+  for (auto byte : expected_bin)
+    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+  std::cout << std::endl;
+
+  std::cout << "result: " << std::endl;
+  for (auto byte : result_bin)
+    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
+  std::cout << std::endl;
+
+  cr_assert_eq(expected_bin, result_bin);
+}

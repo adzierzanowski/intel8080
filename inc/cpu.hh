@@ -8,7 +8,8 @@
 
 #include "ram.hh"
 
-enum class Register : uint8_t {
+enum class Register : uint8_t
+{
   // general puprose registers
   A = 0b111,
   B = 0b000,
@@ -18,12 +19,24 @@ enum class Register : uint8_t {
   H = 0b100,
   L = 0b101,
 
-  SP = 0b1011, // stack pointer treated as register
   M = 0b110, // Memory = [H:L]
+
+  SP = 0b1011, // stack pointer treated as register
   FLAGS = 0b11011 // FLAGS
 };
 
-enum class Flag : uint8_t {
+enum class RegisterPair : uint8_t
+{
+  B = 0b00,
+  D = 0b01,
+  H = 0b10,
+  SP = 0b11
+};
+
+RegisterPair to_regpair(Register reg);
+
+enum class Flag : uint8_t
+{
   S = 0b10000000,  // Sign      - set if the result is negative
   Z = 0b01000000,  // Zero      - set if the result is zero
   Z1 = 0b00100000, // 0         - always 0
