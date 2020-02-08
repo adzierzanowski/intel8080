@@ -138,6 +138,7 @@ bool Token::overlaps(const Token& other) const
     && ((start2 <= start1 && end2 >= start1)
       || (start2 >= start1 && start2 <= end1));
 }
+
 Register Token::get_register() const
 {
   if (type == Token::Type::REGISTER)
@@ -172,24 +173,28 @@ uint16_t Token::get_uint16() const
   return std::stoul(value);
 }
 
-std::ostream& operator<<(std::ostream &os, const Token::Type& type_)
+std::string to_string(const Token::Type& type_)
 {
   switch (type_)
   {
-    case Token::Type::INSTRUCTION: os << "INSTRUCTION"; break;
-    case Token::Type::DIRECTIVE: os << "DIRECTIVE"; break;
-    case Token::Type::NUMBER: os << "NUMBER"; break;
-    case Token::Type::HEXADECIMAL: os << "HEXADECIMAL"; break;
-    case Token::Type::BINARY: os << "BINARY"; break;
-    case Token::Type::LABEL: os << "LABEL"; break;
-    case Token::Type::REGISTER: os << "REGISTER"; break;
-    case Token::Type::SYMBOL: os << "SYMBOL"; break;
+    case Token::Type::INSTRUCTION: return "INSTRUCTION"; break;
+    case Token::Type::DIRECTIVE: return "DIRECTIVE"; break;
+    case Token::Type::NUMBER: return "NUMBER"; break;
+    case Token::Type::HEXADECIMAL: return "HEXADECIMAL"; break;
+    case Token::Type::BINARY: return "BINARY"; break;
+    case Token::Type::LABEL: return "LABEL"; break;
+    case Token::Type::REGISTER: return "REGISTER"; break;
+    case Token::Type::SYMBOL: return "SYMBOL"; break;
     
     default:
-      os << "<UNKNOWN>";
+      return "<UNKNOWN>";
       break;
   }
+}
 
+std::ostream& operator<<(std::ostream &os, const Token::Type& type_)
+{
+  os << to_string(type_);
   return os;
 }
 
@@ -342,10 +347,13 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
 
         if (argc > 0 && last_token)
         {
-          std::cerr << tok.line << ":" << tok.column << " ";
-          std::cerr << "Instruction '" << tok.value << "' ";
-          std::cerr << "expects " << argc << " argument(s).\n";
-          return binary;
+          throw assembler_exception(boost::str(
+              boost::format("%d:%d Instruction %s expects %d argument(s)")
+              % tok.line
+              % tok.column
+              % tok.value
+              % argc
+          ));
         }
 
         std::vector<uint8_t> result = {op.opcode_template};
@@ -362,13 +370,11 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
 
           if (operand_type != optok.type)
           {
-            // TODO: throw an exception
-            std::cerr << tok.line << ":" << tok.column << " ";
-            std::cerr << "Instruction '" << tok.value << "' ";
-            std::cerr << "expects operand #" << (i+1) << " to be of type ";
-            std::cerr << operand_type << ", not " << optok.type << ".\n";
-
-            return binary;
+            throw assembler_exception(boost::str(
+              boost::format(
+                "%d:%d Instruction %s expects operand #%d to be of type %s, not %s"
+              ) % tok.line % tok.column % tok.value % (i+1) % operand_type % optok.type
+            ));
           }
 
           switch (operand_type)
@@ -408,12 +414,16 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
               }
               else
               {
-                // TODO: throw an exception
+                throw assembler_exception("Wrong constraint for NUMBER");
               }
               break;
             }
 
             default:
+              throw assembler_exception(
+                "Wrong type for instruction operand: '"
+                + to_string(operand_type) + "'"
+              );
               break;
           }
         }
@@ -453,16 +463,14 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
     {
       if (last_token)
       {
-        std::cerr << "Directive .org expects an argument.\n";
-        return converted;
+        throw assembler_exception("Directive .org expects an argument");
       }
 
       const Token& next = *(it + 1);
       origin = std::stoul(next.value);
       if (origin > 0xffff)
       {
-        std::cerr << "Directive .org expects a 16-bit value." << std::endl;
-        return converted;
+        throw assembler_exception("Directive .org expects a 16-bit value");
       }
 
       converted.push_back(tok);
@@ -477,8 +485,9 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
 
       if (label != labels.end())
       {
-        std::cerr << "Found two labels with the same name: '" << tok.value << "'.";
-        return converted;
+        throw assembler_exception(
+          "Found two labels with the same name: '" + tok.value + "'"
+        );
       }
 
       labels.insert({tok.value, origin + token_position});
@@ -490,8 +499,7 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
 
       if (label == labels.end())
       {
-        std::cerr << "No such label: '" << tok.value << "'.\n";
-        return converted;
+        throw assembler_exception("Undefined symbol: '" + tok.value + "'");
       }
 
       Token new_token = tok; 
@@ -509,7 +517,7 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
       unsigned int val = std::stoul(tok.value);
       if (val > 0xffff)
       {
-        // TODO: exception
+        throw assembler_exception("Address exceeds 16 bits");
       }
       token_position += val > 0xff ? 2 : 1;
     }

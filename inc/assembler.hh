@@ -16,6 +16,12 @@
 #include "file_loader.hh"
 
 
+struct assembler_exception : public std::runtime_error
+{
+  explicit assembler_exception(const std::string& what)
+    : std::runtime_error(what) {}
+};
+
 struct Token
 {
   enum class Type : int // precedence, the lower the better
@@ -47,6 +53,7 @@ struct Token
   uint16_t get_uint16() const;
 };
 
+std::string to_string(const Token::Type& type_);
 std::ostream& operator <<(std::ostream& os, const Token::Type& type_);
 std::ostream& operator <<(std::ostream& os, const Token& token);
 

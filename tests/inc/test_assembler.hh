@@ -6,6 +6,7 @@
 
 #include <criterion/criterion.h>
 
+#include "test.hh"
 #include "assembler.hh"
 
 
