@@ -340,8 +340,6 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
   for (auto it = tokens.begin(); it != tokens.end(); it++)
   {
     const Token& tok = *it;
-    std::cout << "ASSEMBLING " << tok << std::endl;
-
     bool last_token = (it == (tokens.end() - 1));
 
     switch (tok.type)
@@ -371,8 +369,6 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
           auto constraint = op.constraints[i];
           auto bit_shift = op.opcode_bit_pos[i];
           const Token& optok = *(it+i+1); // Fetch operand token
-
-          std::cout << "OPERAND " << i << " " << optok << std::endl;
 
           if (operand_type != optok.type)
           {
@@ -411,11 +407,6 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
                     ) % tok.line % tok.column % tok.value
                   ));
                 }
-
-                std::cout << "ALTER REGISTER_VALUE=";
-                std::cout << +register_value;
-                std::cout << " TEMPLATE=" << +op.opcode_template;
-                std::cout << " BIT_SHIFT=" << +bit_shift << std::endl;
 
                 // This is an ugly hack:
                 // In order to prevent duplicates in the Register enum,
@@ -464,8 +455,6 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
         }
 
         binary.insert(binary.end(), result.begin(), result.end());
-
-        std::cout << std::endl;
 
         // Next token after the instruction AND its operands
         it += argc;
