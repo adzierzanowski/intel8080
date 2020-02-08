@@ -16,11 +16,15 @@ std::map<const std::string, AsmOp> Assembler::instructions = {
 
   {"cpi", AsmOp(0b11111110, {T::NUMBER}, {C::IMM8}, {-1})},
   {"nop", AsmOp(0b00000000, {}, {}, {})},
-  {"lxi", AsmOp(0b00000001, {T::REGISTER, T::NUMBER}, {C::BDHSP, C::IMM16}, {4, -1})},
+  {"lxi", AsmOp(
+    0b00000001, {T::REGISTER, T::NUMBER}, {C::BDHSP, C::IMM16}, {4, -1}
+  )},
   {"inx", AsmOp(0b00000011, {T::REGISTER}, {C::BDHSP}, {4})},
   {"inr", AsmOp(0b00000100, {T::REGISTER}, {C::ABCDEHLM}, {3})},
   {"dcr", AsmOp(0b00000101, {T::REGISTER}, {C::ABCDEHLM}, {3})},
-  {"mvi", AsmOp(0b00000110, {T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8}, {3, -1})},
+  {"mvi", AsmOp(
+    0b00000110, {T::REGISTER, T::NUMBER}, {C::ABCDEHLM, C::IMM8}, {3, -1}
+  )},
   {"rlc", AsmOp(0b00000111, {}, {}, {})},
   {"dad", AsmOp(0b00001001, {T::REGISTER}, {C::BDHSP}, {4})},
   {"dcx", AsmOp(0b00001011, {T::REGISTER}, {C::BDHSP}, {4})},
@@ -33,7 +37,9 @@ std::map<const std::string, AsmOp> Assembler::instructions = {
   {"stc", AsmOp(0b00110111, {}, {}, {})},
   {"lda", AsmOp(0b00111010, {T::NUMBER}, {C::IMM16}, {-1})},
   {"cmc", AsmOp(0b00111111, {}, {}, {})},
-  {"mov", AsmOp(0b01000000, {T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM}, {3, 0})},
+  {"mov", AsmOp(
+    0b01000000, {T::REGISTER, T::REGISTER}, {C::ABCDEHLM, C::ABCDEHLM}, {3, 0}
+  )},
   {"hlt", AsmOp(0b01110110, {}, {}, {})},
   {"add", AsmOp(0b10000000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
   {"adc", AsmOp(0b10001000, {T::REGISTER}, {C::ABCDEHLM}, {0})},
@@ -159,7 +165,9 @@ Register Token::get_register() const
     // In this case, the opcode alteration is the same as with SP
     if (value == "psw") return Register::SP;
 
-    throw assembler_exception("No register conversion for value '" + value + "'");
+    throw assembler_exception(
+      "No register conversion for value '" + value + "'"
+    );
   }
   else
   {
@@ -211,8 +219,9 @@ std::ostream& operator<<(std::ostream &os, const Token& token)
   return os;
 }
 
-std::vector<Token> Assembler::filter_overlapping_tokens(std::vector<Token>& tokens)
-{
+std::vector<Token> Assembler::filter_overlapping_tokens(
+  std::vector<Token>& tokens
+) {
   std::vector<Token> filtered;
 
   for (auto it = tokens.begin(); it != tokens.end(); it++)
@@ -314,7 +323,9 @@ std::vector<Token> Assembler::convert_numbers(std::vector<Token>& tokens)
           nullptr,
           16
         );
-        return Token(Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
+
+        return Token(
+          Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
       }
       else if (tok.type == Token::Type::BINARY)
       {
@@ -323,7 +334,9 @@ std::vector<Token> Assembler::convert_numbers(std::vector<Token>& tokens)
           nullptr,
           2
         );
-        return Token(Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
+
+        return Token(
+          Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
       }
 
       return tok;
@@ -374,8 +387,14 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
           {
             throw assembler_exception(boost::str(
               boost::format(
-                "%d:%d Instruction %s expects operand #%d to be of type %s, not %s"
-              ) % tok.line % tok.column % tok.value % (i+1) % operand_type % optok.type
+                "%d:%d Instruction %s expects operand #%d "
+                "to be of type %s, not %s"
+              ) % tok.line
+                % tok.column
+                % tok.value
+                % (i+1)
+                % operand_type
+                % optok.type
             ));
           }
 
