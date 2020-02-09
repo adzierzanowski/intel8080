@@ -128,6 +128,7 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
     main:
       mov c, a
       mvi c, 9
+      ; this is a comment, does it break the test?
 
     label:
       jmp label
@@ -139,8 +140,8 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
   auto tokens = Assembler::tokenize(source);
   tokens = Assembler::convert_numbers(tokens);
   auto converted = Assembler::convert_labels(tokens);
-  cr_assert_eq(std::stoul(converted[10].value), 0x103);
-  cr_assert_eq(std::stoul(converted[14].value), 0x100);
+  cr_assert_eq(std::stoul(converted[11].value), 0x103);
+  cr_assert_eq(std::stoul(converted[15].value), 0x100);
   // TODO: add test for intermediate .org
 }
 
