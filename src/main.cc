@@ -48,6 +48,13 @@ int main(int argc, char *argv[])
   opt.takes_arg = true;
   argparser_from_struct(parser, &opt);
 
+  opt.short_name = "-O";
+  opt.long_name = "--origin";
+  opt.help = "addres of the program";
+  opt.required = false;
+  opt.takes_arg = true;
+  argparser_from_struct(parser, &opt);
+
   opt.short_name = "-v";
   opt.long_name = "--verbose";
   opt.help = "be verbose";
@@ -104,11 +111,24 @@ int main(int argc, char *argv[])
     if (contains(exe_exts, extension))
     {
       Emulator emu;
+
       if (argparser_passed(parser, "--verbose"))
       {
         emu.set_verbose_execution(true);
       }
-      emu.load_program(file.get_binary());
+
+      if (argparser_passed(parser, "--bdos"))
+      {
+        emu.set_bdos_mode(true);
+      }
+
+      uint16_t origin = 0;
+      if (argparser_passed(parser, "--origin"))
+      {
+        origin = std::stoul(std::string(argparser_get(parser, "--origin")));
+      }
+
+      emu.load_program(file.get_binary(), origin);
       emu.execute();
     }
     else if (contains(asm_exts, extension))

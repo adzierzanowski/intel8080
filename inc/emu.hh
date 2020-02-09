@@ -26,6 +26,7 @@ class Emulator
     std::vector<Opcode> opcodes;
     bool execute_flag;
     bool verbose_execution;
+    bool bdos_mode;
 
     void nop(void);
     void lxi(Register x, Register y);
@@ -95,6 +96,7 @@ class Emulator
     std::string dump_gpr(void);
     std::string dump_state_registers(void);
     void set_verbose_execution(bool flag);
+    void set_bdos_mode(bool flag);
 };
 
 #endif

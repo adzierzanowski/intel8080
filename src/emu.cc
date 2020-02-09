@@ -7,7 +7,8 @@ Emulator::Emulator(void) :
   cpu{std::make_unique<CPU>()},
   opcodes{std::vector<Opcode>()},
   execute_flag{false},
-  verbose_execution{false}
+  verbose_execution{false},
+  bdos_mode{false}
 {
   FileLoader fl(FileLoader::OPCODES_FILENAME);
   fl.load_opcodes();
@@ -61,6 +62,11 @@ std::string Emulator::dump_state_registers(void)
 void Emulator::set_verbose_execution(bool flag)
 {
   verbose_execution = flag;
+}
+
+void Emulator::set_bdos_mode(bool flag)
+{
+  bdos_mode = flag;
 }
 
 void Emulator::execute_opcode(uint8_t opcode)
@@ -655,9 +661,31 @@ bool Emulator::call(bool condition)
 {
   if (condition)
   {
-    cpu->push(cpu->get_pc() + 3);
-    cpu->set_pc(cpu->get_imm16());
-    return false;
+    uint16_t addr = cpu->get_imm16();
+
+    // BDOS syscall
+    if (bdos_mode && addr == 5)
+    {
+      switch (cpu->get_register(Register::C))
+      {
+        case 2:
+        {
+          std::cout << cpu->get_register(Register::E);
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      return true;
+    }
+    else
+    {
+      cpu->push(cpu->get_pc() + 3);
+      cpu->set_pc(addr);
+      return false;
+    }
   }
 
   return true;

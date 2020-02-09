@@ -24,6 +24,13 @@ Test(cpu, cpu_initialization, .init=test_cpu_init, .fini=test_cpu_fini)
   cr_assert_eq(cpu->pc, 0);
 }
 
+Test(cpu, load_program, .init=test_cpu_init, .fini=test_cpu_fini)
+{
+  cpu->load_program({0x76}, 0x100);
+  cr_assert_eq(cpu->ram->memory[0x100], 0x76);
+  cr_assert_eq(cpu->pc, 0x100);
+}
+
 Test(cpu, set_flag, .init=test_cpu_init, .fini=test_cpu_fini)
 {
   cpu->set_flag(Flag::S, true);
