@@ -137,7 +137,6 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
   auto tokens = Assembler::tokenize(source);
   tokens = Assembler::convert_numbers(tokens);
   auto converted = Assembler::convert_labels(tokens);
-  std::cout << "LABEL: " << converted[15].value << " " << std::to_string(0x100 + 3) << std::endl;
   cr_assert_eq(std::stoul(converted[10].value), 0x103);
   cr_assert_eq(std::stoul(converted[14].value), 0x100);
   // TODO: add test for intermediate .org
@@ -174,17 +173,6 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
   };
 
   auto result_bin = Assembler::assemble(source);
-
-  std::cout << "expected: " << std::endl;
-  for (auto byte : expected_bin)
-    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-  std::cout << std::endl;
-
-  std::cout << "result: " << std::endl;
-  for (auto byte : result_bin)
-    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-  std::cout << std::endl;
-
   cr_assert_eq(expected_bin, result_bin);
 }
 
@@ -520,16 +508,5 @@ Test(assembler, test_assemble_all, .init=test_assembler_init, .fini=test_assembl
   };
 
   auto result_bin = Assembler::assemble(source);
-
-  std::cout << "expected: " << std::endl;
-  for (auto byte : expected_bin)
-    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-  std::cout << std::endl;
-
-  std::cout << "result: " << std::endl;
-  for (auto byte : result_bin)
-    std::cout << std::hex << std::setw(2) << std::setfill('0') << +byte << " ";
-  std::cout << std::endl;
-
   cr_assert_eq(expected_bin, result_bin);
 }
