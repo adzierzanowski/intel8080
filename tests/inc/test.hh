@@ -1,6 +1,7 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <iomanip>
 #include <random>
 #include <utility>
 #include <criterion/criterion.h>

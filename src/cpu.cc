@@ -1,6 +1,31 @@
 #include "cpu.hh"
 
 
+RegisterPair to_regpair(Register reg)
+{
+  switch (reg)
+  {
+    case Register::A:
+      return RegisterPair::SP;
+      break;
+    case Register::B:
+      return RegisterPair::B;
+      break;
+    case Register::D:
+      return RegisterPair::D;
+      break;
+    case Register::H:
+      return RegisterPair::H;
+      break;
+    case Register::SP:
+      return RegisterPair::SP;
+      break;
+    default:
+      throw std::runtime_error("Wrong conversion from Register to RegisterPair");
+      break;
+  }
+}
+
 bool CPU::aux_carry(uint8_t before, uint8_t after)
 {
   uint8_t a = before;
