@@ -1,7 +1,7 @@
 #include "assembler.hh"
 
 using T = Token::Type;
-using C = AsmOp::Constraint;
+using C = Constraint;
 std::map<const std::string, AsmOp> Assembler::instructions = {
   {"stax", AsmOp(0b00000010, {T::REGISTER}, {C::BD}, {4})},
   {"ldax", AsmOp(0b00001010, {T::REGISTER}, {C::BD}, {4})},
@@ -186,6 +186,108 @@ uint16_t Token::get_uint16() const
 {
   // TODO: check the boundary
   return std::stoul(value);
+}
+
+bool Token::constraint_fulfilled(Constraint constraint) const
+{
+  switch (constraint)
+  {
+    case Constraint::ABCDEHLM:
+    {
+      if (type != Token::Type::REGISTER)
+        return false;
+
+      std::vector<std::string> valid_values = {
+        "a", "b", "c", "d", "e", "h", "l", "m"
+      };
+      if (std::find(
+        valid_values.begin(), valid_values.end(), value) != valid_values.end())
+      {
+        return true;
+      }
+      return false;
+
+      break;
+    }
+    case Constraint::BD:
+    {
+      if (type != Token::Type::REGISTER)
+        return false;
+
+      std::vector<std::string> valid_values = {"b", "d"};
+      if (std::find(
+        valid_values.begin(), valid_values.end(), value) != valid_values.end())
+      {
+        return true;
+      }
+      return false;
+
+      break;
+    };
+    case Constraint::BDHPSW:
+    {
+      if (type != Token::Type::REGISTER)
+        return false;
+
+      std::vector<std::string> valid_values = {"b", "d", "h", "psw"};
+      if (std::find(
+        valid_values.begin(), valid_values.end(), value) != valid_values.end())
+      {
+        return true;
+      }
+      return false;
+
+      break;
+    }
+    case Constraint::BDHSP:
+    {
+      if (type != Token::Type::REGISTER)
+        return false;
+
+      std::vector<std::string> valid_values = {"b", "d", "h", "sp"};
+      if (std::find(
+        valid_values.begin(), valid_values.end(), value) != valid_values.end())
+      {
+        return true;
+      }
+      return false;
+
+      break;
+    }
+    case Constraint::IMM8:
+    {
+      if (type != Token::Type::NUMBER)
+      {
+        return false;
+      };
+
+      unsigned int intval = std::stoul(value);
+      if (intval > 0xff)
+      {
+        return false;
+      }
+      return true;
+    }
+    case Constraint::IMM16:
+    {
+      if (type != Token::Type::NUMBER)
+      {
+        return false;
+      };
+
+      unsigned int intval = std::stoul(value);
+      if (intval > 0xffff)
+      {
+        return false;
+      }
+      return true;
+    };
+    default:
+    {
+      return true;
+      break;
+    }
+  }
 }
 
 std::string to_string(const Token::Type& type_)
@@ -385,6 +487,15 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
           auto bit_shift = op.opcode_bit_pos[i];
           const Token& optok = *(it+i+1); // Fetch operand token
 
+          if (!optok.constraint_fulfilled(constraint))
+          {
+            throw assembler_exception(boost::str(
+              boost::format("%d:%d Constraint unfulfilled")
+                % tok.line
+                % tok.column
+            ));
+          }
+
           if (operand_type != optok.type)
           {
             throw assembler_exception(boost::str(
@@ -408,15 +519,15 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
               if (bit_shift > -1)
               {
                 uint8_t register_value;
-                if (constraint == AsmOp::Constraint::BD
-                  || constraint == AsmOp::Constraint::BDHSP
-                  || constraint == AsmOp::Constraint::BDHPSW)
+                if (constraint == Constraint::BD
+                  || constraint == Constraint::BDHSP
+                  || constraint == Constraint::BDHPSW)
                 {
                   register_value = static_cast<uint8_t>(
                     to_regpair(optok.get_register())
                   );
                 }
-                else if (constraint == AsmOp::Constraint::ABCDEHLM)
+                else if (constraint == Constraint::ABCDEHLM)
                 {
                   register_value = static_cast<uint8_t>(optok.get_register());
                 }
@@ -441,7 +552,7 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
             case Token::Type::NUMBER:
             {
 
-              if (constraint == AsmOp::Constraint::IMM8)
+              if (constraint == Constraint::IMM8)
               {
                 if (bit_shift > -1)
                 {
@@ -452,7 +563,7 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
                   result.push_back(optok.get_uint8());
                 }
               }
-              else if (constraint == AsmOp::Constraint::IMM16)
+              else if (constraint == Constraint::IMM16)
               {
                 uint16_t val = optok.get_uint16();
                 // Little-endian

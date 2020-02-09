@@ -16,6 +16,17 @@
 #include "file_loader.hh"
 
 
+enum class Constraint : uint32_t
+{
+  NONE,
+  IMM8,
+  IMM16,
+  BD,
+  BDHSP,
+  BDHPSW,
+  ABCDEHLM,
+};
+
 struct assembler_exception : public std::runtime_error
 {
   explicit assembler_exception(const std::string& what)
@@ -52,6 +63,8 @@ struct Token
   Register get_register() const;
   uint8_t get_uint8() const;
   uint16_t get_uint16() const;
+
+  bool constraint_fulfilled(Constraint constraint) const;
 };
 
 std::string to_string(const Token::Type& type_);
@@ -60,17 +73,6 @@ std::ostream& operator <<(std::ostream& os, const Token& token);
 
 struct AsmOp
 {
-  enum class Constraint : uint32_t
-  {
-    NONE,
-    IMM8,
-    IMM16,
-    BD,
-    BDHSP,
-    BDHPSW,
-    ABCDEHLM,
-  };
-
   uint8_t opcode_template;
   std::string mnemonic;
   std::vector<Token::Type> operands;
@@ -105,7 +107,6 @@ struct Assembler
   static std::vector<Token> tokenize(std::vector<std::string> source_lines);
   static std::vector<uint8_t> assemble(std::string source);
   static std::vector<uint8_t> assemble(std::vector<std::string> source_lines);
-
 };
 
 #endif

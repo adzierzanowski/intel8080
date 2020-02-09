@@ -28,6 +28,37 @@ Test(assembler, test_token_lt, .init=test_assembler_init, .fini=test_assembler_f
   cr_assert(!(t1 < t2));
 }
 
+Test(assembler, test_token_constraint, .init=test_assembler_init, .fini=test_assembler_fini)
+{
+  Token t1(Token::Type::REGISTER, 10, 10, "b");
+  Token t2(Token::Type::NUMBER, 10, 10, "257");
+  Token t3(Token::Type::REGISTER, 10, 10, "h");
+
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::ABCDEHLM), true);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::BD), true);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::BDHPSW), true);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::BDHSP), true);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::IMM8), false);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::IMM16), false);
+  cr_assert_eq(t1.constraint_fulfilled(Constraint::NONE), true);
+
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::ABCDEHLM), false);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::BD), false);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::BDHPSW), false);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::BDHSP), false);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::IMM8), false);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::IMM16), true);
+  cr_assert_eq(t2.constraint_fulfilled(Constraint::NONE), true);
+
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::ABCDEHLM), true);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::BD), false);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::BDHPSW), true);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::BDHSP), true);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::IMM8), false);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::IMM16), false);
+  cr_assert_eq(t3.constraint_fulfilled(Constraint::NONE), true);
+}
+
 Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_fini)
 {
   std::string src = R"(
