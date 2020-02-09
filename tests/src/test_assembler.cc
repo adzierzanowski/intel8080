@@ -21,7 +21,7 @@ Test(assembler, test_token_eq, .init=test_assembler_init, .fini=test_assembler_f
 
 Test(assembler, test_token_lt, .init=test_assembler_init, .fini=test_assembler_fini)
 {
-  Token t1(Token::Type::SYMBOL, 10, 10, "abcdef");
+  Token t1(Token::Type::IDENTIFIER, 10, 10, "abcdef");
   Token t2(Token::Type::LABEL, 10, 10, "abcdef");
   cr_assert_eq(t1.overlaps(t2), true);
   cr_assert(t2 < t1);
@@ -108,7 +108,7 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::NUMBER, 10, 10, "8"),
 
     Token(Token::Type::INSTRUCTION, 11, 6, "jnz"),
-    Token(Token::Type::SYMBOL, 11, 10, "main"),
+    Token(Token::Type::IDENTIFIER, 11, 10, "main"),
     Token(Token::Type::COMMENT, 11, 15, ";this is a comment"),
   };
 

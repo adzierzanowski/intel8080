@@ -3,23 +3,22 @@
 
 #include <boost/format.hpp>
 
+#include "assembler.hh"
 #include "emu.hh"
 #include "interpreter.hh"
 #include "file_loader.hh"
 #include "../argparser/src/argparser.h"
 
+template <typename T>
+bool contains(std::vector<T> haystack, T needle)
+{
+  return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
+}
 
 int main(int argc, char *argv[])
 {
   struct argparser_t *parser = argparser_new("i8080");
   struct option_init_t opt;
-
-  opt.short_name = "-a";
-  opt.long_name = "--assemble";
-  opt.help = "assemble file";
-  opt.required = false;
-  opt.takes_arg = false;
-  argparser_from_struct(parser, &opt);
 
   opt.short_name = "-b";
   opt.long_name = "--bdos";
@@ -42,9 +41,9 @@ int main(int argc, char *argv[])
   opt.takes_arg = false;
   argparser_from_struct(parser, &opt);
 
-  opt.short_name = '-o';
-  opt.long_name = '--output';
-  opt.help = 'output path';
+  opt.short_name = "-o";
+  opt.long_name = "--output";
+  opt.help = "output path";
   opt.required = false;
   opt.takes_arg = true;
   argparser_from_struct(parser, &opt);
@@ -86,6 +85,8 @@ int main(int argc, char *argv[])
     std::vector<std::string> fname_split;
     boost::split(fname_split, filename, boost::is_any_of("."));
     std::string extension = fname_split.back();
+    std::vector<std::string> exe_exts = {"bin", "hex"};
+    std::vector<std::string> asm_exts = {"s", "asm"};
 
     if (extension == "hex")
     {
@@ -95,9 +96,12 @@ int main(int argc, char *argv[])
     {
       file.load_bin();
     }
+    else if (contains(asm_exts, extension))
+    {
+      file.load_text();
+    }
 
-    std::vector<std::string> exe_exts = {"bin", "hex"};
-    if (std::find(exe_exts.begin(), exe_exts.end(), extension) != exe_exts.end())
+    if (contains(exe_exts, extension))
     {
       Emulator emu;
       if (argparser_passed(parser, "--verbose"))
@@ -107,9 +111,37 @@ int main(int argc, char *argv[])
       emu.load_program(file.get_binary());
       emu.execute();
     }
+    else if (contains(asm_exts, extension))
+    {
+      if (argparser_passed(parser, "--output"))
+      {
+        std::vector<uint8_t> binary;
+        try
+        {
+          binary = Assembler::assemble(file.get_text());
+        }
+        catch (assembler_exception& e)
+        {
+          std::cerr << "error: " << filename << ":";
+          std::cerr << e.what() << std::endl;
+          argparser_free(parser);
+          return 1;
+        }
+
+        std::string output_fname = std::string(argparser_get(parser, "--output"));
+        std::ofstream output_file(output_fname, std::ios::out | std::ofstream::binary);
+        output_file.write((char *) &binary[0], binary.size());
+      }
+      else
+      {
+        std::cerr << "Assembler expects '--output' option.\n";
+        argparser_free(parser);
+        return 1;
+      }
+    }
     else
     {
-      std::cerr << "Unrecognized file format for '" << filename << "'.\n";
+      std::cerr << "Unrecognized file format: '" << filename << "'.\n";
       argparser_free(parser);
       return 1;
     }

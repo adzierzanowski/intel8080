@@ -112,7 +112,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::BINARY, R"(0b[01]+)" },
   { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
   { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
-  { Token::Type::SYMBOL, R"(\b[0-9\w]+\b)" },
+  { Token::Type::IDENTIFIER, R"(\b[0-9\w]+\b)" },
   { Token::Type::COMMENT, R"(;.+)" },
 };
 
@@ -301,13 +301,52 @@ std::string to_string(const Token::Type& type_)
     case Token::Type::BINARY: return "BINARY"; break;
     case Token::Type::LABEL: return "LABEL"; break;
     case Token::Type::REGISTER: return "REGISTER"; break;
-    case Token::Type::SYMBOL: return "SYMBOL"; break;
+    case Token::Type::IDENTIFIER: return "IDENTIFIER"; break;
     case Token::Type::COMMENT: return "COMMENT"; break;
     
     default:
       return "<UNKNOWN>";
       break;
   }
+}
+
+std::string to_string(const Constraint& constraint)
+{
+  switch (constraint)
+  {
+    case Constraint::ABCDEHLM:
+      return "A, B, C, D, E, H, L or M";
+      break;
+    
+    case Constraint::BD:
+      return "B or D";
+      break;
+    
+    case Constraint::BDHPSW:
+      return "B, D, H or PSW";
+      break;
+    
+    case Constraint::BDHSP:
+      return "B, D, H or SP";
+      break;
+    
+    case Constraint::IMM16:
+      return "16-bit immediate";
+      break;
+    
+    case Constraint::IMM8:
+      return "8-bit immediate";
+      break;
+
+    case Constraint::NONE:
+      return "any";
+      break;
+  
+    default:
+      return "<UNKNOWN>";
+      break;
+  }
+
 }
 
 std::ostream& operator<<(std::ostream &os, const Token::Type& type_)
@@ -480,11 +519,12 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
         if (argc > 0 && last_token)
         {
           throw assembler_exception(boost::str(
-              boost::format("%d:%d Instruction %s expects %d argument(s)")
-              % tok.line
-              % tok.column
-              % tok.value
-              % argc
+              boost::format(
+                "%d:%d Instruction %s expects %d argument(s)"
+              ) % tok.line
+                % tok.column
+                % tok.value
+                % argc
           ));
         }
 
@@ -501,9 +541,13 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
           if (!optok.constraint_fulfilled(constraint))
           {
             throw assembler_exception(boost::str(
-              boost::format("%d:%d Constraint unfulfilled")
-                % tok.line
+              boost::format(
+                "%d:%d Constraint unfulfilled: operand #%d expects %s: %s"
+              ) % tok.line
                 % tok.column
+                % i
+                % to_string(operand_type)
+                % to_string(constraint)
             ));
           }
 
@@ -637,7 +681,10 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
       origin = std::stoul(next.value);
       if (origin > 0xffff)
       {
-        throw assembler_exception("Directive .org expects a 16-bit value");
+        throw assembler_exception(boost::str(boost::format(
+          "%d:%d Directive .org expects a 16-bit value"
+          ) % tok.line % tok.column
+        ));
       }
 
       converted.push_back(tok);
@@ -652,21 +699,25 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
 
       if (label != labels.end())
       {
-        throw assembler_exception(
-          "Found two labels with the same name: '" + tok.value + "'"
-        );
+        throw assembler_exception(boost::str(boost::format(
+          "%d:%d Duplicate label name"
+          ) % tok.line % tok.column
+        ));
       }
 
       labels.insert({tok.value, origin + token_position});
       converted.push_back(tok);
     }
-    else if (tok.type == Token::Type::SYMBOL)
+    else if (tok.type == Token::Type::IDENTIFIER)
     {
       auto label = labels.find(tok.value + ":");
 
       if (label == labels.end())
       {
-        throw assembler_exception("Undefined symbol: '" + tok.value + "'");
+        throw assembler_exception(boost::str(boost::format(
+          "%d:%d Undefined identifier: '%s'"
+          ) % tok.line % tok.column % tok.value
+        ));
       }
 
       Token new_token = tok; 

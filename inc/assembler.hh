@@ -45,7 +45,7 @@ struct Token
     NUMBER,
     REGISTER,
     LABEL,
-    SYMBOL,
+    IDENTIFIER,
   };
 
   Type type;
@@ -68,6 +68,7 @@ struct Token
 };
 
 std::string to_string(const Token::Type& type_);
+std::string to_string(const Constraint& constraint);
 std::ostream& operator <<(std::ostream& os, const Token::Type& type_);
 std::ostream& operator <<(std::ostream& os, const Token& token);
 
