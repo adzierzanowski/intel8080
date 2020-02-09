@@ -73,6 +73,7 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
       PUSH PSW
       cpi 8
       jnz main ;this is a comment
+    mvi a, 41h
   )";
 
   std::vector<Token> expected_tokens = {
@@ -110,6 +111,10 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::INSTRUCTION, 11, 6, "jnz"),
     Token(Token::Type::IDENTIFIER, 11, 10, "main"),
     Token(Token::Type::COMMENT, 11, 15, ";this is a comment"),
+
+    Token(Token::Type::INSTRUCTION, 12, 4, "mvi"),
+    Token(Token::Type::REGISTER, 12, 8, "a"),
+    Token(Token::Type::HEXADECIMAL, 12, 11, "41h"),
   };
 
 
@@ -127,6 +132,7 @@ Test(assembler, test_convert_numbers, .init=test_assembler_init, .fini=test_asse
   auto tokens = Assembler::tokenize(R"(
     mvi c, 10
     mvi c, 0xa
+    mvi c, ah
     mvi c, 0b1010
   )");
 
@@ -140,15 +146,19 @@ Test(assembler, test_convert_numbers, .init=test_assembler_init, .fini=test_asse
   tok_hex.type = Token::Type::NUMBER;
   tok_hex.value = "10";
 
+  Token tok_hex2 = tokens[8];
+  tok_hex2.type = Token::Type::NUMBER;
+  tok_hex2.value = "10";
 
-  Token tok_bin = tokens[8];
+  Token tok_bin = tokens[11];
   tok_bin.type = Token::Type::NUMBER;
   tok_bin.value = "10";
 
   cr_assert_eq(converted_tokens.size(), tokens.size());
   cr_assert_eq(converted_tokens[2], tok_dec);
   cr_assert_eq(converted_tokens[5], tok_hex);
-  cr_assert_eq(converted_tokens[8], tok_bin);
+  cr_assert_eq(converted_tokens[8], tok_hex2);
+  cr_assert_eq(converted_tokens[11], tok_bin);
 }
 
 Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assembler_fini)

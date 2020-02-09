@@ -2,6 +2,7 @@
 
 using T = Token::Type;
 using C = Constraint;
+
 std::map<const std::string, AsmOp> Assembler::instructions = {
   {"stax", AsmOp(0b00000010, {T::REGISTER}, {C::BD}, {4})},
   {"ldax", AsmOp(0b00001010, {T::REGISTER}, {C::BD}, {4})},
@@ -108,7 +109,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::DIRECTIVE, R"(\.\w+)" },
   { Token::Type::LABEL, R"(\w+:)" },
   { Token::Type::NUMBER, R"(\b\d+\b)" },
-  { Token::Type::HEXADECIMAL, R"(0x[a-f\d]+)" },
+  { Token::Type::HEXADECIMAL, R"((0x[a-f\d]+|[a-f\d]+h))" },
   { Token::Type::BINARY, R"(0b[01]+)" },
   { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
   { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
@@ -472,11 +473,24 @@ std::vector<Token> Assembler::convert_numbers(std::vector<Token>& tokens)
     [](const Token& tok) {
       if (tok.type == Token::Type::HEXADECIMAL)
       {
-        unsigned int tokval = std::stoul(
-          tok.value.substr(2, tok.value.length()-2),
-          nullptr,
-          16
-        );
+        unsigned int tokval;
+
+        if (tok.value.back() == 'h')
+        {
+          tokval = std::stoul(
+            tok.value.substr(0, tok.value.length()-1),
+            nullptr,
+            16
+          );
+        }
+        else
+        {
+          tokval = std::stoul(
+            tok.value.substr(2, tok.value.length()-2),
+            nullptr,
+            16
+          );
+        }
 
         return Token(
           Token::Type::NUMBER, tok.line, tok.column, std::to_string(tokval));
