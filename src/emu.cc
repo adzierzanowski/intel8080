@@ -668,6 +668,14 @@ bool Emulator::call(bool condition)
     {
       switch (cpu->get_register(Register::C))
       {
+        case 1:
+        {
+          char c;
+          std::cin.get(c);
+          cpu->set_register(Register::A, static_cast<uint8_t>(c));
+          cpu->set_register(Register::L, static_cast<uint8_t>(c));
+          break;
+        }
         case 2:
         {
           std::cout << cpu->get_register(Register::E);
