@@ -21,6 +21,13 @@ int main(int argc, char *argv[])
   opt.takes_arg = false;
   argparser_from_struct(parser, &opt);
 
+  opt.short_name = "-b";
+  opt.long_name = "--bdos";
+  opt.help = "use BDOS syscalls";
+  opt.required = false;
+  opt.takes_arg = false;
+  argparser_from_struct(parser, &opt);
+
   opt.short_name = "-h";
   opt.long_name = "--help";
   opt.help = "show this help message and exit";
@@ -33,6 +40,13 @@ int main(int argc, char *argv[])
   opt.help = "run in interpreter mode";
   opt.required = false;
   opt.takes_arg = false;
+  argparser_from_struct(parser, &opt);
+
+  opt.short_name = '-o';
+  opt.long_name = '--output';
+  opt.help = 'output path';
+  opt.required = false;
+  opt.takes_arg = true;
   argparser_from_struct(parser, &opt);
 
   opt.short_name = "-v";
@@ -48,7 +62,7 @@ int main(int argc, char *argv[])
   {
     std::cout << "Intel8080 emulator\n\n";
     std::cout << "usage: " << parser->prog_name << " ";
-    std::cout << "[-hiv] [filename]" << "\n\n";
+    std::cout << "[-abhiov] [filename]" << "\n\n";
     for ( int i = 0; i < parser->count; i++)
     {
       struct option_t *opt = parser->options[i];
