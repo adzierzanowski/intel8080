@@ -44,6 +44,7 @@ struct Token
     BINARY,
     NUMBER,
     REGISTER,
+    DATA,
     STRING,
     LABEL,
     IDENTIFIER,
