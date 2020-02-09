@@ -24,16 +24,17 @@ struct assembler_exception : public std::runtime_error
 
 struct Token
 {
-  enum class Type : int // precedence, the lower the better
+  enum class Type : int // position = precedence, the lower the better
   {
-    DIRECTIVE = 0,
-    INSTRUCTION = 1,
-    HEXADECIMAL = 2,
-    BINARY = 3,
-    NUMBER = 4,
-    REGISTER = 5,
-    LABEL = 6,
-    SYMBOL = 7
+    COMMENT,
+    DIRECTIVE,
+    INSTRUCTION,
+    HEXADECIMAL,
+    BINARY,
+    NUMBER,
+    REGISTER,
+    LABEL,
+    SYMBOL,
   };
 
   Type type;

@@ -30,53 +30,55 @@ Test(assembler, test_token_lt, .init=test_assembler_init, .fini=test_assembler_f
 
 Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_fini)
 {
-  std::vector<std::string> src;
-  src.push_back("\t.org 0x100 .foo .bar 2");
-  src.push_back("mvi a,     55");
-  src.push_back("    ");
-  src.push_back("mov a, c");
-  src.push_back("mov b,c");
-  src.push_back("hlt lxi sp, 0x44ae");
-  src.push_back("    ");
-  src.push_back("main:");
-  src.push_back("push psw");
-  src.push_back("cpi 8");
-  src.push_back("jnz main");
+  std::string src = R"(
+      .org 0x100 .foo .bar 2
+    mvi a,     55
+    
+    mov a, c
+    mov b,c
+    hlt lxi sp, 0x44ae
+    
+    main:
+      push psw
+      cpi 8
+      jnz main ;this is a comment
+  )";
 
   std::vector<Token> expected_tokens = {
-    Token(Token::Type::DIRECTIVE, 0, 1, ".org"),
-    Token(Token::Type::HEXADECIMAL, 0, 6, "0x100"),
-    Token(Token::Type::DIRECTIVE, 0, 12, ".foo"),
-    Token(Token::Type::DIRECTIVE, 0, 17, ".bar"),
-    Token(Token::Type::NUMBER, 0, 22, "2"),
+    Token(Token::Type::DIRECTIVE, 1, 6, ".org"),
+    Token(Token::Type::HEXADECIMAL, 1, 11, "0x100"),
+    Token(Token::Type::DIRECTIVE, 1, 17, ".foo"),
+    Token(Token::Type::DIRECTIVE, 1, 22, ".bar"),
+    Token(Token::Type::NUMBER, 1, 27, "2"),
 
-    Token(Token::Type::INSTRUCTION, 1, 0, "mvi"),
-    Token(Token::Type::REGISTER, 1, 4, "a"),
-    Token(Token::Type::NUMBER, 1, 11, "55"),
+    Token(Token::Type::INSTRUCTION, 2, 4, "mvi"),
+    Token(Token::Type::REGISTER, 2, 8, "a"),
+    Token(Token::Type::NUMBER, 2, 15, "55"),
 
-    Token(Token::Type::INSTRUCTION, 3, 0, "mov"),
-    Token(Token::Type::REGISTER, 3, 4, "a"),
-    Token(Token::Type::REGISTER, 3, 7, "c"),
+    Token(Token::Type::INSTRUCTION, 4, 4, "mov"),
+    Token(Token::Type::REGISTER, 4, 8, "a"),
+    Token(Token::Type::REGISTER, 4, 11, "c"),
 
-    Token(Token::Type::INSTRUCTION, 4, 0, "mov"),
-    Token(Token::Type::REGISTER, 4, 4, "b"),
-    Token(Token::Type::REGISTER, 4, 6, "c"),
+    Token(Token::Type::INSTRUCTION, 5, 4, "mov"),
+    Token(Token::Type::REGISTER, 5, 8, "b"),
+    Token(Token::Type::REGISTER, 5, 10, "c"),
 
-    Token(Token::Type::INSTRUCTION, 5, 0, "hlt"),
-    Token(Token::Type::INSTRUCTION, 5, 4, "lxi"),
-    Token(Token::Type::REGISTER, 5, 8, "sp"),
-    Token(Token::Type::HEXADECIMAL, 5, 12, "0x44ae"),
+    Token(Token::Type::INSTRUCTION, 6, 4, "hlt"),
+    Token(Token::Type::INSTRUCTION, 6, 8, "lxi"),
+    Token(Token::Type::REGISTER, 6, 12, "sp"),
+    Token(Token::Type::HEXADECIMAL, 6, 16, "0x44ae"),
 
-    Token(Token::Type::LABEL, 7, 0, "main:"),
+    Token(Token::Type::LABEL, 8, 4, "main:"),
 
-    Token(Token::Type::INSTRUCTION, 8, 0, "push"),
-    Token(Token::Type::REGISTER, 8, 5, "psw"),
+    Token(Token::Type::INSTRUCTION, 9, 6, "push"),
+    Token(Token::Type::REGISTER, 9, 11, "psw"),
 
-    Token(Token::Type::INSTRUCTION, 9, 0, "cpi"),
-    Token(Token::Type::NUMBER, 9, 4, "8"),
+    Token(Token::Type::INSTRUCTION, 10, 6, "cpi"),
+    Token(Token::Type::NUMBER, 10, 10, "8"),
 
-    Token(Token::Type::INSTRUCTION, 10, 0, "jnz"),
-    Token(Token::Type::SYMBOL, 10, 4, "main"),
+    Token(Token::Type::INSTRUCTION, 11, 6, "jnz"),
+    Token(Token::Type::SYMBOL, 11, 10, "main"),
+    Token(Token::Type::COMMENT, 11, 15, ";this is a comment"),
   };
 
 

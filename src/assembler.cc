@@ -105,14 +105,15 @@ const std::vector<const std::string> Assembler::mnemonics = {
 };
 
 const std::map<Token::Type, const std::string> Assembler::token_regexes = {
-  { Token::Type::DIRECTIVE, R"((\.\w+))" },
-  { Token::Type::LABEL, R"((\w+):)" },
-  { Token::Type::NUMBER, R"(\b(\d+)\b)" },
-  { Token::Type::HEXADECIMAL, R"(0x([a-f\d]+))" },
-  { Token::Type::BINARY, R"(0b([01]+))" },
+  { Token::Type::DIRECTIVE, R"(\.\w+)" },
+  { Token::Type::LABEL, R"(\w+:)" },
+  { Token::Type::NUMBER, R"(\b\d+\b)" },
+  { Token::Type::HEXADECIMAL, R"(0x[a-f\d]+)" },
+  { Token::Type::BINARY, R"(0b[01]+)" },
   { Token::Type::REGISTER, R"(\b([a-ehlm]|sp|psw)\b)" },
   { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
-  { Token::Type::SYMBOL, R"(\b([0-9\w]+)\b))" },
+  { Token::Type::SYMBOL, R"(\b[0-9\w]+\b)" },
+  { Token::Type::COMMENT, R"(;.+)" },
 };
 
 Token::Token(Type type, int line, int column, std::string value)
@@ -199,6 +200,7 @@ std::string to_string(const Token::Type& type_)
     case Token::Type::LABEL: return "LABEL"; break;
     case Token::Type::REGISTER: return "REGISTER"; break;
     case Token::Type::SYMBOL: return "SYMBOL"; break;
+    case Token::Type::COMMENT: return "COMMENT"; break;
     
     default:
       return "<UNKNOWN>";
