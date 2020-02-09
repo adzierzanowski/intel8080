@@ -66,11 +66,11 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     mvi a,     55
     
     mov a, c
-    mov b,c
+    MOV B,C
     hlt lxi sp, 0x44ae
     
     main:
-      push psw
+      PUSH PSW
       cpi 8
       jnz main ;this is a comment
   )";

@@ -360,6 +360,10 @@ std::vector<Token> Assembler::filter_overlapping_tokens(
   
 std::vector<Token> Assembler::tokenize(std::string source)
 {
+  std::transform(source.begin(), source.end(), source.begin(), [](unsigned char c){
+    return tolower(c);
+  });
+
   std::vector<std::string> source_lines;
   boost::split(source_lines, source, boost::is_any_of("\n"));
   return tokenize(source_lines);
@@ -368,6 +372,13 @@ std::vector<Token> Assembler::tokenize(std::string source)
 std::vector<Token> Assembler::tokenize(std::vector<std::string> source)
 {
   std::vector<Token> tokens;
+  std::transform(source.begin(), source.end(), source.begin(), [](auto line){
+    std::string s(line);
+    std::transform(s.begin(), s.end(), s.begin(), [](auto c){
+      return tolower(c);
+    });
+    return s;
+  });
 
   int line_index = 0;
   for (auto line : source)
