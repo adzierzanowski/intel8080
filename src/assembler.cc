@@ -115,6 +115,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
   { Token::Type::IDENTIFIER, R"(\b[0-9\w]+\b)" },
   { Token::Type::COMMENT, R"(;.+)" },
+  { Token::Type::STRING, R"(("|').+("|'))" },
 };
 
 Token::Token(Type type, int line, int column, std::string value)
@@ -304,6 +305,7 @@ std::string to_string(const Token::Type& type_)
     case Token::Type::REGISTER: return "REGISTER"; break;
     case Token::Type::IDENTIFIER: return "IDENTIFIER"; break;
     case Token::Type::COMMENT: return "COMMENT"; break;
+    case Token::Type::STRING: return "STRING"; break;
     
     default:
       return "<UNKNOWN>";

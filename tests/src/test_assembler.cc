@@ -74,6 +74,8 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
       cpi 8
       jnz main ;this is a comment
     mvi a, 41h
+    "string literal"
+    'another string literal'
   )";
 
   std::vector<Token> expected_tokens = {
@@ -115,10 +117,16 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::INSTRUCTION, 12, 4, "mvi"),
     Token(Token::Type::REGISTER, 12, 8, "a"),
     Token(Token::Type::HEXADECIMAL, 12, 11, "41h"),
+
+    Token(Token::Type::STRING, 13, 4, R"("string literal")"),
+    Token(Token::Type::STRING, 14, 4, "'another string literal'"),
   };
 
 
   auto tokens = Assembler::tokenize(src);
+
+  for (auto tok : tokens)
+    std::cout << tok << std::endl;
 
   cr_assert_eq(tokens.size(), expected_tokens.size());
   for (int i = 0; i < tokens.size(); i++)
