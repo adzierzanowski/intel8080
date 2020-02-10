@@ -186,13 +186,18 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
     
     cpi 0
     jnz main
+
+    lxi d, str
+    str: db "Hello"
   )";
 
   auto tokens = Assembler::tokenize(source);
   tokens = Assembler::convert_numbers(tokens);
   auto converted = Assembler::convert_labels(tokens);
-  cr_assert_eq(std::stoul(converted[11].value), 0x103);
-  cr_assert_eq(std::stoul(converted[15].value), 0x100);
+
+  cr_assert_eq(std::stoul(converted[12].value), 0x103);
+  cr_assert_eq(std::stoul(converted[16].value), 0x100);
+  cr_assert_eq(std::stoul(converted[19].value), 0x10e);
   // TODO: add test for intermediate .org
 }
 
@@ -269,7 +274,6 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
   };
 
   auto result_bin = Assembler::assemble(source);
-
   cr_assert_eq(expected_bin, result_bin);
 }
 
