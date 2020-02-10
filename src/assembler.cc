@@ -721,7 +721,7 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
             }
           }
 
-          if (data_it == tokens.end() - 1 || tok.line != data_tok.line)
+          if (data_it >= tokens.end() - 1 || tok.line != data_tok.line)
             break;
         }
 
@@ -742,85 +742,104 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
   std::map<std::string, uint16_t> labels;
 
   unsigned int origin = 0;
-  uint16_t token_position = 0;
+  uint16_t label_position = 0; // label address in code
 
+  // Fill the label map
   for (auto it = tokens.begin(); it != tokens.end(); it++)
   {
     const Token& tok = *it;
     bool last_token = (it == (tokens.end() - 1));
 
-    if (tok.type == Token::Type::DIRECTIVE && tok.value == ".org")
+    switch (tok.type)
     {
-      if (last_token)
+      case Token::Type::LABEL:
       {
-        throw assembler_exception("Directive .org expects an argument");
+        if (labels.find(tok.value) != labels.end())
+        {
+          throw assembler_exception(boost::str(boost::format(
+            "%d:%d Duplicate label: '%s'."
+            ) % tok.line % tok.column % tok.value
+          ));
+        }
+
+        labels.insert({tok.value, origin + label_position});
+        break;
       }
 
-      const Token& next = *(it + 1);
-      origin = std::stoul(next.value);
-      if (origin > 0xffff)
+      case Token::Type::DIRECTIVE:
       {
-        throw assembler_exception(boost::str(boost::format(
-          "%d:%d Directive .org expects a 16-bit value"
-          ) % tok.line % tok.column
-        ));
+        if (tok.value == ".org")
+        {
+          if (last_token)
+          {
+            throw assembler_exception(boost::str(boost::format(
+              "%d:%d .org directive expects an argument."
+              ) % tok.line % tok.column
+            ));
+          }
+
+          const Token& orgval = *(it+1);
+          if (orgval.type != Token::Type::NUMBER)
+          {
+            throw assembler_exception(boost::str(boost::format(
+              "%d:%d .org directive expects a number as an argument, not %s."
+              ) % tok.line % tok.column % to_string(tok.type)
+            ));
+          }
+
+          origin = std::stoul(orgval.value);
+          it++;
+        }
+        break;
       }
 
-      converted.push_back(tok);
+      case Token::Type::INSTRUCTION:
+      {
+        auto ins = instructions[tok.value];
+        //it += ins.operands.size() - 1;
+        label_position++;
+        break;
+      }
 
-      // Move past the directive argument to not increase token_position
-      it++;
-      continue;
+      case Token::Type::NUMBER:
+      {
+        label_position += std::stoul(tok.value) > 0xff ? 2 : 1;
+        break;
+      }
+
+      case Token::Type::IDENTIFIER:
+      {
+        label_position += 2;
+        break;
+      }
+
+      default:
+        break;
     }
-    else if (tok.type == Token::Type::LABEL)
-    {
-      auto label = labels.find(tok.value);
+  }
 
-      if (label != labels.end())
-      {
-        throw assembler_exception(boost::str(boost::format(
-          "%d:%d Duplicate label name"
-          ) % tok.line % tok.column
-        ));
-      }
-
-      labels.insert({tok.value, origin + token_position});
-      converted.push_back(tok);
-    }
-    else if (tok.type == Token::Type::IDENTIFIER)
+  for (auto tok : tokens)
+  {
+    if (tok.type == Token::Type::IDENTIFIER)
     {
       auto label = labels.find(tok.value + ":");
 
       if (label == labels.end())
       {
         throw assembler_exception(boost::str(boost::format(
-          "%d:%d Undefined identifier: '%s'"
+            "%d:%d Undefined identifier: %s"
           ) % tok.line % tok.column % tok.value
         ));
       }
 
-      Token new_token = tok; 
-      new_token.type = Token::Type::NUMBER;
-      new_token.value = std::to_string(labels[tok.value + ":"]);
-      converted.push_back(new_token);
+      Token convtok(tok);
+      convtok.type = Token::Type::NUMBER;
+      convtok.value = std::to_string(label->second);
+      converted.push_back(convtok);
     }
     else
     {
       converted.push_back(tok);
-    }
-
-    if (tok.type == Token::Type::NUMBER)
-    {
-      unsigned int val = std::stoul(tok.value);
-      if (val > 0xffff)
-      {
-        throw assembler_exception("Address exceeds 16 bits");
-      }
-      token_position += val > 0xff ? 2 : 1;
-    }
-    else if (tok.type == Token::Type::INSTRUCTION)
-    {
-      token_position++;
     }
   }
 
