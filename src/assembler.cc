@@ -754,7 +754,7 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
     {
       case Token::Type::LABEL:
       {
-        if (labels.find(tok.value + ":") != labels.end())
+        if (labels.find(tok.value) != labels.end())
         {
           throw assembler_exception(boost::str(boost::format(
             "%d:%d Duplicate label: '%s'."
