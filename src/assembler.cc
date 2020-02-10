@@ -115,7 +115,7 @@ const std::map<Token::Type, const std::string> Assembler::token_regexes = {
   { Token::Type::INSTRUCTION, R"(\b()" + boost::join(mnemonics, "|") + R"()\b)" },
   { Token::Type::IDENTIFIER, R"(\b[0-9\w]+\b)" },
   { Token::Type::COMMENT, R"(;.+)" },
-  { Token::Type::STRING, R"(("|').+("|'))" },
+  { Token::Type::STRING, R"(("|').*?("|'))" },
   { Token::Type::DATA, R"(\b(db|dw)\b)" },
 };
 
@@ -404,10 +404,6 @@ std::vector<Token> Assembler::filter_overlapping_tokens(
   
 std::vector<Token> Assembler::tokenize(std::string source)
 {
-  std::transform(source.begin(), source.end(), source.begin(), [](unsigned char c){
-    return tolower(c);
-  });
-
   std::vector<std::string> source_lines;
   boost::split(source_lines, source, boost::is_any_of("\n"));
   return tokenize(source_lines);
@@ -416,13 +412,6 @@ std::vector<Token> Assembler::tokenize(std::string source)
 std::vector<Token> Assembler::tokenize(std::vector<std::string> source)
 {
   std::vector<Token> tokens;
-  std::transform(source.begin(), source.end(), source.begin(), [](auto line){
-    std::string s(line);
-    std::transform(s.begin(), s.end(), s.begin(), [](auto c){
-      return tolower(c);
-    });
-    return s;
-  });
 
   int line_index = 0;
   for (auto line : source)
@@ -667,6 +656,78 @@ std::vector<uint8_t> Assembler::generate_opcodes(std::vector<Token>& tokens)
         break;
       }
 
+      case Token::Type::DATA:
+      {
+        auto data_it = it;
+
+        while (true)
+        {
+          const Token& data_tok = *(++data_it);
+
+          switch (data_tok.type)
+          {
+            case Token::Type::STRING:
+            {
+              if (tok.value == "db")
+              {
+                std::string payload = data_tok.value.substr(
+                  1, data_tok.value.length() - 2
+                );
+
+                for (auto c : payload)
+                {
+                  binary.push_back(static_cast<uint8_t>(c));
+                }
+              }
+              else
+              {
+                throw assembler_exception(boost::str(boost::format(
+                    "%d:%d String data must be of byte width"
+                  ) % data_tok.line
+                    % data_tok.column
+                ));
+              }
+
+              break;
+            }
+
+            case Token::Type::NUMBER:
+            {
+              if (tok.value == "db")
+              {
+                binary.push_back(data_tok.get_uint8());
+              }
+              else if (tok.value == "dw")
+              {
+                auto val = data_tok.get_uint16();
+                binary.push_back(val & 0x00ff);
+                binary.push_back((val & 0xff00) >> 8);
+              }
+
+              break;
+            }
+
+            default:
+            {
+              throw assembler_exception(boost::str(boost::format(
+                  "%d:%d Data definition expects number or string literals "
+                  "not %s"
+                ) % data_tok.line
+                  % data_tok.column
+                  % to_string(data_tok.type)
+              ));
+
+              break;
+            }
+          }
+
+          if (data_it == tokens.end() - 1 || tok.line != data_tok.line)
+            break;
+        }
+
+        break;
+      }
+
       default:
         break;
     }
@@ -766,11 +827,48 @@ std::vector<Token> Assembler::convert_labels(std::vector<Token>& tokens)
   return converted;
 }
 
+std::vector<Token> Assembler::convert_case(std::vector<Token>& tokens)
+{
+  std::vector<Token> converted;
+
+  for (auto tok : tokens)
+  {
+    switch (tok.type)
+    {
+      case Token::Type::COMMENT:
+      case Token::Type::IDENTIFIER:
+      case Token::Type::LABEL:
+      case Token::Type::STRING:
+      {
+        converted.push_back(tok);
+        break;
+      }
+
+      default:
+      {
+        Token t(tok);
+        std::transform(
+          t.value.begin(),
+          t.value.end(),
+          t.value.begin(),
+          [] (auto c) {
+            return tolower(c);
+        });
+        converted.push_back(t);
+        break;
+      }
+    }
+  }
+
+  return converted;
+}
+
 std::vector<uint8_t> Assembler::assemble(std::string source)
 {
   auto tokens = tokenize(source);
   tokens = convert_numbers(tokens);
   tokens = convert_labels(tokens);
+  tokens = convert_case(tokens);
   return generate_opcodes(tokens);
 }
 
@@ -779,5 +877,6 @@ std::vector<uint8_t> Assembler::assemble(std::vector<std::string> source_lines)
   auto tokens = tokenize(source_lines);
   tokens = convert_numbers(tokens);
   tokens = convert_labels(tokens);
+  tokens = convert_case(tokens);
   return generate_opcodes(tokens);
 }

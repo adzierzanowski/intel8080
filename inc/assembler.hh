@@ -40,12 +40,12 @@ struct Token
     COMMENT,
     DIRECTIVE,
     INSTRUCTION,
+    STRING,
     HEXADECIMAL,
     BINARY,
     NUMBER,
     REGISTER,
     DATA,
-    STRING,
     LABEL,
     IDENTIFIER,
   };
@@ -104,6 +104,7 @@ struct Assembler
   static std::vector<Token> filter_overlapping_tokens(std::vector<Token>& tokens);
   static std::vector<Token> convert_numbers(std::vector<Token>& tokens);
   static std::vector<Token> convert_labels(std::vector<Token>& tokens);
+  static std::vector<Token> convert_case(std::vector<Token>& tokens);
   static std::vector<uint8_t> generate_opcodes(std::vector<Token>& tokens);
 
   static std::vector<Token> tokenize(std::string source);

@@ -93,9 +93,9 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
     Token(Token::Type::REGISTER, 4, 8, "a"),
     Token(Token::Type::REGISTER, 4, 11, "c"),
 
-    Token(Token::Type::INSTRUCTION, 5, 4, "mov"),
-    Token(Token::Type::REGISTER, 5, 8, "b"),
-    Token(Token::Type::REGISTER, 5, 10, "c"),
+    Token(Token::Type::INSTRUCTION, 5, 4, "MOV"),
+    Token(Token::Type::REGISTER, 5, 8, "B"),
+    Token(Token::Type::REGISTER, 5, 10, "C"),
 
     Token(Token::Type::INSTRUCTION, 6, 4, "hlt"),
     Token(Token::Type::INSTRUCTION, 6, 8, "lxi"),
@@ -104,8 +104,8 @@ Test(assembler, test_tokenize, .init=test_assembler_init, .fini=test_assembler_f
 
     Token(Token::Type::LABEL, 8, 4, "main:"),
 
-    Token(Token::Type::INSTRUCTION, 9, 6, "push"),
-    Token(Token::Type::REGISTER, 9, 11, "psw"),
+    Token(Token::Type::INSTRUCTION, 9, 6, "PUSH"),
+    Token(Token::Type::REGISTER, 9, 11, "PSW"),
 
     Token(Token::Type::INSTRUCTION, 10, 6, "cpi"),
     Token(Token::Type::NUMBER, 10, 10, "8"),
@@ -196,6 +196,42 @@ Test(assembler, test_convert_labels, .init=test_assembler_init, .fini=test_assem
   // TODO: add test for intermediate .org
 }
 
+Test(assembler, test_convert_case)
+{
+  std::string source = R"(
+    MOV A, C
+    LABEL:
+      MOV B, A
+    MSG: DB "HELLO WORLD"
+  )";
+
+  auto tokens = Assembler::tokenize(source);
+  auto converted = Assembler::convert_case(tokens);
+
+  std::vector<Token> expected_tokens = {
+    Token(Token::Type::INSTRUCTION, 1, 4, "mov"),
+    Token(Token::Type::REGISTER, 1, 8, "a"),
+    Token(Token::Type::REGISTER, 1, 11, "c"),
+
+    Token(Token::Type::LABEL, 2, 4, "LABEL:"),
+
+    Token(Token::Type::INSTRUCTION, 3, 6, "mov"),
+    Token(Token::Type::REGISTER, 3, 10, "b"),
+    Token(Token::Type::REGISTER, 3, 13, "a"),
+
+    Token(Token::Type::LABEL, 4, 4, "MSG:"),
+    Token(Token::Type::DATA, 4, 9, "db"),
+    Token(Token::Type::STRING, 4, 12, R"("HELLO WORLD")"),
+  };
+
+
+  cr_assert_eq(converted.size(), expected_tokens.size());
+  for (int i = 0; i < converted.size(); i++)
+  {
+    cr_assert_eq(converted[i], expected_tokens[i]);
+  }
+}
+
 Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_fini)
 {
   std::string source = R"(
@@ -212,6 +248,8 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
       jnz mainloop
     pop psw
     hlt
+
+    msg: db "Hello, world!", 10, '$'
   )";
 
   std::vector<uint8_t> expected_bin = {
@@ -223,10 +261,15 @@ Test(assembler, test_assemble, .init=test_assembler_init, .fini=test_assembler_f
     0xfe, 0x00, // cpi 0
     0xc2, 0x01, 0x01, // jnz mainloop
     0xf1, // pop psw
-    0x76 // hlt
+    0x76, // hlt
+
+    // Hello, world!\n$
+    0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20,
+    0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x0a, 0x24
   };
 
   auto result_bin = Assembler::assemble(source);
+
   cr_assert_eq(expected_bin, result_bin);
 }
 
