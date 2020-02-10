@@ -681,9 +681,26 @@ bool Emulator::call(bool condition)
           std::cout << cpu->get_register(Register::E);
           break;
         }
+        case 9:
+        {
+          uint16_t addr = cpu->get_register_pair(Register::D, Register::E);
+          char c = cpu->load(addr);
+          while (c != '$')
+          {
+            std::cout << c;
+            c = cpu->load(++addr);
+          }
+          break;
+        }
 
         default:
+        {
+          std::cerr << "error: Unknown BDOS syscall.\n";
+          std::cerr << dump_state_registers() << "\n";
+          std::cerr << dump_gpr() << "\n";
+          exit(1);
           break;
+        }
       }
 
       return true;
